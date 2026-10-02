@@ -44,6 +44,6 @@ test("missing keys show a clear setup message, never simulated AI",async({page})
  await page.goto("/#summarise");
  await page.getByLabel("Opportunity description").fill("This is a public virtual work experience programme with practical tasks and activities for students.");
  await page.getByRole("button",{name:"Summarise this opportunity"}).click();
- await expect(page.getByRole("alert")).toContainText("Groq API key");
+ await expect(page.getByRole("alert").filter({hasText:"Groq API key"})).toContainText("Groq API key");
  await expect(page.getByRole("button",{name:"Export summary"})).toHaveCount(0);
 });
