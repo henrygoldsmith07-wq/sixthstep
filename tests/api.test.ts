@@ -1,8 +1,13 @@
-import { test } from "node:test";
+import { test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { POST as summarise } from "../app/api/summarise/route";
 import { POST as search } from "../app/api/search/route";
 import { POST as reflect } from "../app/api/reflect/route";
+
+const genericEnv=["OPENAI_API_KEY","OPENAI_BASE_URL","OPENAI_MODEL","OPENAI_PROVIDER_NAME","OPENAI_JSON_MODE","OPENAI_TOKEN_PARAMETER"];
+let previousEnv:Record<string,string|undefined>={};
+beforeEach(()=>{previousEnv=Object.fromEntries(genericEnv.map(name=>[name,process.env[name]]));for(const name of genericEnv)delete process.env[name];});
+afterEach(()=>{for(const name of genericEnv){const value=previousEnv[name];if(value===undefined)delete process.env[name];else process.env[name]=value;}});
 let counter=0;
 function req(path:string,body:unknown){return new Request("http://localhost:3000/api/"+path,{method:"POST",headers:{"Content-Type":"application/json","x-forwarded-for":"test-"+counter++},body:JSON.stringify(body)});}
 const summary={title:"Engineering experience",overview:"A virtual programme.",activities:["Complete a task"],skills:["Problem solving"],eligibility:"Not stated",duration:"Not stated",deadline:"Not stated",cost:"Not stated",steps:["Check provider details"]};
@@ -32,7 +37,7 @@ test("malformed model output and upstream quotas have useful errors",async t=>{
  assert.equal((await summarise(req("summarise",{text:"An engineering virtual programme with practical tasks and workplace activities for students."}))).status,502);
  global.fetch=async()=>Response.json({error:"quota"},{status:429});
  const response=await summarise(req("summarise",{text:"An engineering virtual programme with practical tasks and workplace activities for students."}));
- assert.equal(response.status,429);assert.match((await response.json()).error,/free allowance/);
+ assert.equal(response.status,429);assert.match((await response.json()).error,/AI allowance/);
 });
 test("web search removes unsafe and duplicate links and caches results",async t=>{
  const originalFetch=global.fetch,key=process.env.TAVILY_API_KEY;process.env.TAVILY_API_KEY="test-only-secret";let calls=0;

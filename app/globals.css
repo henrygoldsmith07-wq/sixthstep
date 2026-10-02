@@ -11,3 +11,4 @@
 .edit-textarea{height:160px;margin-top:5px}
 
 .card-description{font-size:11px;color:#69755f}.card-meta{color:#6b795f;font-size:9px}.provider-name{color:#718164}.page-heading p,.card-intro,.dialog-description,.output-overview,.output-list,.privacy-card p,.setup-details{color:#6e7c65}.fine-print{color:#6d7b62;font-size:10px}.notice{color:#627456}.input-hint{color:#728365}.sidebar-note p{color:#718063}.search-help{color:#697860}.section-header p{color:#718065}.results-toolbar{color:#6c7b62}.empty-state p{color:#6d7e61}
+.connection-row>div{min-width:0;overflow-wrap:anywhere}.connection-status{flex-shrink:0}.setup-details code{overflow-wrap:anywhere}

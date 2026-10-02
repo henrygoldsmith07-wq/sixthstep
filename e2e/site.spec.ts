@@ -47,3 +47,19 @@ test("missing keys show a clear setup message, never simulated AI",async({page})
  await expect(page.getByRole("alert").filter({hasText:"Groq API key"})).toContainText("Groq API key");
  await expect(page.getByRole("button",{name:"Export summary"})).toHaveCount(0);
 });
+
+test("settings show the configured compatible provider and its setup instructions",async({page})=>{
+ await page.route("**/api/status",r=>r.fulfill({json:{ai:true,search:false,aiProvider:"School AI",aiSetup:"ready"}}));
+ await page.goto("/#settings");
+ await expect(page.getByText("School AI",{exact:true})).toBeVisible();
+ await expect(page.getByText("Configured",{exact:true})).toBeVisible();
+ await page.getByText("How to connect an AI provider",{exact:false}).click();
+ await expect(page.getByText("OPENAI_API_KEY",{exact:true})).toBeVisible();
+ await expect(page.getByText("OPENAI_BASE_URL",{exact:true})).toBeVisible();
+ await expect(page.getByText("OPENAI_MODEL",{exact:true})).toBeVisible();
+ await page.setViewportSize({width:390,height:844});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth)).toBe(false);
+ await page.getByRole("button",{name:"Open navigation"}).click();
+ await page.getByRole("link",{name:"Experience journal"}).click();
+ await expect(page.getByText(/AI reflection sends these notes to School AI/)).toBeVisible();
+});

@@ -7,7 +7,7 @@ A work experience finder and AI summariser for UK sixth-form students, built wit
 - Curated, source-linked provider collection with sector, keyword, format, cost and eligibility filters.
 - Personalised ordering based on selected career interests.
 - Live web search with Tavily, when configured.
-- Opportunity summaries from pasted text with Groq; HTTPS links are extracted through Tavily.
+- Opportunity summaries from pasted text with Groq or an OpenAI-compatible provider; HTTPS links are extracted through Tavily.
 - Saved opportunities with Interested / Applied / Completed status and CSV export.
 - Experience journal, truthful AI reflections and text exports.
 - Responsive navigation, keyboard-friendly dialogs and accessible input labels.
@@ -29,16 +29,39 @@ On Windows PowerShell, use `Copy-Item .env.example .env.local`. Add keys only to
 ## Deploy to Vercel
 
 1. Import this GitHub repository at [Vercel New Project](https://vercel.com/new).
-2. Keep the root directory as the repository root and choose Next.js. Defaults are `npm run build` and Next.js output.
-3. Add the following variables under **Settings → Environment Variables**:
-   - `GROQ_API_KEY` — [create a Groq key](https://console.groq.com/keys).
-   - `TAVILY_API_KEY` — [create a Tavily key](https://app.tavily.com).
-   - Optional `GROQ_MODEL`, default `openai/gpt-oss-20b`.
-4. Deploy. When keys are added later, redeploy so the server functions receive them.
+2. Keep the repository root as the root directory and choose Next.js.
+3. Add your chosen AI credentials under **Settings → Environment Variables**:
+   - **Groq:** `GROQ_API_KEY` — [create a Groq key](https://console.groq.com/keys). Optional `GROQ_MODEL` defaults to `openai/gpt-oss-20b`.
+   - **OpenAI-compatible provider:** `OPENAI_API_KEY`, `OPENAI_MODEL`, and `OPENAI_BASE_URL` (details below).
+   - **Web search and link extraction:** `TAVILY_API_KEY` — [create a Tavily key](https://app.tavily.com).
+4. Deploy. Redeploy after changing environment variables.
 
-The site builds and runs without API keys: the collection, filters, bookmarks and notes work; AI and web search show setup information. A URL summary needs both keys. Pasted-text summaries and reflections need only Groq.
+The site builds and runs without keys: the collection, filters, bookmarks and notes work. Pasted-text summaries and reflections need an AI provider; URL summaries also need Tavily.
 
 Do not use `NEXT_PUBLIC_` for API keys. Never commit secrets, Vercel credentials, `.env.local`, `.vercel` or student data. No database is required.
+
+## Add any OpenAI-compatible API key
+
+Both AI features support providers implementing the OpenAI **Chat Completions** request/response format with Bearer authentication. Configure these server-side variables in Vercel, or in `.env.local` for local development:
+
+| Variable | Value |
+| --- | --- |
+| `OPENAI_API_KEY` | Your chosen provider's API key |
+| `OPENAI_BASE_URL` | Provider API base URL, including its version path; defaults to `https://api.openai.com/v1` if blank |
+| `OPENAI_MODEL` | Exact model ID from your provider; required |
+| `OPENAI_PROVIDER_NAME` | Optional public label shown to students |
+| `OPENAI_JSON_MODE` | `true` by default; set `false` if the provider rejects `response_format` |
+| `OPENAI_TOKEN_PARAMETER` | `max_completion_tokens` by default; set `max_tokens` for providers requiring that field |
+
+The app appends `/chat/completions` to the base URL; a full URL ending in `/chat/completions` is also accepted. URLs must use public HTTPS without embedded credentials, query parameters or fragments. Redirects are rejected to protect the key. Azure-style endpoints requiring a different authentication header or query parameters, and Responses-only providers, need a separate adapter.
+
+If any of `OPENAI_API_KEY`, `OPENAI_BASE_URL` or `OPENAI_MODEL` is supplied, generic configuration takes priority over Groq. Incomplete configuration produces a setup error; it never silently sends text to another provider. Clear these three variables to return to Groq.
+
+No generic temperature is sent, for compatibility with reasoning models. JSON mode can be disabled, but every response is still parsed and validated against the app's schema. Plain or fenced JSON is accepted. See the official [Chat Completions reference](https://developers.openai.com/api/reference/resources/chat) and [JSON mode guide](https://developers.openai.com/api/docs/guides/structured-outputs).
+
+Settings show the public provider label and configuration state only. Keys, models and endpoints are never returned by the status API. “Configured” means settings are complete, not that a live request has succeeded.
+
+Free usage depends on the chosen provider and model. An OpenAI-compatible key does not imply a free plan. Existing Groq free-tier configuration remains supported. There is no automatic paid fallback.
 
 ## Free tiers and age requirements
 
@@ -52,7 +75,7 @@ Choose free plans and keep paid billing disabled to avoid paid fallback. Hosting
 
 Bookmarks, interests and reflection notes are saved in this browser's localStorage. They do not sync between devices. Students can export CSV/text copies. AI outputs remain in the current page until exported. Private details should not be submitted.
 
-AI requests send the submitted text to Groq. URL extraction sends the public URL to Tavily. Web search sends selected query, town/region, age and sector to Tavily. The site does not send the student's saved profile or bookmarks automatically.
+AI requests send the submitted text to the configured AI provider. Review that provider's data handling and age requirements before enabling it for students. URL extraction sends the public URL to Tavily. Web search sends selected query, town/region, age and sector to Tavily. The site does not send the student's saved profile or bookmarks automatically.
 
 Provider keys are server-side. JSON input is validated with Zod, request sizes and processing time are bounded, origins are checked, and model output is validated before rendering. The server never fetches arbitrary user URLs directly: Tavily handles extraction. HTML and instructions in supplied text are not trusted.
 
