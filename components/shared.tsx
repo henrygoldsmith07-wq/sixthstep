@@ -1,0 +1,30 @@
+"use client";
+import { cloneElement, isValidElement, useId, type ReactElement, type ReactNode } from "react";
+import { ArrowRight, Download, CircleHelp } from "lucide-react";
+export function safeHref(value:string){
+ try {
+  const url=new URL(value),host=url.hostname.toLowerCase().replace(/\.$/,"");
+  if(url.protocol!=="https:"||url.username||url.password||url.port&&url.port!=="443"||!host.includes(".")||host.includes(":")||/^\d+(\.\d+){3}$/.test(host)||/\.(local|internal|localhost)$/.test(host))return "";
+  return url.toString();
+ }catch{return "";}
+}
+export function download(name:string,content:string,type="text/plain"){
+ const url=URL.createObjectURL(new Blob([content],{type})),link=document.createElement("a");link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+export function Heading({eyebrow,title,description,action}:{eyebrow:string;title:string;description:string;action?:ReactNode}){
+ return <div className="page-heading feature-heading"><div><span className="eyebrow muted">{eyebrow}</span><h1>{title}</h1><p>{description}</p></div>{action}</div>;
+}
+export function Notice({children}:{children:ReactNode}){return <div className="notice compact"><CircleHelp size={17}/><span>{children}</span></div>;}
+export function Empty({title,children,action,label}:{title:string;children:ReactNode;action?:()=>void;label?:string}){
+ return <div className="empty-state roomy"><h3>{title}</h3><p>{children}</p>{action&&<button className="button primary" onClick={action}>{label}<ArrowRight size={16}/></button>}</div>;
+}
+export function Field({label,children,hint}:{label:string;children:ReactNode;hint?:string}){
+ const id=useId(),hintId=id+"-hint";
+ const control=isValidElement(children)?cloneElement(children as ReactElement<{id?:string;"aria-describedby"?:string}>,{id,"aria-describedby":hint?hintId:undefined}):children;
+ return <div className="form-field"><label className="field-label" htmlFor={id}>{label}</label>{control}{hint&&<span id={hintId} className="input-hint">{hint}</span>}</div>;
+}
+export function ExportButton({name,text,label="Export"}:{name:string;text:string;label?:string}){
+ return <button type="button" className="button secondary" onClick={()=>download(name,text)}><Download size={15}/>{label}</button>;
+}
+export function Lines({title,items}:{title:string;items:string[]}){return <><h3>{title}</h3>{items.length?<ul className="output-list">{items.map((item,i)=><li key={i}>{item}</li>)}</ul>:<p className="fine-print">Not stated</p>}</>;}
+export function csv(rows:(string|number)[][]){return rows.map(row=>row.map(value=>{let s=String(value);if(/^[=+@\-\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}).join(",")).join("\r\n");}

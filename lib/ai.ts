@@ -38,6 +38,7 @@ function configuration(): AiConfig {
  if(!key) throw new ApiError(503,"AI summaries need an OpenAI-compatible API key or a Groq API key. The site owner can add one in Vercel. The finder and tracker are ready to use.");
  return {key,endpoint:"https://api.groq.com/openai/v1/chat/completions",model:process.env.GROQ_MODEL?.trim() || "openai/gpt-oss-20b",provider:"Groq",jsonMode:true,tokenParameter:"max_completion_tokens",temperature:0.2};
 }
+export function ensureAiConfigured() { configuration(); }
 export function aiStatus() {
  try {
   const config=configuration();

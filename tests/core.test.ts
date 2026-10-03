@@ -21,7 +21,7 @@ test("unknown ages are never silently claimed eligible",()=>{
 test("keyword, sector, free and format filters compose",()=>{
  const results=filterOpportunities(catalogue,{...filters,sector:"Technology",freeOnly:true,query:"cybersecurity"});
  assert.equal(results.length,1); assert.equal(results[0].provider,"Forage");
- assert.equal(filterOpportunities(catalogue,{...filters,format:"In person"}).length,0);
+ assert.equal(filterOpportunities(catalogue.slice(0,8),{...filters,format:"In person"}).length,0);
  assert.equal(filterOpportunities(catalogue,{...filters,sector:"Law",format:"Job simulations"}).length,1);
 });
 

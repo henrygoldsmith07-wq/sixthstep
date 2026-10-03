@@ -1,65 +1,119 @@
-import { test, expect } from "@playwright/test";
-test("search, bookmark, change status and reload saved data",async({page})=>{
- const errors:string[]=[];page.on("pageerror",e=>errors.push(e.message));
- await page.goto("/");await expect(page.getByRole("heading",{name:/Your next step/})).toBeVisible();
- await page.screenshot({path:"../../work/sixthstep-desktop.png",fullPage:true});
- await page.getByRole("button",{name:"Technology",exact:true}).click();
- await expect(page.locator(".opportunity-card")).toHaveCount(2);
- await page.getByRole("button",{name:"Save Try a career in technology",exact:true}).click();
- await page.getByRole("link",{name:/My opportunities/}).click();
- await expect(page.getByRole("button",{name:"Try a career in technology",exact:true})).toBeVisible();
- await page.getByLabel("Application status for Try a career in technology").selectOption("Applied");
- await page.reload();await expect(page.getByLabel("Application status for Try a career in technology")).toHaveValue("Applied");
+import { test, expect, type Page } from "@playwright/test";
+import { catalogue } from "../lib/catalogue";
+// External font delivery is unrelated to product flows and can stall CI navigation.
+test.beforeEach(async({page})=>{await page.route(/https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/,route=>route.abort());});
+import { enrich, createRecord, experienceSchema, defaultProfile, type RichReflection } from "../lib/domain";
+const notes="I compared two design options in a virtual engineering simulation and explained my choice using their costs.";
+const reflection:RichReflection={summary:"I compared two design options in a simulation.",skills:[{skill:"Problem solving",evidenceQuote:"I compared two design options",whatHappened:"Two designs had different costs.",action:"I compared the options and explained my choice.",learning:"I learned to consider trade-offs."}],star:{situation:"Two design options in a simulation",task:"Choose a design",action:"I compared costs",result:"I explained my choice"},cvBullet:"Compared design options in a virtual engineering simulation.",applicationExample:"I considered the costs of two designs and explained my choice.",interviewTalkingPoint:"I learned to discuss design trade-offs.",nextSteps:["Explore engineering design further"]};
+const imported=enrich({id:"import-e2e",title:"External engineering insight",provider:"Example University",category:"Employer insight",sector:"Engineering",format:"Virtual",location:"Virtual",duration:"2 days",durationBand:"1–3 days",eligibility:"Year 12; age not stated",years:["Year 12"],deadline:"31 October 2026",deadlineDate:"2026-10-31",cost:"Free",activities:["Compare two design options"],skills:["Problem solving"],description:"A virtual engineering insight with a design task.",url:"https://example.org/engineering",applicationUrl:"https://example.org/apply",source:"imported",sourceKind:"Imported",unconfirmed:["Age eligibility"]});
+async function nav(page:Page,label:string){if(await page.getByRole("button",{name:"Open menu",exact:true}).isVisible())await page.getByRole("button",{name:"Open menu",exact:true}).click();await page.locator(".sidebar").getByRole("button",{name:label}).click();}
+async function seed(page:Page,value:unknown){await page.addInitScript(data=>{if(!localStorage.getItem("sixthstep-workspace-v2"))localStorage.setItem("sixthstep-workspace-v2",JSON.stringify(data));},value);}
+async function fixedDay(page:Page){await page.clock.setFixedTime(new Date("2026-10-03T12:00:00Z"));}
+async function mockConnections(page:Page){await page.route("**/api/status",r=>r.fulfill({json:{ai:true,search:true,aiProvider:"School AI",aiSetup:"ready"}}));}
+test("profile, explained discovery, application actions, completion, journal and evidence survive reload",async({page})=>{
+ const errors:string[]=[];page.on("pageerror",e=>errors.push(e.message));await fixedDay(page);await page.goto("/");
+ await expect(page.getByRole("heading",{name:/A little progress/})).toBeVisible();
+ await page.screenshot({path:"test-results/dashboard-desktop.png",fullPage:true});
+ await page.getByRole("button",{name:/Set my interests/}).click();
+ await page.getByLabel("Subjects you're studying",{exact:false}).fill("Maths, Physics");await page.getByLabel("Age",{exact:false}).selectOption("17");
+ await page.getByRole("button",{name:"Engineering",exact:true}).click();await page.getByLabel("Career interests",{exact:false}).fill("Engineering design");
+ await page.getByRole("button",{name:"Save my profile",exact:true}).click();await nav(page,"Find opportunities");
+ await expect(page.getByRole("heading",{name:"Recommended for you",exact:true})).toBeVisible();
+ await expect(page.locator(".match-note").first()).toContainText(/interest|Related|career/);
+ await page.getByRole("button",{name:"Save Inside the world of Leonardo",exact:true}).first().click();await nav(page,"My opportunities");
+ await page.getByRole("button",{name:"Open workspace",exact:true}).click();
+ await page.getByLabel("Application status for Inside the world of Leonardo").selectOption("Preparing application");
+ await page.getByLabel("Next action",{exact:true}).fill("Ask my teacher for a reference");await page.getByLabel("Next-action due date").fill("2026-10-02");
+ await page.getByLabel("Application deadline",{exact:false}).fill("2026-10-08");
+ await page.getByLabel("My notes",{exact:true}).fill("Ask about access requirements.");
+ await page.getByLabel("New checklist item").fill("Teacher reference");await page.locator(".inline-form").first().getByRole("button",{name:"Add",exact:true}).click();
+ await page.getByLabel("Reminder text").fill("Prepare questions");await page.getByLabel("Reminder date",{exact:true}).fill("2026-10-06");await page.getByRole("button",{name:"Add reminder",exact:true}).click();
+ await nav(page,"My dashboard");await expect(page.getByRole("button",{name:/Ask my teacher for a reference/})).toContainText("Overdue");await expect(page.getByRole("button",{name:/Prepare questions/})).toBeVisible();
+ await page.getByRole("button",{name:/Ask my teacher for a reference/}).click();await expect(page.getByLabel("Teacher reference",{exact:true})).not.toBeChecked();await page.getByLabel("Teacher reference",{exact:true}).check();
+ await page.getByLabel("Application status for Inside the world of Leonardo").selectOption("Applied");await expect(page.getByLabel("Date applied")).toHaveValue("2026-10-03");
+ await nav(page,"My dashboard");await expect(page.getByRole("heading",{name:"Awaiting a response",exact:true})).toBeVisible();
+ await nav(page,"My opportunities");await page.getByRole("button",{name:"Mark completed & record experience",exact:true}).click();
+ await expect(page.getByLabel("Experience name")).toHaveValue("Inside the world of Leonardo");await page.getByLabel("What I did",{exact:true}).fill(notes);await page.getByLabel("What I learned",{exact:true}).fill("I learned that design decisions involve trade-offs.");
+ await page.getByLabel("Skill",{exact:true}).selectOption("Problem solving");await page.getByLabel("What happened",{exact:true}).fill("I had to choose between two designs.");await page.getByLabel("What I personally did").fill("I compared their costs and explained my choice.");await page.getByLabel("What I learned from this").fill("I learned to explain trade-offs.");
+ await page.getByRole("button",{name:"Add to evidence bank",exact:true}).click();await nav(page,"Evidence bank");await expect(page.getByText("I compared their costs and explained my choice.",{exact:true})).toBeVisible();
+ const download=page.waitForEvent("download");await page.getByRole("button",{name:"Export examples",exact:true}).click();expect((await download).suggestedFilename()).toBe("sixthstep-evidence-bank.txt");
+ await page.reload();await expect(page.getByText("I compared their costs and explained my choice.",{exact:true})).toBeVisible();await page.getByRole("button",{name:"View / edit source experience",exact:true}).click();await expect(page.getByLabel("What I did",{exact:true})).toHaveValue(notes);
  expect(errors).toEqual([]);
 });
-test("details modal works with keyboard and source information",async({page})=>{
- await page.goto("/");await page.getByRole("button",{name:"Inside the world of Leonardo",exact:true}).click();
- const dialog=page.getByRole("dialog");await expect(dialog).toBeVisible();
- await expect(dialog.getByRole("link",{name:"Visit provider"})).toHaveAttribute("href",/leonardo.springpod.com/);
- await page.keyboard.press("Escape");await expect(dialog).not.toBeVisible();
+test("details and 2–4 comparison work with keyboard, source labels and no page overflow",async({page})=>{
+ await fixedDay(page);await page.goto("/#finder");await page.getByRole("button",{name:"Inside the world of Leonardo",exact:true}).first().click();
+ const dialog=page.getByRole("dialog");await expect(dialog).toBeVisible();await expect(dialog.getByRole("link",{name:"Visit provider",exact:true})).toHaveAttribute("href",/leonardo.springpod.com/);await expect(dialog.getByText(/Source details checked/)).toBeVisible();await page.keyboard.press("Escape");await expect(dialog).not.toBeVisible();
+ const buttons=page.locator(".compare-toggle");await buttons.nth(0).click();await expect(page.getByRole("button",{name:"Compare opportunities",exact:true})).toBeDisabled();await buttons.nth(1).click();await buttons.nth(2).click();await buttons.nth(3).click();await buttons.nth(4).click();await expect(page.locator(".comparison-bar")).toContainText("4 / 4");
+ await page.getByRole("button",{name:"Compare opportunities",exact:true}).click();await expect(dialog.getByRole("table")).toBeVisible();await expect(dialog.getByRole("columnheader")).toHaveCount(5);await expect(dialog.getByRole("rowheader",{name:"Your fit",exact:true})).toBeVisible();await page.keyboard.press("Escape");await expect(dialog).not.toBeVisible();
 });
-test("summary and reflection flows render and export using mocked provider responses",async({page})=>{
- await page.route("**/api/status",r=>r.fulfill({json:{ai:true,search:true}}));
- await page.route("**/api/summarise",r=>r.fulfill({json:{summary:{title:"Engineering experience",overview:"Learn about engineering through a virtual task.",activities:["Complete an engineering task"],skills:["Problem solving"],eligibility:"Not stated",duration:"Not stated",deadline:"Not stated",cost:"Free",steps:["Check the original source"]},sourceUrl:null}}));
- await page.route("**/api/reflect",r=>r.fulfill({json:{reflection:{summary:"I completed a virtual engineering task.",skills:["Problem solving: compared solutions"],cvBullet:"Completed a virtual engineering simulation.",nextSteps:["Explore a placement"]}}}));
- await page.goto("/#summarise");
- await page.getByLabel("Opportunity description").fill("This virtual engineering programme includes practical tasks, career insights and activities for students.");
- await page.getByRole("button",{name:"Summarise this opportunity"}).click();
- await expect(page.getByRole("heading",{name:"Engineering experience",exact:true})).toBeVisible();
- const download=page.waitForEvent("download");await page.getByRole("button",{name:"Export summary"}).click();expect((await download).suggestedFilename()).toBe("sixthstep-summary.txt");
- await page.getByRole("link",{name:"Experience journal"}).click();
- await page.getByLabel("What did you do and learn?").fill("During a virtual engineering simulation I compared two solutions and learned how to explain a design choice.");
- await page.getByRole("button",{name:"Help me reflect"}).click();
- await expect(page.getByText("Completed a virtual engineering simulation.",{exact:true})).toBeVisible();
+test("pasted URL becomes an editable normal application record and duplicate imports open the saved record",async({page})=>{
+ await mockConnections(page);await page.route("**/api/opportunity",r=>{expect(r.request().postDataJSON()).toEqual({url:"https://example.org/engineering"});return r.fulfill({json:{opportunity:imported,nextSteps:["Check eligibility"]}});});
+ await page.goto("/#summarise");await page.getByRole("button",{name:"Paste a link",exact:true}).click();await page.getByLabel("Opportunity URL",{exact:false}).fill("https://example.org/engineering");await page.getByRole("button",{name:"Summarise & extract details",exact:true}).click();
+ await expect(page.getByLabel("Opportunity title")).toHaveValue(imported.title);await expect(page.locator(".notice").filter({hasText:"Unconfirmed:"})).toContainText("Age eligibility");
+ await page.getByLabel("Opportunity title").fill("Reviewed engineering insight");await page.getByLabel("Confirmed deadline date",{exact:false}).fill("2026-11-04");await page.getByLabel("My next action",{exact:true}).fill("Ask about age eligibility");
+ await page.getByText("Activities, skills & evidence",{exact:true}).click();await page.getByLabel("Skills you could practise",{exact:false}).fill("Problem solving, Communication");await page.getByLabel("What you would actually do",{exact:false}).fill("Compare designs\nDiscuss career paths");
+ await page.getByLabel("I have reviewed these details",{exact:false}).check();const download=page.waitForEvent("download");await page.getByRole("button",{name:"Export summary",exact:true}).click();expect((await download).suggestedFilename()).toBe("sixthstep-opportunity-summary.txt");
+ await page.getByRole("button",{name:"Add to my opportunities",exact:true}).click();await expect(page.getByRole("heading",{name:"Reviewed engineering insight",exact:true})).toBeVisible();await expect(page.getByLabel("Next action",{exact:true})).toHaveValue("Ask about age eligibility");await expect(page.getByLabel("Application deadline",{exact:false})).toHaveValue("2026-11-04");
+ await page.reload();await expect(page.getByRole("button",{name:"Reviewed engineering insight",exact:true})).toBeVisible();const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem("sixthstep-workspace-v2")!));expect(stored.records[0].opportunity.skills).toEqual(["Problem solving","Communication"]);expect(stored.records[0].opportunity.activities).toHaveLength(2);
+ await nav(page,"AI summariser");await page.getByRole("button",{name:"Paste a link",exact:true}).click();await page.getByLabel("Opportunity URL",{exact:false}).fill("https://example.org/engineering");await page.getByRole("button",{name:"Summarise & extract details",exact:true}).click();await page.getByLabel("I have reviewed these details",{exact:false}).check();await page.getByRole("button",{name:"Open existing opportunity",exact:true}).click();expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("sixthstep-workspace-v2")!).records.length)).toBe(1);
 });
-test("mobile navigation, filters and layout remain usable",async({page})=>{
- await page.setViewportSize({width:390,height:844});await page.goto("/");
- await page.getByRole("button",{name:"Open navigation"}).click();
- await page.getByRole("link",{name:"AI summariser"}).click();
- await expect(page.getByRole("heading",{name:/Make sense of your/})).toBeVisible();
- const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);expect(overflow).toBe(false);
- await page.screenshot({path:"../../work/sixthstep-mobile.png",fullPage:true});
+test("manual opportunity works without keys and custom deadlines and CSV exports persist",async({page})=>{
+ await page.goto("/#summarise");await page.getByRole("button",{name:"Add myself",exact:true}).click();await page.getByLabel("Opportunity title").fill("Local hospital insight");await page.getByLabel("Provider / organisation").fill("Local hospital");await page.getByLabel("Opportunity category").selectOption("Employer insight");await page.getByLabel("My next action",{exact:true}).fill("Check the published requirements");await page.getByLabel("I have reviewed these details",{exact:false}).check();await page.getByRole("button",{name:"Add to my opportunities",exact:true}).click();
+ await page.getByLabel("Application deadline",{exact:false}).fill("2026-10-14");await page.getByLabel("Application URL",{exact:false}).fill("https://example.org/apply");await page.getByLabel("Priority",{exact:true}).selectOption("High");const download=page.waitForEvent("download");await page.getByRole("button",{name:"Export CSV",exact:true}).click();expect((await download).suggestedFilename()).toBe("sixthstep-opportunities.csv");
+ await page.reload();await page.getByRole("button",{name:"Open workspace",exact:true}).click();await expect(page.getByLabel("Application deadline",{exact:false})).toHaveValue("2026-10-14");await expect(page.getByLabel("Priority",{exact:true})).toHaveValue("High");
 });
-test("missing keys show a clear setup message, never simulated AI",async({page})=>{
- await page.goto("/#summarise");
- await page.getByLabel("Opportunity description").fill("This is a public virtual work experience programme with practical tasks and activities for students.");
- await page.getByRole("button",{name:"Summarise this opportunity"}).click();
- await expect(page.getByRole("alert").filter({hasText:"Groq API key"})).toContainText("Groq API key");
- await expect(page.getByRole("button",{name:"Export summary"})).toHaveCount(0);
+test("rich AI reflection is editable, explicitly saved and grounded evidence is linked to its own experience",async({page})=>{
+ await mockConnections(page);let payload:Record<string,unknown>|undefined;await page.route("**/api/experience-reflection",r=>{payload=r.request().postDataJSON();return r.fulfill({json:{reflection}});});
+ await page.goto("/#reflect");await page.getByRole("button",{name:"New experience",exact:true}).click();await page.getByLabel("Experience name").fill("Design simulation");await page.getByLabel("What I did",{exact:true}).fill(notes);await page.getByRole("button",{name:"Help me reflect",exact:true}).click();
+ await expect(page.getByLabel("CV bullet",{exact:true})).toHaveValue(reflection.cvBullet);expect(payload?.whatDid).toBe(notes);expect(payload).not.toHaveProperty("profile");expect(payload).not.toHaveProperty("records");
+ await page.getByLabel("CV bullet",{exact:true}).fill("Compared two options and explained my design choice during a simulation.");await page.getByRole("button",{name:"Use this evidence",exact:true}).click();await page.getByRole("button",{name:"Use this evidence",exact:true}).click();await page.getByRole("button",{name:"Save edited reflection",exact:true}).click();
+ const download=page.waitForEvent("download");await page.getByRole("button",{name:"Export reflection",exact:true}).click();expect((await download).suggestedFilename()).toBe("sixthstep-reflection.txt");
+ await nav(page,"Evidence bank");await expect(page.locator(".evidence-card")).toHaveCount(1);await expect(page.getByText(reflection.skills[0].action,{exact:true})).toBeVisible();await page.reload();await expect(page.locator(".evidence-card")).toHaveCount(1);await page.getByRole("button",{name:"View / edit source experience",exact:true}).click();await expect(page.getByLabel("CV bullet",{exact:true})).toHaveValue("Compared two options and explained my design choice during a simulation.");
 });
-
-test("settings show the configured compatible provider and its setup instructions",async({page})=>{
- await page.route("**/api/status",r=>r.fulfill({json:{ai:true,search:false,aiProvider:"School AI",aiSetup:"ready"}}));
- await page.goto("/#settings");
- await expect(page.getByText("School AI",{exact:true})).toBeVisible();
- await expect(page.getByText("Configured",{exact:true})).toBeVisible();
- await page.getByText("How to connect an AI provider",{exact:false}).click();
- await expect(page.getByText("OPENAI_API_KEY",{exact:true})).toBeVisible();
- await expect(page.getByText("OPENAI_BASE_URL",{exact:true})).toBeVisible();
- await expect(page.getByText("OPENAI_MODEL",{exact:true})).toBeVisible();
- await page.setViewportSize({width:390,height:844});
- expect(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth)).toBe(false);
- await page.getByRole("button",{name:"Open navigation"}).click();
- await page.getByRole("link",{name:"Experience journal"}).click();
- await expect(page.getByText(/AI reflection sends these notes to School AI/)).toBeVisible();
+test("a delayed AI response cannot attach to a different experience",async({page})=>{
+ await mockConnections(page);let release:(()=>void)|undefined;await page.route("**/api/experience-reflection",async r=>{await new Promise<void>(resolve=>release=resolve);await r.fulfill({json:{reflection}});});
+ await page.goto("/#reflect");await page.getByRole("button",{name:"New experience",exact:true}).click();await page.getByLabel("Experience name").fill("First experience");await page.getByLabel("What I did",{exact:true}).fill(notes);await page.getByRole("button",{name:"Help me reflect",exact:true}).click();await expect.poll(()=>!!release).toBe(true);
+ await page.getByRole("button",{name:"New experience",exact:true}).click();await page.getByLabel("Experience name").fill("Second experience");release!();await expect(page.getByRole("button",{name:"Help me reflect",exact:true})).toBeVisible();await expect(page.getByLabel("CV bullet",{exact:true})).toHaveCount(0);
+ expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("sixthstep-workspace-v2")!).experiences.every((e:{reflection?:unknown})=>!e.reflection))).toBe(true);
+});
+test("legacy bookmarks and notes migrate, and broken saved data is never overwritten",async({page})=>{
+ await page.addInitScript(item=>{localStorage.setItem("sixthstep-saved-v1",JSON.stringify([{...item,status:"Applied",savedAt:"2026-10-01"}]));localStorage.setItem("sixthstep-journal-v1",JSON.stringify("I compared two designs during my virtual experience."));},catalogue[1]);
+ await page.goto("/#saved");await expect(page.getByLabel("Application status for Inside the world of Leonardo")).toHaveValue("Applied");await nav(page,"Experience journal");await expect(page.getByRole("heading",{name:"My previous experience notes",exact:true})).toBeVisible();await page.getByRole("button",{name:"Open experience",exact:false}).click();await expect(page.getByLabel("What I did",{exact:true})).toHaveValue("I compared two designs during my virtual experience.");
+ const old=await page.evaluate(()=>localStorage.getItem("sixthstep-saved-v1"));expect(old).toContain("Applied");
+ await page.evaluate(()=>localStorage.setItem("sixthstep-workspace-v2","{broken"));await page.reload();await expect(page.getByRole("alert").first()).toContainText("could not be loaded");expect(await page.evaluate(()=>localStorage.getItem("sixthstep-workspace-v2"))).toBe("{broken");
+});
+test("workspace backup restore is reviewable and retains linked evidence",async({page})=>{
+ const entry=experienceSchema.parse({id:"restore-e",name:"Restored volunteering",updatedAt:"2026-10-03",skills:[{id:"s",skill:"Communication",whatHappened:"A visitor needed directions",action:"I explained the route clearly",learning:"Check understanding"}]});
+ const backup={version:2,profile:{...defaultProfile,configured:true},records:[createRecord(imported)],experiences:[entry]};
+ await page.goto("/#settings");await page.getByLabel("Restore workspace backup").setInputFiles({name:"backup.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(backup))});
+ await expect(page.getByText(/This backup contains 1 opportunities and 1 experiences/)).toBeVisible();expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("sixthstep-workspace-v2")!).records.length)).toBe(0);
+ await page.getByRole("button",{name:"Restore this workspace",exact:true}).click();await nav(page,"Evidence bank");await expect(page.getByText("I explained the route clearly",{exact:true})).toBeVisible();const download=page.waitForEvent("download");await nav(page,"My profile & settings");await page.getByRole("button",{name:"Export workspace backup",exact:true}).click();expect((await download).suggestedFilename()).toBe("sixthstep-workspace-backup.json");
+});
+test("decision filters compose, show active choices and clear without inventing eligibility",async({page})=>{
+ await page.goto("/#finder");await page.getByRole("button",{name:"Filters",exact:true}).click();await page.getByLabel("Opportunity type",{exact:true}).selectOption("Competition");await page.getByLabel("School year",{exact:true}).selectOption("Year 12");await page.getByLabel("Free only",{exact:true}).check();await page.getByLabel("Verified details only",{exact:true}).check();
+ await expect(page.locator(".opportunity-card")).not.toHaveCount(0);for(const card of await page.locator(".opportunity-card").all())await expect(card.locator(".type-tag")).toHaveText("Competition");await expect(page.getByRole("button",{name:"Remove category filter",exact:true})).toBeVisible();
+ await page.getByRole("button",{name:"Clear all filters",exact:true}).click();await expect(page.getByLabel("Opportunity type",{exact:true})).toHaveValue("Any");await expect(page.getByLabel("Free only",{exact:true})).not.toBeChecked();
+});
+test("classified live results are visibly unverified and lead to editable import",async({page})=>{
+ await mockConnections(page);await page.route("**/api/search",r=>r.fulfill({json:{results:[{...imported,id:"web-e2e",source:"web",sourceKind:"Web result",resultKind:"Specific opportunity",authority:"Official provider",checkedAt:""}],discarded:3,cached:false}}));await page.goto("/#finder");await page.getByLabel("Search opportunities").fill("engineering");await page.getByRole("button",{name:"Search the web",exact:true}).click();
+ await expect(page.locator(".opportunity-card")).toHaveCount(1);await expect(page.locator(".source-badge").first()).toContainText("unverified");await page.getByRole("button",{name:"External engineering insight",exact:true}).click();await expect(page.getByRole("dialog")).toContainText("not been checked");await page.getByRole("button",{name:"Import / review page",exact:true}).click();await expect(page.getByLabel("Opportunity URL",{exact:false})).toHaveValue("https://example.org/engineering");
+});
+test("separate curated programmes sharing one provider URL can both be saved",async({page})=>{
+ const pair=catalogue.filter(i=>i.id==="deloitte-women"||i.id==="deloitte-black");expect(pair).toHaveLength(2);expect(pair[0].url).toBe(pair[1].url);
+ await page.goto("/#finder");for(const i of pair)await page.getByRole("button",{name:"Save "+i.title,exact:true}).first().click();await nav(page,"My opportunities");await expect(page.locator(".tracked-card")).toHaveCount(2);
+});
+test("mobile dashboard, finder, comparison, tracker, journal, evidence and settings stay usable",async({page})=>{
+ await page.setViewportSize({width:390,height:844});await seed(page,{version:2,profile:defaultProfile,records:[createRecord(imported)],experiences:[]});await page.goto("/");
+ await expect(page.getByRole("heading",{name:/A little progress/})).toBeVisible();await page.screenshot({path:"test-results/dashboard-mobile.png",fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
+ for(const name of ["Find opportunities","My opportunities","Experience journal","Evidence bank","My profile & settings","AI summariser"]){await nav(page,name);expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);}
+ await nav(page,"Find opportunities");await page.locator(".compare-toggle").nth(0).click();await page.locator(".compare-toggle").nth(1).click();await page.getByRole("button",{name:"Compare opportunities",exact:true}).click();await expect(page.getByRole("dialog")).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);await page.screenshot({path:"test-results/comparison-mobile.png",fullPage:false});await page.keyboard.press("Escape");
+ await page.getByRole("button",{name:"Open menu",exact:true}).click();await expect(page.getByRole("button",{name:"Close menu",exact:true})).toBeFocused();await page.keyboard.press("Escape");await expect(page.getByRole("button",{name:"Open menu",exact:true})).toBeFocused();
+});
+test("missing keys report setup clearly, with no simulated AI output",async({page})=>{
+ // The API unit suite verifies actual missing configuration; browser tests never spend provider credit.
+ await page.route("**/api/opportunity",route=>route.fulfill({status:503,json:{error:"AI summaries need an OpenAI-compatible API key or a Groq API key. The site owner can add one in Vercel."}}));
+ await page.goto("/#summarise");await page.getByLabel("Opportunity text",{exact:false}).fill("This public virtual engineering programme includes design tasks and workplace activities for sixth-form students.");await page.getByRole("button",{name:"Summarise & extract details",exact:true}).click();await expect(page.getByRole("alert").filter({hasText:/API key|setup/})).toContainText(/API key|setup/);await expect(page.getByRole("button",{name:"Export summary",exact:true})).toHaveCount(0);
+});
+test("compatible-provider settings remain available and selected reflections name the provider",async({page})=>{
+ await mockConnections(page);await page.goto("/#settings");await expect(page.getByText("School AI",{exact:true})).toBeVisible();await page.getByText("How to connect an AI provider",{exact:true}).click();await expect(page.getByText("OPENAI_API_KEY",{exact:true})).toBeVisible();await expect(page.getByText("OPENAI_BASE_URL",{exact:true})).toBeVisible();await expect(page.getByText("OPENAI_MODEL",{exact:true})).toBeVisible();await nav(page,"Experience journal");await page.getByRole("button",{name:"New experience",exact:true}).click();await expect(page.getByText(/AI reflection sends this experience's notes to School AI/)).toBeVisible();
 });

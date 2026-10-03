@@ -1,0 +1,52 @@
+"use client";
+import { useState } from "react";
+import { Search, SlidersHorizontal, X, ArrowRight, LoaderCircle, Plus } from "lucide-react";
+import { catalogue } from "@/lib/catalogue";
+import { sectors } from "@/lib/types";
+import { categories, formats, enrich, type RichOpportunity } from "@/lib/domain";
+import { discover, defaultFilters, deadlineOrder, discoverySections, matchOpportunity, type FinderFilters } from "@/lib/recommendations";
+import { useWorkspace } from "./workspace-context";
+import { Heading, Notice, Field, Empty } from "./shared";
+import { OpportunityCard, OpportunityDialog, Comparison } from "./opportunity";
+export function Finder(){
+ const {data,connections,navigate,startImport}=useWorkspace();
+ const [filters,setFilters]=useState<FinderFilters>(defaultFilters),[expanded,setExpanded]=useState(false),[sort,setSort]=useState("Best fit");
+ const [selected,setSelected]=useState<RichOpportunity|null>(null),[compare,setCompare]=useState<RichOpportunity[]>([]),[showCompare,setShowCompare]=useState(false);
+ const [live,setLive]=useState<RichOpportunity[]|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(""),[discarded,setDiscarded]=useState(0);
+ const update=(key:keyof FinderFilters,value:string|boolean)=>setFilters(current=>({...current,[key]:value}));
+ const active=Object.entries(filters).filter(([key,value])=>value!==defaultFilters[key as keyof FinderFilters]);
+ let items=discover(live??catalogue,{...filters,query:live?"":filters.query});
+ items=[...items].sort((a,b)=>sort==="Deadline"?deadlineOrder(a,b):sort==="A–Z"?a.title.localeCompare(b.title):matchOpportunity(b,data.profile).rank-matchOpportunity(a,data.profile).rank);
+ const sections=discoverySections(catalogue,data.profile,data.records);
+ function compareItem(item:RichOpportunity){setCompare(current=>current.some(i=>i.id===item.id)?current.filter(i=>i.id!==item.id):current.length<4?[...current,item]:current);}
+ async function search(){
+  setBusy(true);setError("");
+  try{const response=await fetch("/api/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:filters.query,location:filters.location,sector:filters.sector,format:filters.format==="Any"?"All formats":filters.format,age:filters.age||data.profile.age})});const result=await response.json();if(!response.ok)throw new Error(result.error);setLive(result.results.map(enrich));setDiscarded(result.discarded||0);}
+  catch(e){setError(e instanceof Error?e.message:"Search could not complete.");}finally{setBusy(false);}
+ }
+ return <><Heading eyebrow="FOLLOW YOUR CURIOSITY" title="Find your next possibility." description="Explore placements, university programmes, insight events, competitions and more." action={<button className="button secondary" onClick={()=>startImport()}><Plus size={15}/>Paste an opportunity</button>}/>
+ <form className="search-bar" onSubmit={e=>{e.preventDefault();if(connections?.search)void search();}}><div className="search-input"><Search size={20}/><input aria-label="Search opportunities" maxLength={160} value={filters.query} onChange={e=>{update("query",e.target.value);if(live)setLive(null);}} placeholder="A career, programme, provider or subject…"/>{filters.query&&<button type="button" aria-label="Clear search" className="icon-button" onClick={()=>update("query","")}><X size={15}/></button>}</div><button className="button primary search-submit" disabled={busy||!connections?.search}>{busy?<LoaderCircle className="spin" size={16}/>:<Search size={16}/>}Search the web</button></form>
+ <div className="search-help"><span>{connections?.search?"Search the checked collection as you type, or search the web.":"The checked collection works without keys. Connect Tavily in your profile for web search."}</span>{live&&<button className="inline-link" onClick={()=>setLive(null)}>Back to collection</button>}</div>
+ {error&&<p className="error-message" role="alert">{error}</p>}
+ <div className="sector-tabs" role="group" aria-label="Sector filters">{sectors.map(s=><button key={s} className={"sector-tab "+(filters.sector===s?"selected":"")} aria-pressed={filters.sector===s} onClick={()=>update("sector",s)}>{s}</button>)}</div>
+ <div className="feature-toolbar"><button className="button secondary" aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}><SlidersHorizontal size={15}/>Filters{active.length?" ("+active.length+")":""}</button><label className="toggle-label"><input type="checkbox" checked={filters.free} onChange={e=>update("free",e.target.checked)}/>Free only</label><label className="toggle-label"><input type="checkbox" checked={filters.open} onChange={e=>update("open",e.target.checked)}/>Applications open</label><label className="toggle-label"><input type="checkbox" checked={filters.verified} onChange={e=>update("verified",e.target.checked)}/>Verified details only</label></div>
+ {expanded&&<section className="workspace-card filter-workspace" aria-label="Opportunity filters"><div className="form-grid">
+ <Field label="Opportunity type"><select className="text-input" value={filters.category} onChange={e=>update("category",e.target.value)}><option>Any</option>{categories.map(c=><option key={c}>{c}</option>)}</select></Field>
+ <Field label="Delivery format"><select className="text-input" value={filters.format} onChange={e=>update("format",e.target.value)}><option>Any</option>{formats.map(c=><option key={c}>{c}</option>)}</select></Field>
+ <Field label="Age eligibility" hint="Shows only published age bands; other criteria still apply."><select className="text-input" value={filters.age} onChange={e=>update("age",e.target.value)}><option value="">Any / not specified</option>{[15,16,17,18,19].map(a=><option key={a} value={a}>Age {a}</option>)}</select></Field>
+ <Field label="School year"><select className="text-input" value={filters.year} onChange={e=>update("year",e.target.value)}><option>Any</option><option>Year 12</option><option>Year 13</option></select></Field>
+ <Field label="Related subject"><input className="text-input" maxLength={100} value={filters.subject} onChange={e=>update("subject",e.target.value)} placeholder="e.g. Maths or Biology"/></Field>
+ <Field label="Deadline range"><select className="text-input" value={filters.deadline} onChange={e=>update("deadline",e.target.value)}>{["Any","Next 7 days","Next 30 days","No fixed deadline","Deadline passed"].map(v=><option key={v}>{v}</option>)}</select></Field>
+ <Field label="Time commitment"><select className="text-input" value={filters.duration} onChange={e=>update("duration",e.target.value)}>{["Any","A few hours","1–3 days","4–7 days","1–2 weeks","Several weeks","Longer programme","Self-paced"].map(v=><option key={v}>{v}</option>)}</select></Field>
+ <Field label="Preferred location" hint="Virtual programmes stay visible. Travel is not calculated."><input className="text-input" maxLength={100} value={filters.location} onChange={e=>update("location",e.target.value)} placeholder="e.g. London"/></Field>
+ <Field label="Provider"><select className="text-input" value={filters.provider} onChange={e=>update("provider",e.target.value)}><option>Any</option>{[...new Set((live??catalogue).map(i=>i.provider))].sort().map(p=><option key={p}>{p}</option>)}</select></Field>
+ </div><p className="fine-print">Published age and year bands are only part of eligibility. Regional equivalents, age-at-start rules, grades and access criteria need checking.</p></section>}
+ {active.length>0&&<div className="active-filters" aria-label="Active filters">{active.map(([key,value])=><button key={key} onClick={()=>update(key as keyof FinderFilters,defaultFilters[key as keyof FinderFilters])} aria-label={"Remove "+key+" filter"}>{key==="free"?"Free only":key==="open"?"Applications open":key==="verified"?"Verified details":key+": "+value}<X size={11}/></button>)}<button className="inline-link" onClick={()=>setFilters(defaultFilters)}>Clear all filters</button></div>}
+ {!live&&!active.length&&<>{!data.profile.configured&&<div className="summariser-banner"><div><h3>Possibilities that make sense for you.</h3><p>Add your interests and subjects for explained recommendations.</p></div><button className="button secondary" onClick={()=>navigate("settings")}>Set my interests <ArrowRight size={14}/></button></div>}{sections.map(section=><section className="discovery-section" key={section.title}><div className="section-header"><div><h2>{section.title}</h2><p>{section.description}</p></div></div><div className="opportunity-grid">{section.items.map(i=><OpportunityCard key={i.id} item={i} onOpen={()=>setSelected(i)}/>)}</div></section>)}</>}
+ {live&&<Notice>Web results are unverified. Official-source pages rank first; generic articles and irrelevant results are removed where detected.{discarded?" "+discarded+" lower-quality result(s) omitted.":""} Import a promising page to review its details.</Notice>}
+ <div className="results-toolbar"><span>{items.length} {live?"web results":"collection entries"} · {live?"check original sources":"programmes and directories clearly labelled"}</span><label>Sort by <select aria-label="Sort opportunities" value={sort} onChange={e=>setSort(e.target.value)}><option>Best fit</option><option>Deadline</option><option>A–Z</option></select></label></div>
+ {items.length?<div className="opportunity-grid">{items.map(item=><OpportunityCard key={item.id} item={item} onOpen={()=>setSelected(item)} compare={compare.some(i=>i.id===item.id)} onCompare={()=>compareItem(item)}/>)}</div>:<Empty title="Try a wider search." action={()=>setFilters(defaultFilters)} label="Clear filters">There are no entries with these confirmed details. Try fewer filters or paste a programme you have found.</Empty>}
+ {compare.length>0&&<div className="comparison-bar"><span>{compare.length} / 4 selected</span><button className="button primary" disabled={compare.length<2} onClick={()=>setShowCompare(true)}>Compare opportunities</button><button className="button text-button" onClick={()=>setCompare([])}>Clear</button>{compare.length===4&&<small>Remove a selection before adding another.</small>}</div>}
+ <OpportunityDialog item={selected} onClose={()=>setSelected(null)}/>{showCompare&&<Comparison items={compare} onClose={()=>setShowCompare(false)}/>}
+ </>;
+}
