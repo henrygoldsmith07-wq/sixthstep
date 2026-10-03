@@ -68,7 +68,7 @@ export function priorityActions(data:AppData,collection:RichOpportunity[]=[],tod
  return {priority:chosen,remaining:all.filter(i=>!chosen.some(c=>c.id===i.id))};
 }
 export function calendarItems(data:AppData,collection:RichOpportunity[]=[],today=todayISO()){
- return workspaceItems(data,collection,today).flatMap(item=>{
+ return workspaceItems(data,collection,today).filter(item=>item.kind!=="Explore").flatMap(item=>{
   const state=data.actionStates.find(s=>s.id===item.id);
   return state?.state==="Snoozed"?[{...item,snoozed:true},{...item,id:"scheduled:"+item.id,actionId:item.id,title:"Reminder: "+item.title,date:state.date,basis:"Student-entered date" as DateBasis,detail:"Scheduled reminder · "+item.detail,snoozed:true}]:[item];
  }).sort((a,b)=>(a.date||"9999").localeCompare(b.date||"9999")||a.title.localeCompare(b.title));

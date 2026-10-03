@@ -117,7 +117,7 @@ test("snoozed reminders appear separately in Calendar and retain the original pr
  assert.throws(()=>appSchema.parse({...data,actionStates:[{...data.actionStates[0],date:""}]}));
 });
 test("freshly recorded matches can become explained Home actions without creating dates or saved records",()=>{
- const data=workspace();const matches=workspaceItems(data,[programme],day);assert.ok(matches.some(i=>i.kind==="Explore"&&!i.date&&i.detail.includes("interest")));assert.equal(data.records.length,0);
+ const data=workspace();const matches=workspaceItems(data,[programme],day);assert.ok(matches.some(i=>i.kind==="Explore"&&!i.date&&i.detail.includes("interest")));assert.equal(data.records.length,0);assert.ok(calendarItems(data,[programme],day).every(item=>item.kind!=="Explore"));
  assert.ok(!workspaceItems({...data,feedback:[feedback("Not for me")]},[programme],day).some(i=>i.kind==="Explore"));
 });
 
