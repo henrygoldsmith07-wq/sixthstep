@@ -36,5 +36,7 @@ export function restoreWorkspace(text:string):AppData {
  if(!parsed.success)throw new Error("This is not a valid SixthStep workspace backup.");
  const data=parsed.data;
  if(new Set(data.records.map(r=>r.opportunity.id)).size!==data.records.length||new Set(data.experiences.map(e=>e.id)).size!==data.experiences.length)throw new Error("This backup has duplicate record IDs.");
+ for(const record of data.records)if(new Set(record.questions.map(q=>q.id)).size!==record.questions.length||new Set(record.requirements.map(r=>r.id)).size!==record.requirements.length)throw new Error("This backup has duplicate question or requirement IDs.");
+ for(const experience of data.experiences)if(new Set(experience.skills.map(s=>s.id)).size!==experience.skills.length)throw new Error("This backup has duplicate evidence IDs.");
  return data;
 }

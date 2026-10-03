@@ -10,15 +10,15 @@ type Workspace={
  save:(item:RichOpportunity)=>void;updateRecord:(id:string,patch:Partial<TrackedRecord>)=>void;removeRecord:(id:string)=>void;
  updateProfile:(value:StudentProfile)=>void;updateExperience:(entry:Experience)=>void;removeExperience:(id:string)=>void;
  startExperience:(record:TrackedRecord)=>void;activeExperience:string;setActiveExperience:(id:string)=>void;
- activeRecord:string;setActiveRecord:(id:string)=>void;importUrl:string;startImport:(url?:string)=>void;
- toast:(value:string)=>void;replaceData:(data:AppData)=>void;
+ activeRecord:string;setActiveRecord:(id:string)=>void;importUrl:string;importMode:"link"|"text"|"manual";startImport:(url?:string,manual?:boolean)=>void;
+ dismissAlert:(id:string)=>void;activeQuestion:string;setActiveQuestion:(id:string)=>void;toast:(value:string)=>void;replaceData:(data:AppData)=>void;
 };
 const Context=createContext<Workspace|null>(null);
 export function useWorkspace(){const value=useContext(Context);if(!value)throw new Error("Workspace missing");return value;}
 export function WorkspaceProvider({children}:{children:ReactNode}){
  const [data,setData]=useState<AppData>(emptyData),[ready,setReady]=useState(false),[error,setError]=useState(""),[blocked,setBlocked]=useState(false);
  const [view,setView]=useState<View>("dashboard"),[connections,setConnections]=useState<Connections|null>(null);
- const [activeRecord,setActiveRecord]=useState(""),[activeExperience,setActiveExperience]=useState(""),[importUrl,setImportUrl]=useState(""),[message,setMessage]=useState("");
+ const [activeRecord,setActiveRecord]=useState(""),[activeExperience,setActiveExperience]=useState(""),[importUrl,setImportUrl]=useState(""),[importMode,setImportMode]=useState<"link"|"text"|"manual">("text"),[message,setMessage]=useState(""),[activeQuestion,setActiveQuestion]=useState("");
  useEffect(()=>{
   try {const loaded=loadWorkspace(localStorage);setData(loaded.data);setError(loaded.error);setBlocked(!!loaded.error);if(loaded.migrated&&!loaded.error)setMessage("Your saved opportunities and notes have moved into your workspace.");}
   catch {setError("Browser storage is unavailable. Export a backup before leaving; changes will not be saved.");setBlocked(true);}
@@ -35,7 +35,7 @@ export function WorkspaceProvider({children}:{children:ReactNode}){
   read();window.addEventListener("hashchange",read);return()=>window.removeEventListener("hashchange",read);
  },[]);
  useEffect(()=>{if(!message)return;const timer=setTimeout(()=>setMessage(""),4500);return()=>clearTimeout(timer);},[message]);
- function navigate(next:View){setView(next);window.location.hash=next;}
+ function navigate(next:View){setView(next);window.location.hash=next;window.requestAnimationFrame(()=>document.getElementById("main-content")?.focus({preventScroll:true}));}
  function save(item:RichOpportunity){
   setData(current=>current.records.some(r=>r.opportunity.id===item.id||["imported","manual"].includes(item.source)&&!!item.url&&r.opportunity.url===item.url)?current:{...current,records:[createRecord(item),...current.records]});
   setMessage("Saved to your opportunities");
@@ -51,8 +51,8 @@ export function WorkspaceProvider({children}:{children:ReactNode}){
  }
  const value:Workspace={data,ready,error,connections,view,navigate,save,updateRecord,removeRecord,updateProfile:profile=>setData(current=>({...current,profile})),updateExperience,
  removeExperience:id=>setData(current=>({...current,experiences:current.experiences.filter(e=>e.id!==id)})),
- startExperience,activeExperience,setActiveExperience,activeRecord,setActiveRecord,importUrl,
- startImport:(url="")=>{setImportUrl(url);navigate("summarise");},toast:setMessage,
+ startExperience,activeExperience,setActiveExperience,activeRecord,setActiveRecord,importUrl,importMode,
+ startImport:(url="",manual=false)=>{setImportUrl(url);setImportMode(manual?"manual":url?"link":"text");navigate("summarise");},activeQuestion,setActiveQuestion,dismissAlert:id=>setData(current=>({...current,dismissedAlerts:[...new Set([...current.dismissedAlerts,id])].slice(-2000)})),toast:setMessage,
  replaceData:next=>{setData(appSchema.parse(next));setBlocked(false);setError("");setMessage("Workspace restored");}
  };
  return <Context.Provider value={value}>{children}{message&&<div className="toast" role="status">{message}</div>}</Context.Provider>;

@@ -4,7 +4,7 @@ An opportunity and experience workspace for UK sixth-form students, built with N
 
 ## What works
 
-SixthStep supports the full student journey: **discover → understand → match → save → apply → complete → reflect → reuse evidence**.
+SixthStep supports the full student journey: **discover → evaluate → choose → apply → complete → reflect → build evidence → reuse evidence → explore next**.
 
 - A source-linked collection of 33 entries: 24 named programmes/events and 9 clearly labelled directories. It spans employer insights, medical experiences, university outreach, summer schools, STEM, research, mentoring, apprenticeship insight, competitions and academic events.
 - A quick editable profile: school year, optional age, subjects, interests and career direction, with optional format, time, travel and opportunity preferences.
@@ -20,6 +20,23 @@ SixthStep supports the full student journey: **discover → understand → match
 - CSV/text exports, full JSON workspace backup and reviewed restoration, responsive navigation and keyboard-friendly dialogs.
 
 Source checking confirms the facts reviewed at that date, not a student's eligibility or a guaranteed place. Directories are not placements. Web/imported details are not marked verified. Missing facts remain “Not stated”. Programme activities and skills are never automatically turned into personal achievements.
+
+## Connected student workflows
+
+Navigation follows student goals: **Home → Explore → Applications → Experiences → Evidence → Profile**. Existing URL hashes remain compatible. Explore contains browsing, web search, reviewed link/text importing, manual entry and a shortlist.
+
+- **Opportunity intelligence:** discovery collections for medicine, engineering/technology, science, outreach, summer schools, competitions, work experience, employer insight, subjects, local matches, virtual opportunities and recently added entries. Collections appear only with enough real data. Opening-soon countdowns require a distinct confirmed application opening date. New means added to the collection, not launched recently.
+- **Explainable personalisation:** explicit career relationships connect medicine with clinical/biomedical areas and engineering with relevant science/design subjects. Exploring gives adjacent areas more weight; Targeting gives direct career connections more weight. Saved interests and experiences with a student-recorded increase in interest can contribute labelled reasons. Decreased interest and previous AI drafts do not supply positive reflection signals. These are connections, not eligibility guarantees or match percentages.
+- **Shortlist:** Maybe, Interested, Shortlisted and Applying are separate from application outcome. New saves start Interested. Existing version 2 records default to Applying to preserve their established workspaces. When applications exist, Applications starts with the Applying filter; all saved interests remain accessible. Compare 2–4, inspect highlighted differences, save a shortlist and choose to apply.
+- **Application Workspace:** add confirmed provider requirements, personal tasks and recorded milestones. Create individual application/interview questions, word or character limits, drafts, notes and completion states. Empty or over-limit drafts cannot be marked Ready/Submitted through the editor. Counts reflect actual recorded tasks, not an estimated percentage.
+- **Evidence reuse:** application questions suggest only recorded personal actions using skills and shared topics. Inspect an example, append it to a draft or build a STAR scaffold. Missing STAR details stay explicit prompts. Evidence can also be sent to a selected application or interview question from the bank. Nothing auto-submits or replaces an existing answer.
+- **Evidence provenance:** drafts retain source references. Copied text is a snapshot, so later source edits do not silently alter an answer. Deleted source evidence produces a review warning. Bank filters cover skill, experience, date, career area and recorded detail/STAR completeness; detail labels describe fields present, not achievement quality.
+- **Reflection and exploration:** a five-prompt reflection guide captures actual actions, enjoyment, dislikes, challenges, learning, a specific skill example, career interest change and next steps. The Exploration Map groups areas using chosen labels or experience titles. It separately displays exact student notes, repeated wording across different entries, and suggestions from an explicit adjacent-area map. It does not choose a career or infer personal achievement from programme publicity.
+- **Actionable Home:** four first-use steps, unfinished responses, outstanding references, deadline buckets (overdue/today/next 7/next 30 days), response waiting, reflection prompts and actual evidence/STAR counts. Alerts cover upcoming deadlines/interviews, overdue actions, confirmed outstanding references, long response waits, source staleness and manual date changes. Alerts update when the workspace is opened and are dismissible locally.
+
+The version 2 storage contract gains additive Zod defaults; existing backups remain readable. Requirements, drafts, source references, intent, reflection interest and dismissed alerts are included in new backups. Duplicate question, requirement and evidence IDs are rejected on restore. The original v1 migration and invalid-storage preservation remain intact.
+
+Application drafting, evidence matching, career relationships, the Exploration Map and alerts run locally and do not spend provider credits. AI reflection remains optional, editable and grounded through the existing validated API. No external email infrastructure or account sync is added.
 
 ## Using the workspace
 
@@ -41,7 +58,7 @@ Profiles, tracked applications, experiences, edited reflections and evidence liv
 
 Existing v1 bookmarks and their Applied/Completed stages migrate automatically; Interested becomes Saved. Existing subjects/interests and journal notes are retained. Original v1 keys are kept for recovery. Invalid stored data is not overwritten: the app displays a recovery warning and changes remain temporary until a valid backup is restored.
 
-Use **My profile & settings → Export workspace backup** for a complete JSON copy. Restoration validates the schema and duplicate IDs, shows the record counts, and requires an explicit restore action before replacing this browser's workspace. CSV and text exports remain available for individual workflows. Original stored data can also be exported for recovery.
+Use **Profile → Export workspace backup** for a complete JSON copy. Restoration validates the schema and duplicate IDs, shows the record counts, and requires an explicit restore action before replacing this browser's workspace. CSV and text exports remain available for individual workflows. Original stored data can also be exported for recovery.
 
 ## Run locally
 
@@ -126,7 +143,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-API tests use mocked upstream responses; no paid calls or keys are required. Browser tests cover the profile-to-evidence journey, review/import/manual entry, actions and stages, comparisons, migrations and recovery, mocked AI responses, exports, mobile navigation and missing-key errors. GitHub Actions runs these checks.
+API tests use mocked upstream responses; no paid calls or keys are required. The suite includes 55 unit/API tests and 20 browser scenarios. Browser tests cover onboarding and recommendations, shortlist decisions, application requirements/questions, real evidence suggestions and reuse, guided reflection and exploration, deadline alerts, review/import/manual entry, stages, migrations and recovery, mocked AI responses, exports, narrow-width navigation and missing-key errors. GitHub Actions runs these checks.
 
 ## Source collection
 
@@ -141,7 +158,10 @@ Directories link to the provider for current programme-specific requirements. Fo
 ## Project structure
 
 - `components/sixthstep.tsx`: navigation shell; `workspace-context.tsx`: shared workspace state.
-- `components/dashboard.tsx`, `finder.tsx`, `opportunity.tsx`, `importer.tsx`, `tracker.tsx`, `journal.tsx`, `evidence.tsx`, `profile.tsx`: focused product features.
+- `components/dashboard.tsx`, `explore.tsx`, `finder.tsx`, `opportunity.tsx`, `importer.tsx`, `shortlist.tsx`, `tracker.tsx`: discovery and application views.
+- `components/application-workspace.tsx`, `reuse-evidence.tsx`: question preparation and source-linked evidence reuse.
+- `components/journal.tsx`, `reflection-guide.tsx`, `exploration-map.tsx`, `evidence.tsx`, `profile.tsx`: reflection, exploration, evidence and preferences.
+- `lib/careers.ts`, `intelligence.ts`: transparent career relationships, evidence relevance, deadline context and alert rules.
 - `lib/domain.ts`: validated opportunity/profile/application/experience models and deadline/action/evidence helpers.
 - `lib/recommendations.ts`: transparent matching, decision filters and discovery sections.
 - `lib/persistence.ts`: v1 migration and JSON backup validation.
