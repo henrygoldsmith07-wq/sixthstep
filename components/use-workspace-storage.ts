@@ -4,17 +4,20 @@ import { appSchema, emptyData, type AppData } from "@/lib/domain";
 import { browserWorkspaceStorage, type WorkspaceStorage } from "@/lib/workspace-storage";
 
 export function useWorkspaceStorage(factory=browserWorkspaceStorage){
+  // Choose the adapter once per mount. Production bundling may inline the
+  // default factory as a new function on each render; it must not rehydrate edits.
+  const storageFactory=useRef(factory);
   const [data,setData]=useState<AppData>(emptyData),[ready,setReady]=useState(false),[error,setError]=useState(""),[conflict,setConflict]=useState(false);
   const adapter=useRef<WorkspaceStorage|null>(null),blocked=useRef(false),epoch=useRef(0),queue=useRef<Promise<void>>(Promise.resolve());
   useEffect(()=>{
     let alive=true,unsubscribe:(()=>void)|undefined;
     try{
-      const storage=factory();adapter.current=storage;
+      const storage=storageFactory.current();adapter.current=storage;
       void storage.load().then(loaded=>{if(!alive)return;setData(loaded.data);blocked.current=!!loaded.error;setError(loaded.error);setReady(true);}).catch(()=>{if(alive){blocked.current=true;setError("Browser storage is unavailable. Export a backup before leaving; changes will not be saved.");setReady(true);}});
       unsubscribe=storage.subscribe?.(()=>{blocked.current=true;setConflict(true);setError("Another tab changed this workspace. Export your current edits or choose which version to continue with.");});
     }catch{blocked.current=true;setError("Browser storage is unavailable. Export a backup before leaving; changes will not be saved.");setReady(true);}
     return()=>{alive=false;unsubscribe?.();};
-  },[factory]);
+  },[]);
   useEffect(()=>{
     if(!ready||blocked.current||!adapter.current)return;
     const generation=epoch.current,snapshot=data;
