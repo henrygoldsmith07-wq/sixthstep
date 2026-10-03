@@ -5,6 +5,8 @@ import { sourceFreshness } from "./opportunity-repository";
 export type RecommendationContext={records?:TrackedRecord[];experiences?:Experience[];feedback?:DiscoveryFeedback[]};
 export type Match={reasons:string[];checks:string[];conflicts:string[];rank:number;eligible:boolean};
 export function conciseReason(match:Match){
+ const feedback=match.reasons.find(r=>r.startsWith("You asked for more"));
+ if(feedback)return feedback.replace(/ · shared .+$/,"")+".";
  const subject=match.reasons.find(r=>r.startsWith("Related to "));
  const interest=match.reasons.find(r=>r.startsWith("Matches your ")&&r.endsWith(" interest"));
  if(subject&&interest)return subject+" and your "+interest.slice("Matches your ".length)+".";

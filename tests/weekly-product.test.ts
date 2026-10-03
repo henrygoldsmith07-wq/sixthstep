@@ -16,7 +16,7 @@ const opportunity=enrich({id:"weekly",title:"Engineering insight",provider:"Test
 test("concise reasons retain meaningful connections and direct negative feedback lowers repetition",()=>{
  const item=enrich({...opportunity,sector:"Engineering",subjects:["Physics"],description:"Engineering design",deadlineDate:""}),profile={...defaultProfile,configured:true,subjects:["Physics"],interests:["Engineering"]};
  const base=matchOpportunity(item,profile),feedback=feedbackSchema.parse({opportunityId:item.id,title:item.title,sector:item.sector,category:item.category,provider:item.provider,subjects:item.subjects,signal:"Show fewer like this",at:today});
- assert.match(conciseReason(base),/Related to Physics and your engineering interest/);assert.ok(matchOpportunity(item,profile,{feedback:[feedback]}).rank<base.rank);assert.equal(matchOpportunity(item,profile,{feedback:[feedback]}).eligible,base.eligible);
+ assert.match(conciseReason(base),/Related to Physics and your engineering interest/);assert.match(conciseReason(matchOpportunity(item,profile,{feedback:[{...feedback,signal:"Show me more like this"}]})),/asked for more/);assert.ok(matchOpportunity(item,profile,{feedback:[feedback]}).rank<base.rank);assert.equal(matchOpportunity(item,profile,{feedback:[feedback]}).eligible,base.eligible);
  const checked=enrich({...item,source:"catalogue",checkedAt:today});assert.ok(matchOpportunity({...checked,checkedAt:"2020-01-01"},profile).rank<matchOpportunity(checked,profile).rank);
 });
 test("weekly overview separates upcoming dates from actual checks without invented periods",()=>{
