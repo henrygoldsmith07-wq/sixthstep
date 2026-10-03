@@ -41,8 +41,8 @@ test("profile, explained discovery, application actions, completion, journal and
  expect(errors).toEqual([]);
 });
 test("details and 2–4 comparison work with keyboard, source labels and no page overflow",async({page})=>{
- await fixedDay(page);await page.goto("/#finder");await page.getByRole("button",{name:"Inside the world of Leonardo",exact:true}).first().click();
- const dialog=page.getByRole("dialog");await expect(dialog).toBeVisible();await expect(dialog.getByRole("link",{name:"Visit provider",exact:true})).toHaveAttribute("href",/leonardo.springpod.com/);await expect(dialog.getByText(/Source details checked/)).toBeVisible();await page.keyboard.press("Escape");await expect(dialog).not.toBeVisible();
+ await fixedDay(page);await page.goto("/#finder");await page.getByLabel("Search opportunities").fill("Leonardo");await page.getByRole("button",{name:"Inside the world of Leonardo",exact:true}).first().click();
+ const dialog=page.getByRole("dialog");await expect(dialog).toBeVisible();await expect(dialog.getByRole("link",{name:"Visit provider",exact:true})).toHaveAttribute("href",/leonardo.springpod.com/);await expect(dialog.getByText(/Source details checked/)).toBeVisible();await page.keyboard.press("Escape");await expect(dialog).not.toBeVisible();await page.getByRole("button",{name:"Clear search",exact:true}).click();
  const buttons=page.locator(".compare-toggle");await buttons.nth(0).click();await expect(page.getByRole("button",{name:"Compare opportunities",exact:true})).toBeDisabled();await buttons.nth(1).click();await buttons.nth(2).click();await buttons.nth(3).click();await buttons.nth(4).click();await expect(page.locator(".comparison-bar")).toContainText("4 / 4");
  await page.getByRole("button",{name:"Compare opportunities",exact:true}).click();await expect(dialog.getByRole("table")).toBeVisible();await expect(dialog.getByRole("columnheader")).toHaveCount(5);await expect(dialog.getByRole("rowheader",{name:/^Your fit/})).toBeVisible();await page.keyboard.press("Escape");await expect(dialog).not.toBeVisible();
 });
@@ -100,7 +100,7 @@ test("classified live results are visibly unverified and lead to editable import
 });
 test("separate curated programmes sharing one provider URL can both be saved",async({page})=>{
  const pair=catalogue.filter(i=>i.id==="deloitte-women"||i.id==="deloitte-black");expect(pair).toHaveLength(2);expect(pair[0].url).toBe(pair[1].url);
- await page.goto("/#finder");for(const i of pair)await page.getByRole("button",{name:"Save "+i.title,exact:true}).first().click();await nav(page,"My opportunities");await expect(page.locator(".tracked-card")).toHaveCount(2);
+ await page.goto("/#finder");await page.getByLabel("Search opportunities").fill("Deloitte");for(const i of pair)await page.getByRole("button",{name:"Save "+i.title,exact:true}).first().click();await nav(page,"My opportunities");await expect(page.locator(".tracked-card")).toHaveCount(2);
 });
 test("mobile dashboard, finder, comparison, tracker, journal, evidence and settings stay usable",async({page})=>{
  await page.setViewportSize({width:390,height:844});await seed(page,{version:2,profile:defaultProfile,records:[createRecord(imported)],experiences:[]});await page.goto("/");
