@@ -56,7 +56,7 @@ test("application availability expires and passed deadlines cannot look open",()
 });
 test("manual deadlines, actions, reminders and completion produce useful ordered next steps",()=>{
  const a=createRecord(enrich({...programme,deadlineDate:"2026-10-08"}));a.nextAction="Ask for a reference";a.nextActionDate="2026-10-02";a.priority="High";
- a.reminders=[{id:"r",label:"Prepare questions",date:"2026-10-06",done:false},{id:"done",label:"Already done",date:"2026-10-01",done:true}];
+ a.reminders=[{id:"r",label:"Prepare questions",date:"2026-10-06",done:false,kind:"Personal"},{id:"done",label:"Already done",date:"2026-10-01",done:true,kind:"Personal"}];
  assert.equal(recordDeadline(a),"2026-10-08");a.deadlineOverride=true;a.deadlineDate="";assert.equal(recordDeadline(a),"");
  a.deadlineDate="2026-10-09";
  const steps=nextSteps([a],[],"2026-10-03");assert.equal(steps[0].title,"Ask for a reference");assert.equal(steps[0].overdue,true);assert.equal(steps.length,3);

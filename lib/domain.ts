@@ -1,7 +1,8 @@
 import { z } from "zod";
 import type { Opportunity } from "./types";
+import { feedbackSchema, dispositionSchema, activitySchema, reminderKinds } from "./workspace-events";
 
-export const categories=["Work experience","Virtual work experience","Employer insight","University outreach","Summer school","Widening participation","STEM programme","Research placement","Competition","Mentoring","Lecture / academic event","Apprenticeship insight","Career exploration","Job simulation","Provider directory","Not stated"] as const;
+export const categories=["Work experience","Virtual work experience","Employer insight","University outreach","Summer school","Widening participation","STEM programme","Research placement","Competition","Mentoring","Lecture / academic event","Apprenticeship insight","Career exploration","Job simulation","Provider directory","Volunteering","Academic programme","Masterclass","Residential programme","Apprenticeship","Degree apprenticeship","Not stated"] as const;
 export const formats=["Virtual","In person","Hybrid","Not stated"] as const;
 export const intentions=["Maybe","Interested","Shortlisted","Applying"] as const;
 export const applicationStages=["Eligibility checked","Application started","Responses drafted","Evidence reviewed","Reference requested","Application reviewed"] as const;
@@ -9,12 +10,8 @@ export const statuses=["Saved","Researching","Preparing application","Applied","
 export const skillNames=["Teamwork","Communication","Leadership","Problem solving","Resilience","Organisation","Analytical thinking","Creativity","Technical skills","Independent learning"] as const;
 const text=(length=600)=>z.string().max(length);
 const list=(length=120)=>z.array(text(length)).max(30);
-export const dateSchema=z.string().refine(v=>v==="" || isDate(v),"Use a real date in YYYY-MM-DD format");
-export function isDate(value:string):boolean {
- if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;
- const date=new Date(value+"T12:00:00Z");
- return !Number.isNaN(date.getTime())&&date.toISOString().slice(0,10)===value;
-}
+export { isDate, dateSchema } from "./domain-dates";
+import { isDate, dateSchema } from "./domain-dates";
 export const opportunitySchema=z.object({
  id:text(180),title:text(180).min(1),provider:text(180),sector:text(100),
  type:text(100),category:z.enum(categories).default("Not stated"),subSector:text(150).default("Not stated"),
@@ -22,7 +19,7 @@ export const opportunitySchema=z.object({
  durationBand:z.enum(["A few hours","1–3 days","4–7 days","1–2 weeks","Several weeks","Longer programme","Self-paced","Not stated"]).default("Not stated"),
  eligibility:text(1200),minAge:z.number().int().min(0).max(100).optional(),maxAge:z.number().int().min(0).max(100).optional(),
  years:list().default([]),subjects:list().default([]),subjectRequirements:text(600).default("Not stated"),
- geography:text(600).default("Not stated"),cost:text(300),deadline:text(300),deadlineDate:dateSchema.default(""),
+ geography:text(600).default("Not stated"),wideningParticipation:text(1200).default("Not stated"),careerAreas:list().default([]),applicationRequirements:list(500).default([]),cost:text(300),deadline:text(300),deadlineDate:dateSchema.default(""),
  startDate:dateSchema.default(""),openingDate:dateSchema.default(""),openingPeriod:text(300).default(""),closingPeriod:text(300).default(""),applicationState:z.enum(["Open","Closed","Not yet open","Rolling","Unknown"]).default("Unknown"),
  applicationUrl:text(2000).default(""),url:text(2000),description:text(1800),activities:list(500).default([]),
  skills:list().default([]),tags:list(),certificate:text(300).default("Not stated"),selection:text(600).default("Not stated"),
@@ -57,7 +54,7 @@ export const profileSchema=z.object({
 export type StudentProfile=z.infer<typeof profileSchema>;
 export const defaultProfile:StudentProfile=profileSchema.parse({});
 export const checklistSchema=z.object({id:text(180),label:text(250),done:z.boolean()});
-export const reminderSchema=z.object({id:text(180),label:text(250),date:dateSchema,done:z.boolean()});
+export const reminderSchema=z.object({id:text(180),label:text(250),date:dateSchema,done:z.boolean(),kind:z.enum(reminderKinds).default("Personal")});
 export const questionSchema=z.object({id:text(180),question:text(1500).min(1),purpose:z.enum(["Application","Interview"]).default("Application"),limitKind:z.enum(["None","Words","Characters"]).default("None"),limit:z.number().int().min(0).max(20000).default(0),draft:text(20000).default(""),notes:text(2000).default(""),status:z.enum(["Draft","Ready","Submitted"]).default("Draft"),evidenceIds:z.array(text(370)).max(60).default([])});
 export type ApplicationQuestion=z.infer<typeof questionSchema>;
 export const requirementSchema=z.object({id:text(180),label:text(250).min(1),note:text(1000).default(""),done:z.boolean().default(false)});
@@ -68,7 +65,7 @@ export const recordSchema=z.object({
  notes:text(6000).default(""),appliedAt:dateSchema.default(""),eventDate:dateSchema.default(""),
  outcome:text(1000).default(""),priority:z.enum(["Normal","High","Low"]).default("Normal"),
  checklist:z.array(checklistSchema).max(40).default([]),reminders:z.array(reminderSchema).max(30).default([]),
- intent:z.enum(intentions).default("Applying"),requirements:z.array(requirementSchema).max(40).default([]),questions:z.array(questionSchema).max(40).default([]),applicationSteps:z.array(z.enum(applicationStages)).max(6).default([])
+ intent:z.enum(intentions).default("Applying"),requirements:z.array(requirementSchema).max(40).default([]),questions:z.array(questionSchema).max(40).default([]),applicationSteps:z.array(z.enum(applicationStages)).max(6).default([]),milestoneDates:z.array(z.object({stage:z.enum(applicationStages),date:dateSchema})).max(6).default([])
 });
 export type TrackedRecord=z.infer<typeof recordSchema>;
 export const starSchema=z.object({situation:text(1000),task:text(1000),action:text(1500),result:text(1000)});
@@ -88,10 +85,10 @@ export const experienceSchema=z.object({
  whatDid:text(4500).default(""),learned:text(2500).default(""),challenges:text(1500).default(""),
  surprised:text(1500).default(""),enjoyed:text(1500).default(""),disliked:text(1500).default(""),
  careerImpact:text(1500).default(""),nextStep:text(1000).default(""),careerAreas:list().default([]),interestChange:z.enum(["Unsure","Increased","Decreased","Mixed","Unchanged"]).default("Unsure"),skills:z.array(evidenceSchema).max(30).default([]),
- reflection:richReflectionSchema.optional(),updatedAt:text(50)
+ reflectionCompletedAt:dateSchema.default(""),reflection:richReflectionSchema.optional(),updatedAt:text(50)
 });
 export type Experience=z.infer<typeof experienceSchema>;
-export const appSchema=z.object({version:z.literal(2),profile:profileSchema,records:z.array(recordSchema).max(1000),experiences:z.array(experienceSchema).max(1000),dismissedAlerts:z.array(text(300)).max(2000).default([])});
+export const appSchema=z.object({version:z.literal(2),profile:profileSchema,records:z.array(recordSchema).max(1000),experiences:z.array(experienceSchema).max(1000),dismissedAlerts:z.array(text(300)).max(2000).default([]),feedback:z.array(feedbackSchema).max(2000).default([]),actionStates:z.array(dispositionSchema).max(3000).default([]),activity:z.array(activitySchema).max(5000).default([])});
 export type AppData=z.infer<typeof appSchema>;
 export const emptyData:AppData=appSchema.parse({version:2,profile:defaultProfile,records:[],experiences:[]});
 export function createRecord(opportunity:RichOpportunity,now=new Date().toISOString()):TrackedRecord {

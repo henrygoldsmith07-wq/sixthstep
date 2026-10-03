@@ -1,3 +1,4 @@
+import { extendedCatalogue } from "./catalogue-extensions";
 import { enrich, type RichOpportunity } from "./domain";
 // Source facts checked 2 October 2026. A check does not imply current availability.
 // Unknown dates are deliberately not turned into countdowns.
@@ -1186,4 +1187,4 @@ export const catalogue:RichOpportunity[] = [
       "Registration is currently accepting submissions"
     ]
   }
-].map(item=>enrich(item as Partial<RichOpportunity>));
+].map(item=>enrich({...item,...(item.id==="deloitte-women"?{openingDate:"2026-11-09",checkedAt:"2026-10-03",years:["Year 12","Year 13 (Northern Ireland)","S5"]}:item.id==="deloitte-black"?{openingPeriod:"January 2027",checkedAt:"2026-10-03",years:["Year 12","Year 13 (Northern Ireland)","S5"]}:{})} as Partial<RichOpportunity>)).concat(extendedCatalogue);

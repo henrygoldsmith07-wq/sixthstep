@@ -1,0 +1,13 @@
+"use client";
+import { useState } from "react";
+import { developmentTimeline } from "@/lib/operating-system";
+import { dateLabel } from "@/lib/domain";
+import { useWorkspace } from "./workspace-context";
+import { Empty } from "./shared";
+export function DevelopmentTimeline(){
+ const {data,navigate,setActiveRecord,setActiveExperience}=useWorkspace(),[theme,setTheme]=useState("All themes"),[kind,setKind]=useState("All events"),[count,setCount]=useState(30);
+ const all=developmentTimeline(data),events=all.filter(e=>(theme==="All themes"||e.themes.includes(theme))&&(kind==="All events"||e.kind===kind));
+ return <section aria-label="Development timeline"><h2>Your development over time</h2><p className="card-intro">Saved possibilities, applications and the things you personally recorded. Themes group activity; they do not imply a career commitment.</p><div className="feature-toolbar"><label>Theme<select className="text-input" aria-label="Development theme" value={theme} onChange={e=>{setTheme(e.target.value);setCount(30);}}><option>All themes</option>{[...new Set(all.flatMap(e=>e.themes))].sort().map(v=><option key={v}>{v}</option>)}</select></label><label>Event<select className="text-input" aria-label="Development event" value={kind} onChange={e=>{setKind(e.target.value);setCount(30);}}><option>All events</option>{[...new Set(all.map(e=>e.kind))].sort().map(v=><option key={v}>{v}</option>)}</select></label></div>
+ {events.length?<ol className="development-list">{events.slice(0,count).map(e=><li key={e.id}><span className="status-chip">{e.kind}</span><h3>{e.title}</h3><p className="fine-print">{e.date?dateLabel(e.date):"Date not recorded"} · {e.basis}</p><p className="fine-print">{e.themes.join(" · ")||"Theme not recorded"}</p>{(e.experienceId&&data.experiences.some(v=>v.id===e.experienceId)||e.recordId&&data.records.some(r=>r.opportunity.id===e.recordId))?<button className="inline-link" onClick={()=>{if(e.experienceId){setActiveExperience(e.experienceId);navigate("reflect");}else{setActiveRecord(e.recordId);navigate("saved");}}}>Open source {e.experienceId?"experience":"application"}</button>:<p className="fine-print">Source record no longer in this workspace; recorded history retained.</p>}</li>)}</ol>:<Empty title={all.length?"No events with these filters.":"Your journey starts with one possibility."} action={()=>{if(all.length){setTheme("All themes");setKind("All events");}else navigate("finder");}} label={all.length?"Clear filters":"Find an opportunity"}>New actions are recorded as they happen. Existing evidence keeps an unknown addition date when none was recorded.</Empty>}
+ {events.length>count&&<button className="button secondary" onClick={()=>setCount(count+30)}>Show more development events</button>}</section>;
+}

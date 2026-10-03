@@ -13,7 +13,7 @@ export function loadWorkspace(storage:StorageReader):{data:AppData;error:string;
   const old=parseLegacy(storage,"sixthstep-saved-v1");
   if(Array.isArray(old))for(const item of old){
    try {
-    const record=createRecord(enrich(item),typeof item.savedAt==="string"?item.savedAt:new Date().toISOString());
+    const record=createRecord(enrich(item),typeof item.savedAt==="string"?item.savedAt:"");
     record.status=item.status==="Applied"?"Applied":item.status==="Completed"?"Completed":"Saved";
     if(!data.records.some(r=>r.opportunity.id===record.opportunity.id))data.records.push(record);
    }catch {error="Some old saved opportunities could not be migrated. Your original v1 data is still retained.";}
@@ -35,8 +35,9 @@ export function restoreWorkspace(text:string):AppData {
  const parsed=appSchema.safeParse(JSON.parse(text));
  if(!parsed.success)throw new Error("This is not a valid SixthStep workspace backup.");
  const data=parsed.data;
+ if(new Set(data.feedback.map(f=>f.opportunityId)).size!==data.feedback.length||new Set(data.actionStates.map(s=>s.id)).size!==data.actionStates.length||new Set(data.activity.map(e=>e.id)).size!==data.activity.length)throw new Error("This backup has duplicate feedback, reminder or activity IDs.");
  if(new Set(data.records.map(r=>r.opportunity.id)).size!==data.records.length||new Set(data.experiences.map(e=>e.id)).size!==data.experiences.length)throw new Error("This backup has duplicate record IDs.");
- for(const record of data.records)if(new Set(record.questions.map(q=>q.id)).size!==record.questions.length||new Set(record.requirements.map(r=>r.id)).size!==record.requirements.length)throw new Error("This backup has duplicate question or requirement IDs.");
+ for(const record of data.records)if(new Set(record.questions.map(q=>q.id)).size!==record.questions.length||new Set(record.requirements.map(r=>r.id)).size!==record.requirements.length||new Set(record.milestoneDates.map(m=>m.stage)).size!==record.milestoneDates.length)throw new Error("This backup has duplicate question, requirement or milestone IDs.");
  for(const experience of data.experiences)if(new Set(experience.skills.map(s=>s.id)).size!==experience.skills.length)throw new Error("This backup has duplicate evidence IDs.");
  return data;
 }

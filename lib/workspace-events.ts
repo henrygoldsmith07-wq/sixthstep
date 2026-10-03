@@ -1,0 +1,10 @@
+import { z } from "zod";
+import { dateSchema } from "./domain-dates";
+export const feedbackSignals=["Interested","Maybe","Not for me","Already done something similar","Show me more like this","Show fewer like this"] as const;
+export const feedbackSchema=z.object({opportunityId:z.string().max(180),title:z.string().max(180),sector:z.string().max(100),category:z.string().max(100),provider:z.string().max(180),subjects:z.array(z.string().max(120)).max(30),signal:z.enum(feedbackSignals),at:z.string().max(50)});
+export type DiscoveryFeedback=z.infer<typeof feedbackSchema>;
+export const reminderKinds=["Deadline","Opening","Next action","Interview","Reference","Follow up","Programme","Reflection","Personal","Milestone"] as const;
+export const dispositionSchema=z.object({id:z.string().max(400),state:z.enum(["Snoozed","Dismissed","Completed"]),date:dateSchema.default(""),at:z.string().max(50)}).refine(s=>s.state!=="Snoozed"||!!s.date,"A snoozed reminder requires a date");
+export type ActionDisposition=z.infer<typeof dispositionSchema>;
+export const activitySchema=z.object({id:z.string().max(180),kind:z.enum(["Saved","Application started","Application submitted","Stage changed","Interview recorded","Completed programme","Experience recorded","Evidence added","Reflection completed","Interest changed"]),at:z.string().max(50),recordId:z.string().max(180).default(""),experienceId:z.string().max(180).default(""),title:z.string().max(400),themes:z.array(z.string().max(120)).max(30).default([])});
+export type ActivityEvent=z.infer<typeof activitySchema>;

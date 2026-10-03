@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Leaf, LayoutDashboard, Compass, Sparkles, Bookmark, FileText, Layers3, Settings2, Menu, X, ArrowRight } from "lucide-react";
+import { Leaf, LayoutDashboard, CalendarDays, Compass, Sparkles, Bookmark, FileText, Layers3, Settings2, Menu, X, ArrowRight } from "lucide-react";
 import { WorkspaceProvider, useWorkspace, type View } from "./workspace-context";
+import { Calendar } from "./calendar";
 import { Dashboard } from "./dashboard";
 import { Explore } from "./explore";
 
@@ -13,6 +14,7 @@ const tabs=[
  {id:"dashboard",label:"Home",icon:LayoutDashboard},
  {id:"finder",label:"Explore",icon:Compass},
  {id:"saved",label:"Applications",icon:Bookmark},
+ {id:"calendar",label:"Calendar",icon:CalendarDays},
  {id:"reflect",label:"Experiences",icon:FileText},
  {id:"evidence",label:"Evidence",icon:Layers3}
 ] as const;
@@ -42,7 +44,7 @@ function Shell(){
  </aside><div className="main-shell" inert={mobile}><header className="topbar"><button ref={menuButton} className="icon-button mobile-menu" aria-label="Open menu" aria-expanded={mobile} aria-controls="main-navigation" onClick={()=>setMobile(true)}><Menu size={20}/></button><p className="breadcrumb">Your workspace <span>/</span><strong>{label}</strong></p><span className="topbar-badge"><Leaf size={12}/>Designed for sixth form</span></header>
  <main className="content" id="main-content" tabIndex={-1}>
  {error&&<div className="error-message" role="alert">{error} <button className="inline-link" onClick={()=>go("settings")}>Open backup & recovery</button></div>}
- {!ready?<p className="notice" role="status">Opening your workspace…</p>:view==="dashboard"?<Dashboard/>:view==="finder"||view==="summarise"?<Explore/>:view==="saved"?<Tracker/>:view==="reflect"?<Journal/>:view==="evidence"?<EvidenceBank/>:<Profile/>}
+ {!ready?<p className="notice" role="status">Opening your workspace…</p>:view==="dashboard"?<Dashboard/>:view==="finder"||view==="summarise"?<Explore/>:view==="saved"?<Tracker/>:view==="reflect"?<Journal/>:view==="evidence"?<EvidenceBank/>:view==="calendar"?<Calendar/>:<Profile/>}
  <footer className="footer"><span className="footer-brand">SixthStep.</span><span>Discover. Apply. Reflect. Grow.</span><button className="inline-link" onClick={()=>go("settings")}>Your data & connections <ArrowRight size={12}/></button></footer>
  </main></div></div>;
 }
