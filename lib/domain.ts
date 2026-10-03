@@ -96,15 +96,17 @@ export function createRecord(opportunity:RichOpportunity,now=new Date().toISOStr
  return recordSchema.parse({opportunity,savedAt:now,intent:"Interested",applicationUrl:opportunity.applicationUrl||opportunity.url});
 }
 export function recordDeadline(record:TrackedRecord) {return record.deadlineOverride?record.deadlineDate:record.opportunity.deadlineDate;}
+const londonDayFormatter=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit"});
+const displayDateFormatter=new Intl.DateTimeFormat("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"});
 export function todayISO(now=new Date()) {
- const parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(now);
+ const parts=londonDayFormatter.formatToParts(now);
  return ["year","month","day"].map(key=>parts.find(p=>p.type===key)?.value).join("-");
 }
 export function daysUntil(date:string,today=todayISO()):number|null {
  if(!isDate(date)||!isDate(today))return null;
  return Math.round((Date.parse(date+"T12:00:00Z")-Date.parse(today+"T12:00:00Z"))/86400000);
 }
-export function dateLabel(date:string) {return isDate(date)?new Intl.DateTimeFormat("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(date+"T12:00:00Z")):"Not stated";}
+export function dateLabel(date:string) {return isDate(date)?displayDateFormatter.format(new Date(date+"T12:00:00Z")):"Not stated";}
 export function deadlineLabel(date:string,fallback="Not stated",today=todayISO()) {
  const days=daysUntil(date,today);
  return days===null?fallback:days<0?"Deadline passed · "+dateLabel(date):days===0?"Closes today":days===1?"1 day remaining":days<=30?days+" days remaining":dateLabel(date);
