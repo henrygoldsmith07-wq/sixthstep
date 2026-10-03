@@ -17,5 +17,5 @@ export function sourceFreshness(item:RichOpportunity,today?:string){
 }
 export function sourceFacts(item:RichOpportunity){
  const fields:[string,string][]=[["School years",item.years.join(", ")],["Age",item.minAge!==undefined||item.maxAge!==undefined?(item.minAge??"?")+"–"+(item.maxAge??"?"):""],["Subjects",item.subjectRequirements],["Geography",item.geography],["Widening participation",item.wideningParticipation],["Opening",item.openingDate||item.openingPeriod],["Closing",item.deadlineDate||item.deadline],["Event",item.startDate],["Cost",item.cost],["Application requirements",item.applicationRequirements.join("; ")]];
- return fields.map(([field,value])=>({field,value:value||"Not stated",state:!value||/^(Not stated|Unknown|Varies)/i.test(value)?"Needs checking":item.source==="catalogue"?"Source recorded":"Student review required",url:item.url,checkedAt:item.checkedAt}));
+ return fields.map(([field,value])=>({field,value:value||"Not stated",state:!value||/^(Not stated|Unknown|Varies)/i.test(value)?"Needs checking":item.source==="catalogue"?(sourceFreshness(item).stale?"Source information needs rechecking":"Source recorded"):"Student review required",url:item.url,checkedAt:item.checkedAt}));
 }

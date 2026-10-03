@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Opportunity } from "./types";
+import { metricsSchema } from "./product-metrics";
 import { feedbackSchema, dispositionSchema, activitySchema, reminderKinds } from "./workspace-events";
 
 export const categories=["Work experience","Virtual work experience","Employer insight","University outreach","Summer school","Widening participation","STEM programme","Research placement","Competition","Mentoring","Lecture / academic event","Apprenticeship insight","Career exploration","Job simulation","Provider directory","Volunteering","Academic programme","Masterclass","Residential programme","Apprenticeship","Degree apprenticeship","Not stated"] as const;
@@ -55,7 +56,7 @@ export type StudentProfile=z.infer<typeof profileSchema>;
 export const defaultProfile:StudentProfile=profileSchema.parse({});
 export const checklistSchema=z.object({id:text(180),label:text(250),done:z.boolean()});
 export const reminderSchema=z.object({id:text(180),label:text(250),date:dateSchema,done:z.boolean(),kind:z.enum(reminderKinds).default("Personal")});
-export const questionSchema=z.object({id:text(180),question:text(1500).min(1),purpose:z.enum(["Application","Interview"]).default("Application"),limitKind:z.enum(["None","Words","Characters"]).default("None"),limit:z.number().int().min(0).max(20000).default(0),draft:text(20000).default(""),notes:text(2000).default(""),status:z.enum(["Draft","Ready","Submitted"]).default("Draft"),evidenceIds:z.array(text(370)).max(60).default([])});
+export const questionSchema=z.object({id:text(180),question:text(1500).min(1),purpose:z.enum(["Application","Interview"]).default("Application"),limitKind:z.enum(["None","Words","Characters"]).default("None"),limit:z.number().int().min(0).max(20000).default(0),draft:text(20000).default(""),notes:text(2000).default(""),status:z.enum(["Draft","Ready","Submitted"]).default("Draft"),evidenceIds:z.array(text(370)).max(60).default([]),evidenceSnapshots:z.array(z.object({id:text(370),signature:text(80)})).max(60).default([]),evidenceReviewed:z.boolean().default(false)});
 export type ApplicationQuestion=z.infer<typeof questionSchema>;
 export const requirementSchema=z.object({id:text(180),label:text(250).min(1),note:text(1000).default(""),done:z.boolean().default(false)});
 export const recordSchema=z.object({
@@ -88,7 +89,7 @@ export const experienceSchema=z.object({
  reflectionCompletedAt:dateSchema.default(""),reflection:richReflectionSchema.optional(),updatedAt:text(50)
 });
 export type Experience=z.infer<typeof experienceSchema>;
-export const appSchema=z.object({version:z.literal(2),profile:profileSchema,records:z.array(recordSchema).max(1000),experiences:z.array(experienceSchema).max(1000),dismissedAlerts:z.array(text(300)).max(2000).default([]),feedback:z.array(feedbackSchema).max(2000).default([]),actionStates:z.array(dispositionSchema).max(3000).default([]),activity:z.array(activitySchema).max(5000).default([])});
+export const appSchema=z.object({version:z.literal(2),profile:profileSchema,records:z.array(recordSchema).max(1000),experiences:z.array(experienceSchema).max(1000),dismissedAlerts:z.array(text(300)).max(2000).default([]),feedback:z.array(feedbackSchema).max(2000).default([]),actionStates:z.array(dispositionSchema).max(3000).default([]),activity:z.array(activitySchema).max(5000).default([]),discoveries:z.array(opportunitySchema).max(200).default([]),metrics:metricsSchema.default(()=>metricsSchema.parse({}))});
 export type AppData=z.infer<typeof appSchema>;
 export const emptyData:AppData=appSchema.parse({version:2,profile:defaultProfile,records:[],experiences:[]});
 export function createRecord(opportunity:RichOpportunity,now=new Date().toISOString()):TrackedRecord {
@@ -111,7 +112,7 @@ export function deadlineLabel(date:string,fallback="Not stated",today=todayISO()
 export function availability(item:RichOpportunity,today=todayISO()) {
  if(item.deadlineDate && (daysUntil(item.deadlineDate,today)??0)<0)return "Closed";
  const age=daysUntil(item.checkedAt.slice(0,10),today);
- if(item.source!=="catalogue" || age===null || age< -45)return "Unknown";
+ if(item.source!=="catalogue" || age===null || age>0 || age< -45)return "Unknown";
  return item.applicationState;
 }
 const terminal=new Set<string>(["Completed","Unsuccessful","Not pursuing"]);
@@ -146,7 +147,7 @@ export function experienceFromRecord(record:TrackedRecord,now=new Date().toISOSt
  return experienceSchema.parse({id:"experience-"+record.opportunity.id,opportunityId:record.opportunity.id,name:record.opportunity.title,organisation:record.opportunity.provider,type:record.opportunity.category,date:record.eventDate,careerAreas:record.opportunity.sector==="Explore careers"?[]:[record.opportunity.sector],updatedAt:now});
 }
 export function evidenceBank(experiences:Experience[]) {
- return experiences.flatMap(experience=>experience.skills.filter(s=>s.skill.trim()&&s.action.trim()).map(skill=>({...skill,experienceId:experience.id,experienceName:experience.name,organisation:experience.organisation,date:experience.date,sectors:experience.careerAreas})));
+ return experiences.flatMap(experience=>experience.skills.filter(s=>s.skill.trim()&&s.action.trim()).map(skill=>({...skill,experienceId:experience.id,experienceName:experience.name,experienceType:experience.type,organisation:experience.organisation,date:experience.date,sectors:experience.careerAreas})));
 }
 export function reflectionInput(experience:Experience) {
  return [

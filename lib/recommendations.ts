@@ -27,6 +27,10 @@ export function matchOpportunity(item:RichOpportunity,profile:StudentProfile,con
  if(saved){reasons.push("In the same sector as "+saved.opportunity.title+", which you saved");rank+=2;}
  const completed=(context.experiences||[]).find(e=>e.interestChange!=="Decreased"&&e.careerAreas.some(a=>relatedAreas(a).some(area=>relatedAreas(content).some(b=>b.area===area.area)))&&(e.interestChange==="Increased"&&!!(e.enjoyed.trim()||e.careerImpact.trim())));
  if(completed){reasons.push("Builds on "+completed.name+", where you recorded increased interest");rank+=2;}
+ const decreased=(context.experiences||[]).find(e=>e.interestChange==="Decreased"&&!!(e.disliked.trim()||e.careerImpact.trim())&&e.careerAreas.some(area=>area===item.sector));
+ if(decreased){rank-=2;checks.push("Lower after you recorded decreased interest in "+decreased.name);}
+ const similarDone=signals.find(f=>f.signal==="Already done something similar"&&f.opportunityId!==item.id&&f.provider===item.provider&&f.category===item.category);
+ if(similarDone){rank--;checks.push("Same provider and type as "+similarDone.title+", which you marked already done something similar");}
  if(profile.interests.some(s=>s===item.sector||overlap(s,item.sector))){reasons.push("Matches your "+item.sector.toLowerCase()+" interest");rank+=4;}
  if(profile.careerInterests&&overlap(profile.careerInterests,content)){reasons.push("Relates to the career you want to explore");rank+=profile.direction==="Targeting a field"?7:4;}
  if(profile.outsideInterests&&overlap(profile.outsideInterests,content)){reasons.push("Connects with your interests outside school");rank++;}
@@ -63,8 +67,20 @@ export function matchOpportunity(item:RichOpportunity,profile:StudentProfile,con
  return {reasons:[...new Set(reasons)],checks:[...new Set(checks)],conflicts,rank,eligible:!conflicts.some(c=>/age band|school year|closed/.test(c))};
 }
 export function recommendations(items:RichOpportunity[],profile:StudentProfile,exclude:string[]=[],context:RecommendationContext={}) {
- return items.map(item=>({item,match:matchOpportunity(item,profile,context)})).filter(v=>v.match.eligible&&v.match.rank>=3&&v.item.sourceKind==="Programme"&&!exclude.includes(v.item.id)&&!(context.feedback||[]).some(f=>f.opportunityId===v.item.id&&["Not for me","Already done something similar"].includes(f.signal)))
+ const ranked=items.map(item=>({item,match:matchOpportunity(item,profile,context)})).filter(v=>v.match.eligible&&v.match.rank>=3&&v.item.sourceKind==="Programme"&&!exclude.includes(v.item.id)&&!(context.feedback||[]).some(f=>f.opportunityId===v.item.id&&["Not for me","Already done something similar"].includes(f.signal)))
  .sort((a,b)=>b.match.rank-a.match.rank||a.item.title.localeCompare(b.item.title));
+ return diversifyRecommendations(ranked,profile.direction);
+}
+export function diversifyRecommendations(ranked:{item:RichOpportunity;match:Match}[],direction:StudentProfile["direction"]="Exploring"){
+ const pool=[...ranked],result:typeof ranked=[],providers=new Map<string,number>(),types=new Map<string,number>();
+ // Diversify the visible feed, not eligibility or the underlying connection score.
+ while(pool.length&&result.length<12){
+  const value=(v:typeof ranked[number])=>v.match.rank-(providers.get(v.item.provider)||0)*(direction==="Exploring"?3:1)-(types.get(v.item.category)||0)*(direction==="Exploring"?1:0);
+  let index=0;for(let i=1;i<pool.length;i++)if(value(pool[i])>value(pool[index]))index=i;
+  const [chosen]=pool.splice(index,1),next={...chosen,match:index>0&&direction==="Exploring"?{...chosen.match,reasons:[...chosen.match.reasons,"A different provider or opportunity type adds variety to your exploration"]}:chosen.match};
+  providers.set(next.item.provider,(providers.get(next.item.provider)||0)+1);types.set(next.item.category,(types.get(next.item.category)||0)+1);result.push(next);
+ }
+ return [...result,...pool];
 }
 export type FinderFilters={query:string;sector:string;category:string;format:string;age:string;year:string;subject:string;free:boolean;open:boolean;deadline:string;duration:string;location:string;provider:string;verified:boolean};
 export const defaultFilters:FinderFilters={query:"",sector:"All sectors",category:"Any",format:"Any",age:"",year:"Any",subject:"",free:false,open:false,deadline:"Any",duration:"Any",location:"",provider:"Any",verified:false};

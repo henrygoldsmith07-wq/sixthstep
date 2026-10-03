@@ -1,13 +1,7 @@
 "use client";
 import { cloneElement, isValidElement, useId, type ReactElement, type ReactNode } from "react";
 import { ArrowRight, Download, CircleHelp } from "lucide-react";
-export function safeHref(value:string){
- try {
-  const url=new URL(value),host=url.hostname.toLowerCase().replace(/\.$/,"");
-  if(url.protocol!=="https:"||url.username||url.password||url.port&&url.port!=="443"||!host.includes(".")||host.includes(":")||/^\d+(\.\d+){3}$/.test(host)||/\.(local|internal|localhost)$/.test(host))return "";
-  return url.toString();
- }catch{return "";}
-}
+export { safePublicHref as safeHref } from "@/lib/public-link";
 export function download(name:string,content:string,type="text/plain"){
  const url=URL.createObjectURL(new Blob([content],{type})),link=document.createElement("a");link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
@@ -20,7 +14,8 @@ export function Empty({title,children,action,label}:{title:string;children:React
 }
 export function Field({label,children,hint}:{label:string;children:ReactNode;hint?:string}){
  const id=useId(),hintId=id+"-hint";
- const control=isValidElement(children)?cloneElement(children as ReactElement<{id?:string;"aria-describedby"?:string}>,{id,"aria-describedby":hint?hintId:undefined}):children;
+ const element=children as ReactElement<{id?:string;"aria-describedby"?:string}>;
+ const control=isValidElement(children)?cloneElement(element,{id,"aria-describedby":[element.props["aria-describedby"],hint?hintId:undefined].filter(Boolean).join(" ")||undefined}):children;
  return <div className="form-field"><label className="field-label" htmlFor={id}>{label}</label>{control}{hint&&<span id={hintId} className="input-hint">{hint}</span>}</div>;
 }
 export function ExportButton({name,text,label="Export"}:{name:string;text:string;label?:string}){

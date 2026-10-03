@@ -2,6 +2,22 @@
 
 An opportunity and experience workspace for UK sixth-form students, built with Next.js, TypeScript and React. Ready to import into Vercel.
 
+## Dependable application workspaces
+
+Home prioritises up to four explained actions, choosing across applications before adding further urgent tasks. Application overview, requirements, tasks, questions, evidence, milestones and notes have distinct sections. Live answer limits, explicit evidence-review confirmation and changed/removed source warnings protect drafts; SixthStep never submits or silently rewrites an answer.
+
+Applications, individual questions, experiences, evidence and opportunities have durable hash addresses, for example `/#saved/<id>/questions/<questionId>` and `/#reflect/<id>`. Refresh and browser back/forward preserve the selected workspace. These links identify browser-local records; another device needs the corresponding backup restored.
+
+Calendar exports individual dates, selected date groups or every exact date as `.ics`. Approximate periods remain undated. Descriptions preserve provider links, checked dates and student-entered/suggested date labels. Stable event identifiers make repeated exports predictable; importing/updating duplicates remains the calendar application's responsibility. Export follows [RFC 5545](https://www.rfc-editor.org/info/rfc5545/) and does not establish calendar sync.
+
+`WorkspaceStorage` in `lib/workspace-storage.ts` provides asynchronous load/save/replace/recovery/subscription operations. The local adapter retains the v2 schema and original v1 data, blocks automatic replacement of corrupt data, detects changes from another tab, and backs up the previous version before an explicit replacement. Web Locks coordinate writes where available. A future authenticated adapter can implement this interface; there is no unused database or cloud account requirement.
+
+The catalogue lives in `data/catalogue/` with strict runtime and CI validation. Its review helpers identify stale, incomplete/conflicting and approaching dated records; proposed source changes remain pending confirmation. Run `npm run validate:catalogue` after editing records. All 53 existing records and their provenance are preserved.
+
+Recommendations retain explicit profile/activity/feedback reasons and diversify exploration across providers and opportunity types. Evidence retrieval uses recorded skills, shared topics, career labels and experience type; every result explains its connection. Local aggregate funnel metrics are available under Profile without transmitting student data or assigning achievement scores.
+
+Authenticated cloud sync, direct Google Calendar integration, external reminder delivery, automated provider monitoring and semantic embeddings are deliberately deferred. The storage, calendar and catalogue boundaries support those additions without making them dependencies of the current student workflow.
+
 ## What works
 
 SixthStep supports the full student journey: **discover → evaluate → choose → apply → complete → reflect → build evidence → reuse evidence → explore next**.

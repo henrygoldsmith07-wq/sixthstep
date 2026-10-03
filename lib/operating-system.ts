@@ -16,6 +16,7 @@ export function workspaceItems(data:AppData,collection:RichOpportunity[]=[],toda
  }
  for(const r of data.records){
   const o=r.opportunity,source:DateBasis=o.source==="manual"?"Student-entered date":o.source==="catalogue"&&!sourceFreshness(o,today).stale?"Confirmed source date":"Source date · needs review";
+  if(r.intent==="Applying"&&!inactive.has(r.status)&&sourceFreshness(o,today).stale){add(r,"Requirement","Recheck provider dates and criteria: "+o.title,"","Unknown date","source-review","An active application uses older source information. This does not mean the programme is invalid.");items[items.length-1].score+=100;}
   if(inactive.has(r.status)){
    if(r.status==="Completed"&&!data.experiences.some(e=>e.opportunityId===o.id&&(e.reflectionCompletedAt||e.reflection))){const completion=data.activity.find(e=>e.recordId===o.id&&e.kind==="Completed programme")?.at.slice(0,10)||"";add(r,"Reflection","Reflect on "+o.title,completion?plusDays(completion,1):"",completion?"Suggested date":"Unknown date","reflect","A prompt after you marked this programme complete; record what you personally did.");}
    continue;
@@ -44,7 +45,7 @@ export function workspaceItems(data:AppData,collection:RichOpportunity[]=[],toda
  for(const e of data.experiences.filter(e=>e.opportunityId===""&&!e.whatDid.trim()))items.push({id:"experience:"+e.id+":Reflection",recordId:"",experienceId:e.id,title:"Record what you did: "+e.name,detail:"Capture one real action while it is fresh.",kind:"Reflection",date:"",originalDate:"",period:"",basis:"Unknown date",score:20,priority:"Normal",snoozed:false});
  for(const {item,match} of recommendations(collection,data.profile,data.records.map(r=>r.opportunity.id),{records:data.records,experiences:data.experiences,feedback:data.feedback}).filter(v=>{const d=daysUntil(v.item.openingDate,today);return d!==null&&d>=0&&d<=7;}).slice(0,3)){
   const days=daysUntil(item.openingDate,today)!;
-  items.push({id:"discover:"+item.id+":Opening:"+item.openingDate,recordId:"",opportunityId:item.id,title:(days===0?"Applications open today: ":"Applications opening soon: ")+item.title,detail:match.reasons.slice(0,2).join("; "),kind:"Opening",date:item.openingDate,originalDate:item.openingDate,period:"",basis:item.source==="catalogue"?"Confirmed source date":"Source date · needs review",score:days===0?340:160-days,priority:"Normal",snoozed:false});
+  items.push({id:"discover:"+item.id+":Opening:"+item.openingDate,recordId:"",opportunityId:item.id,title:(days===0?"Applications open today: ":"Applications opening soon: ")+item.title,detail:match.reasons.slice(0,2).join("; "),kind:"Opening",date:item.openingDate,originalDate:item.openingDate,period:"",basis:item.source==="catalogue"&&!sourceFreshness(item,today).stale?"Confirmed source date":"Source date · needs review",score:days===0?340:160-days,priority:"Normal",snoozed:false});
  }
  const freshMatch=recommendations(collection,data.profile,data.records.map(r=>r.opportunity.id),{records:data.records,experiences:data.experiences,feedback:data.feedback}).find(v=>{const d=daysUntil(v.item.addedAt,today);return v.match.rank>=7&&d!==null&&d>=-7&&d<=0&&!data.feedback.some(f=>f.opportunityId===v.item.id&&f.signal==="Maybe");});
  if(freshMatch&&!items.some(i=>i.opportunityId===freshMatch.item.id)){const {item,match}=freshMatch;items.push({id:"discover:"+item.id+":Explore:"+item.addedAt,recordId:"",opportunityId:item.id,title:"Take a look: "+item.title,detail:"Recently added to the collection · "+match.reasons.slice(0,2).join("; "),kind:"Explore",date:"",originalDate:"",period:"",basis:"Unknown date",score:10,priority:"Normal",snoozed:false});}
@@ -64,7 +65,7 @@ export function actionableItems(data:AppData,collection:RichOpportunity[]=[],tod
 export function priorityActions(data:AppData,collection:RichOpportunity[]=[],today=todayISO(),limit=4){
  const all=actionableItems(data,collection,today),chosen:WorkspaceItem[]=[],seen=new Set<string>();
  for(const item of all){const group=item.recordId||item.experienceId||item.opportunityId||item.id;if(seen.has(group))continue;seen.add(group);chosen.push(item);if(chosen.length===limit)break;}
- if(chosen.length<limit)for(const item of all)if(!chosen.some(c=>c.id===item.id)){chosen.push(item);if(chosen.length===limit)break;}
+ if(chosen.length<limit)for(const item of all){const group=item.recordId||item.experienceId||item.opportunityId||item.id;const same=chosen.filter(c=>(c.recordId||c.experienceId||c.opportunityId||c.id)===group).length;if(!chosen.some(c=>c.id===item.id)&&same<2&&item.score>=300){chosen.push(item);if(chosen.length===limit)break;}}
  return {priority:chosen,remaining:all.filter(i=>!chosen.some(c=>c.id===i.id))};
 }
 export function calendarItems(data:AppData,collection:RichOpportunity[]=[],today=todayISO()){

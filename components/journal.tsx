@@ -1,13 +1,13 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Plus, Sparkles, LoaderCircle, Trash2, Leaf, ArrowLeft, Download } from "lucide-react";
-import { experienceSchema, skillNames, reflectionInput, todayISO, type Experience, type SkillEvidence, type RichReflection } from "@/lib/domain";
+import { Plus, Sparkles, LoaderCircle, Trash2, Leaf, ArrowLeft } from "lucide-react";
+import { experienceSchema, skillNames, reflectionInput, type Experience, type SkillEvidence, type RichReflection } from "@/lib/domain";
 import { DevelopmentTimeline } from "./development-timeline";
 import { ExplorationMap } from "./exploration-map";
 import { ReflectionGuide } from "./reflection-guide";
 import { studentEvidenceText } from "@/lib/grounding";
 import { useWorkspace } from "./workspace-context";
-import { Heading, Field, Notice, Empty, ExportButton, download } from "./shared";
+import { Heading, Field, Notice, Empty, ExportButton } from "./shared";
 function newExperience():Experience{return experienceSchema.parse({id:crypto.randomUUID(),name:"Untitled experience",updatedAt:new Date().toISOString()});}
 function experienceText(e:Experience){return [e.name,"Organisation: "+e.organisation,"Date: "+e.date,"Hours: "+e.hours,"Type: "+e.type,reflectionInput(e),"SKILL EVIDENCE",...e.skills.map(s=>s.skill+"\nWhat happened: "+s.whatHappened+"\nMy action: "+s.action+"\nLearning: "+s.learning+(s.quote?"\nSource quote: "+s.quote:"")),e.reflection?"EDITED REFLECTION\n"+e.reflection.summary+"\nCV: "+e.reflection.cvBullet+"\nApplication: "+e.reflection.applicationExample+"\nInterview: "+e.reflection.interviewTalkingPoint:""].join("\n\n");}
 export function Journal(){

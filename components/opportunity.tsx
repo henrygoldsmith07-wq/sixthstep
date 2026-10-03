@@ -3,7 +3,7 @@ import { useEffect, useRef, useId } from "react";
 import { Bookmark, ArrowUpRight, X, CircleHelp, MapPin, Clock3, CheckCircle2, Sparkles, ExternalLink, Plus } from "lucide-react";
 import { deadlineLabel, daysUntil, availability, dateLabel, type RichOpportunity } from "@/lib/domain";
 import { deadlineIntelligence } from "@/lib/intelligence";
-import { sourceFacts } from "@/lib/opportunity-repository";
+import { sourceFacts, sourceFreshness } from "@/lib/opportunity-repository";
 import { feedbackSignals } from "@/lib/workspace-events";
 import { matchOpportunity } from "@/lib/recommendations";
 import { useWorkspace } from "./workspace-context";
@@ -11,8 +11,9 @@ import { safeHref, Lines, Notice } from "./shared";
 const themes:Record<string,string>={"Technology":"lavender","Engineering":"sage","Healthcare":"pink","Business & finance":"sand","Law":"blue","Creative & media":"peach","Science & research":"sage","Humanities & social sciences":"sand"};
 export function SourceBadge({item}:{item:RichOpportunity}){
  const checked=item.source==="catalogue"&&item.sourceKind==="Programme";
- const label=checked?(deadlineIntelligence(item).stale?"Source checked · stale":"Source checked"):item.source==="web"?(item.sourceKind==="Directory"?"Web directory · unverified":"Web result · unverified"):item.source==="imported"?"Imported · review details":item.sourceKind==="Directory"?"Provider directory":"Your own record";
- return <span className={"source-badge "+(checked?"checked":item.sourceKind==="Directory"&&item.source==="catalogue"?"directory":"unverified")}>{checked?<CheckCircle2 size={12}/>:<CircleHelp size={12}/>} {label}</span>;
+ const freshness=sourceFreshness(item);
+ const label=checked?(freshness.state==="Unknown"?"Source date unknown":freshness.stale?"Source checked · stale":"Source checked"):item.source==="web"?(item.sourceKind==="Directory"?"Web directory · unverified":"Web result · unverified"):item.source==="imported"?"Imported · review details":item.sourceKind==="Directory"?"Provider directory":"Your own record";
+ return <span title={item.source==="catalogue"?"Reviewed by SixthStep · "+(item.checkedAt?dateLabel(item.checkedAt.slice(0,10)):"check date unknown")+" · "+freshness.label:"Details need your review; this is not SixthStep verification."} className={"source-badge "+(checked?"checked":item.sourceKind==="Directory"&&item.source==="catalogue"?"directory":"unverified")}>{checked?<CheckCircle2 size={12}/>:<CircleHelp size={12}/>} {label}</span>;
 }
 export function Fit({item,compact=false}:{item:RichOpportunity;compact?:boolean}){
  const {data}=useWorkspace(),match=matchOpportunity(item,data.profile,{records:data.records,experiences:data.experiences,feedback:data.feedback});

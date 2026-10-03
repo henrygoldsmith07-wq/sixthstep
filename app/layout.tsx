@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./operating-system.css";
+import "./workspace.css";
 export const metadata: Metadata = {
   title: "SixthStep — Your next step starts here",
   description: "Find work experience, make sense of opportunities, and build your future. Made for UK sixth form students."

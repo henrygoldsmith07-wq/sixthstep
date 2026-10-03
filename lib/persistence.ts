@@ -1,5 +1,5 @@
 import { appSchema, defaultProfile, emptyData, enrich, createRecord, experienceSchema, type AppData } from "./domain";
-type StorageReader={getItem:(key:string)=>string|null};
+export type StorageReader={getItem:(key:string)=>string|null};
 export const storageKey="sixthstep-workspace-v2";
 function parseLegacy(storage:StorageReader,key:string) {const raw=storage.getItem(key);return raw?JSON.parse(raw):null;}
 export function loadWorkspace(storage:StorageReader):{data:AppData;error:string;migrated:boolean} {

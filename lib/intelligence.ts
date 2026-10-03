@@ -24,13 +24,17 @@ const evidenceRelations=[
  {terms:["learn","interest","motivat"],skills:["Independent learning","Technical skills"]},
  {terms:["research","analyse","analys","design"],skills:["Analytical thinking","Technical skills","Creativity"]}
 ];
-export function suggestEvidence(question:string,entries:ReturnType<typeof evidenceBank>){
+export function suggestEvidence(question:string,entries:ReturnType<typeof evidenceBank>,context:{careerAreas?:string[];experienceTypes?:string[]}={}){
  const lower=question.toLowerCase(),wanted=evidenceRelations.filter(r=>r.terms.some(t=>lower.includes(t))).flatMap(r=>r.skills);
  return entries.map(e=>{
   const reasons:string[]=[];let rank=0;
   if(wanted.includes(e.skill)){reasons.push("Recorded "+e.skill.toLowerCase()+" example relates to this question");rank+=3;}
   const words=lower.split(/[^a-z0-9]+/).filter(w=>w.length>4&&!["describe","about","programme","demonstrated","experience"].includes(w));
-  if(words.some(w=>[e.action,e.whatHappened,e.learning,e.experienceName].join(" ").toLowerCase().includes(w))){reasons.push("Your recorded notes share a topic with this question");rank++;}
+  const topics=[...new Set(words)].filter(w=>[e.action,e.whatHappened,e.learning,e.experienceName,e.star?.result||""].join(" ").toLowerCase().split(/[^a-z0-9]+/).includes(w));
+  if(topics.length){reasons.push("Your recorded notes share "+topics.slice(0,3).join(", ")+" with this question");rank+=Math.min(3,topics.length);}
+  const areas=(context.careerAreas||[]).filter(a=>e.sectors.some(s=>a.toLowerCase()===s.toLowerCase()));
+  if(areas.length){reasons.push("You recorded a related career area: "+areas.join(", "));rank++;}
+  if(context.experienceTypes?.includes(e.experienceType)){reasons.push("Your recorded experience type connects: "+e.experienceType);rank++;}
   return {evidence:e,reasons,rank};
  }).filter(v=>v.rank>0).sort((a,b)=>b.rank-a.rank||Number(starComplete(b.evidence))-Number(starComplete(a.evidence))||Number(!!b.evidence.whatHappened.trim()&&!!b.evidence.learning.trim())-Number(!!a.evidence.whatHappened.trim()&&!!a.evidence.learning.trim())||a.evidence.experienceName.localeCompare(b.evidence.experienceName));
 }
