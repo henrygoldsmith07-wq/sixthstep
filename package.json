@@ -9,22 +9,25 @@
     "typecheck": "tsc --noEmit",
     "validate:catalogue": "tsx scripts/validate-catalogue.ts",
     "test": "tsx --test tests/*.test.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "review:catalogue": "tsx scripts/review-catalogue.ts",
+    "profile:workspace": "tsx scripts/profile-workspace.ts"
   },
   "dependencies": {
+    "lucide-react": "1.50.0",
     "next": "16.3.8",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "lucide-react": "1.50.0",
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "1.63.0",
     "@types/node": "26.6.4",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
-    "typescript": "7.0.2",
     "tsx": "4.23.15",
-    "@playwright/test": "1.63.0"
+    "typescript": "7.0.2"
   },
   "engines": {
     "node": ">=22"

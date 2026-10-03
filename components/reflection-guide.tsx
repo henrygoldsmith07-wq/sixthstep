@@ -5,7 +5,7 @@ import { skillNames, todayISO, type Experience } from "@/lib/domain";
 import { Field } from "./shared";
 import { useWorkspace } from "./workspace-context";
 export function ReflectionGuide({experience,update}:{experience:Experience;update:(patch:Partial<Experience>)=>void}){
- const {toast,navigate}=useWorkspace(),[step,setStep]=useState(0),[open,setOpen]=useState(!experience.whatDid.trim()),[skill,setSkill]=useState<string>("Problem solving"),[action,setAction]=useState(""),[context,setContext]=useState("");
+ const {toast,navigate}=useWorkspace(),[step,setStep]=useState(0),[open,setOpen]=useState(false),[skill,setSkill]=useState<string>("Problem solving"),[action,setAction]=useState(""),[context,setContext]=useState("");
  const titles=["What actually happened?","What caught your interest?","What did you learn?","Keep one specific example","What would you explore next?"];
  const field=(key:"whatDid"|"enjoyed"|"disliked"|"surprised"|"challenges"|"learned"|"careerImpact"|"nextStep",label:string,max:number)=><Field label={"Reflection: "+label}><textarea className="large-textarea short-textarea" maxLength={max} value={experience[key]} onChange={e=>update({[key]:e.target.value})}/></Field>;
  return <details className="reflection-guide" open={open} onToggle={e=>setOpen(e.currentTarget.open)}><summary>Short guided reflection</summary><p className="eyebrow muted">PROMPT {step+1} OF 5 · SAVES AS YOU WRITE</p><h3>{titles[step]}</h3>

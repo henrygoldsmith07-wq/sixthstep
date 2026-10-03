@@ -1,40 +1,60 @@
-import { availability, daysUntil, type RichOpportunity, type StudentProfile, type TrackedRecord, type Experience } from "./domain";
+import { availability, daysUntil, todayISO, type RichOpportunity, type StudentProfile, type TrackedRecord, type Experience } from "./domain";
 import type { DiscoveryFeedback } from "./workspace-events";
 import { relatedAreas, opportunityContent } from "./careers";
+import { sourceFreshness } from "./opportunity-repository";
 export type RecommendationContext={records?:TrackedRecord[];experiences?:Experience[];feedback?:DiscoveryFeedback[]};
 export type Match={reasons:string[];checks:string[];conflicts:string[];rank:number;eligible:boolean};
+export function conciseReason(match:Match){
+ const subject=match.reasons.find(r=>r.startsWith("Related to "));
+ const interest=match.reasons.find(r=>r.startsWith("Matches your ")&&r.endsWith(" interest"));
+ if(subject&&interest)return subject+" and your "+interest.slice("Matches your ".length)+".";
+ return (subject||interest||match.reasons.find(r=>r.startsWith("Relates to")||r.startsWith("Builds on")||r.startsWith("Connected to"))||match.reasons[0]||"").replace(/ through .+$/,"");
+}
 function words(value:string) {return value.toLowerCase().replace(/mathematics/g,"maths").replace(/computer science/g,"computing").split(/[^a-z0-9]+/).filter(v=>v.length>2);}
 function overlap(a:string,b:string) {const tokens=words(a);return tokens.some(w=>words(b).includes(w));}
-export function matchOpportunity(item:RichOpportunity,profile:StudentProfile,context:RecommendationContext={}):Match {
+function prepareMatcher(profile:StudentProfile,context:RecommendationContext){
+ const signals=context.feedback||[],saved=new Map<string,TrackedRecord[]>(),decreased=new Map<string,Experience>();
+ for(const record of context.records||[])if(record.intent!=="Maybe"&&!["Not pursuing","Unsuccessful"].includes(record.status)){const sector=record.opportunity.sector,list=saved.get(sector)||[];if(list.length<2)list.push(record);saved.set(sector,list);}
+ for(const e of context.experiences||[])if(e.interestChange==="Decreased"&&(e.disliked.trim()||e.careerImpact.trim()))for(const area of e.careerAreas)if(!decreased.has(area))decreased.set(area,e);
+ const enjoyed=(context.experiences||[]).filter(e=>e.interestChange==="Increased"&&(e.enjoyed.trim()||e.careerImpact.trim())).map(experience=>({experience,areas:new Set(experience.careerAreas.flatMap(a=>relatedAreas(a).map(v=>v.area)))}));
+ const tokens=new Map<string,string[]>(),get=(text:string)=>{let value=tokens.get(text);if(!value){value=words(text);tokens.set(text,value);}return value;};
+ return {today:todayISO(),direct:new Map(signals.map(f=>[f.opportunityId,f])),more:signals.filter(f=>f.signal==="Show me more like this"),fewer:signals.filter(f=>f.signal==="Show fewer like this"),signals,saved,decreased,enjoyed,careerAreas:relatedAreas([profile.careerInterests,...profile.interests].join(" ")),overlap:(a:string,b:string)=>{const bs=get(b);return get(a).some(w=>bs.includes(w));}};
+}
+export function recommendationMatcher(profile:StudentProfile,context:RecommendationContext={}){
+ const prepared=prepareMatcher(profile,context);return (item:RichOpportunity)=>matchOpportunity(item,profile,context,prepared);
+}
+export function matchOpportunity(item:RichOpportunity,profile:StudentProfile,context:RecommendationContext={},prepared=prepareMatcher(profile,context)):Match {
  const reasons:string[]=[],checks:string[]=[],conflicts:string[]=[];let rank=0;
- const content=opportunityContent(item);
- const signals=context.feedback||[];
- const direct=signals.find(f=>f.opportunityId===item.id);
+ const content=opportunityContent(item),itemAreas=relatedAreas(content),relatedOverlap=prepared.overlap;
+ const signals=prepared.signals;
+ const direct=prepared.direct.get(item.id);
  if(direct?.signal==="Interested"){rank+=3;reasons.push("You marked this opportunity Interested");}
  if(direct?.signal==="Maybe"){rank-=1;checks.push("You marked this as Maybe");}
- const more=signals.filter(f=>f.signal==="Show me more like this"&&f.opportunityId!==item.id&&(f.sector===item.sector||f.provider===item.provider)).slice(-2);
+ if(direct?.signal==="Show fewer like this"){rank-=4;checks.push("Lower because you asked for fewer like this opportunity");}
+ if(direct?.signal==="Show me more like this"){rank+=2;reasons.push("You asked for more like this opportunity");}
+ const more=prepared.more.filter(f=>f.opportunityId!==item.id&&(f.sector===item.sector||f.provider===item.provider)).slice(-2);
  for(const f of more){rank+=2;reasons.push("You asked for more like "+f.title+" · shared "+(f.provider===item.provider?"provider":"sector"));}
- const fewer=signals.filter(f=>f.signal==="Show fewer like this"&&f.opportunityId!==item.id&&(f.sector===item.sector||f.provider===item.provider)).slice(-2);
+ const fewer=prepared.fewer.filter(f=>f.opportunityId!==item.id&&(f.sector===item.sector||f.provider===item.provider)).slice(-2);
  for(const f of fewer){rank-=2;checks.push("Lower in your feed because you asked for fewer like "+f.title);}
  if(["Not for me","Already done something similar"].includes(direct?.signal||""))checks.push("Hidden from your personalised feed by your explicit feedback");
  if(item.wideningParticipation!=="Not stated"||item.category==="Widening participation")checks.push("Widening-participation criteria apply; check the provider");
  if(item.geography==="Not stated"&&item.format!=="Virtual")checks.push("Geographic eligibility unclear");
  if(!item.deadlineDate&&item.applicationState!=="Rolling")checks.push("Application window not yet confirmed");
- const careerAreas=relatedAreas([profile.careerInterests,...profile.interests].join(" "));
- const related=careerAreas.filter(a=>relatedAreas(content).some(b=>b.area===a.area)||a.area==="Medicine"&&item.subjects.some(s=>/biology|chemistry/i.test(s))||a.area==="Engineering"&&item.subjects.some(s=>/physics|maths|mathematics|computing|design/i.test(s)));
+ const careerAreas=prepared.careerAreas;
+ const related=careerAreas.filter(a=>itemAreas.some(b=>b.area===a.area)||a.area==="Medicine"&&item.subjects.some(s=>/biology|chemistry/i.test(s))||a.area==="Engineering"&&item.subjects.some(s=>/physics|maths|mathematics|computing|design/i.test(s)));
  for(const area of related){reasons.push("Connected to your interest in "+area.area.toLowerCase()+" through "+(item.subSector!=="Not stated"?item.subSector:item.sector).toLowerCase());rank+=profile.direction==="Exploring"?3:2;}
- const saved=(context.records||[]).find(r=>r.opportunity.id!==item.id&&r.intent!=="Maybe"&&!["Not pursuing","Unsuccessful"].includes(r.status)&&r.opportunity.sector===item.sector);
+ const saved=prepared.saved.get(item.sector)?.find(r=>r.opportunity.id!==item.id);
  if(saved){reasons.push("In the same sector as "+saved.opportunity.title+", which you saved");rank+=2;}
- const completed=(context.experiences||[]).find(e=>e.interestChange!=="Decreased"&&e.careerAreas.some(a=>relatedAreas(a).some(area=>relatedAreas(content).some(b=>b.area===area.area)))&&(e.interestChange==="Increased"&&!!(e.enjoyed.trim()||e.careerImpact.trim())));
+ const completed=prepared.enjoyed.find(e=>itemAreas.some(area=>e.areas.has(area.area)))?.experience;
  if(completed){reasons.push("Builds on "+completed.name+", where you recorded increased interest");rank+=2;}
- const decreased=(context.experiences||[]).find(e=>e.interestChange==="Decreased"&&!!(e.disliked.trim()||e.careerImpact.trim())&&e.careerAreas.some(area=>area===item.sector));
+ const decreased=prepared.decreased.get(item.sector);
  if(decreased){rank-=2;checks.push("Lower after you recorded decreased interest in "+decreased.name);}
  const similarDone=signals.find(f=>f.signal==="Already done something similar"&&f.opportunityId!==item.id&&f.provider===item.provider&&f.category===item.category);
  if(similarDone){rank--;checks.push("Same provider and type as "+similarDone.title+", which you marked already done something similar");}
- if(profile.interests.some(s=>s===item.sector||overlap(s,item.sector))){reasons.push("Matches your "+item.sector.toLowerCase()+" interest");rank+=4;}
- if(profile.careerInterests&&overlap(profile.careerInterests,content)){reasons.push("Relates to the career you want to explore");rank+=profile.direction==="Targeting a field"?7:4;}
- if(profile.outsideInterests&&overlap(profile.outsideInterests,content)){reasons.push("Connects with your interests outside school");rank++;}
- const subjects=profile.subjects.filter(subject=>item.subjects.some(s=>overlap(subject,s)));
+ if(profile.interests.some(s=>s===item.sector||relatedOverlap(s,item.sector))){reasons.push("Matches your "+item.sector.toLowerCase()+" interest");rank+=4;}
+ if(profile.careerInterests&&relatedOverlap(profile.careerInterests,content)){reasons.push("Relates to the career you want to explore");rank+=profile.direction==="Targeting a field"?7:4;}
+ if(profile.outsideInterests&&relatedOverlap(profile.outsideInterests,content)){reasons.push("Connects with your interests outside school");rank++;}
+ const subjects=profile.subjects.filter(subject=>item.subjects.some(s=>relatedOverlap(subject,s)));
  if(subjects.length){reasons.push("Related to "+subjects.join(" and "));rank+=3;}
  if(profile.preferredTypes.includes(item.category)){reasons.push("One of your preferred opportunity types");rank+=2;}
  if(profile.format!=="Any"&&profile.format!=="Not stated"){
@@ -54,20 +74,21 @@ export function matchOpportunity(item:RichOpportunity,profile:StudentProfile,con
   else conflicts.push("Your school year is not listed");
  }else if(profile.configured&&!item.years.length)checks.push("School year eligibility is not stated");
  if(item.format!=="Virtual"&&profile.location){
-  if(overlap(profile.location,item.location)){reasons.push("In your preferred area");rank+=2;}
+  if(relatedOverlap(profile.location,item.location)){reasons.push("In your preferred area");rank+=2;}
   else if(profile.travel==="Local only"&&item.location!=="Not stated")conflicts.push("Travel area needs checking");
   else checks.push("Check the journey and geographic restrictions");
  }
  if(item.geography!=="Not stated"||item.subjectRequirements!=="Not stated")checks.push("Check all subject, location and additional eligibility criteria");
  if(item.sourceKind==="Directory")checks.push("Choose a specific programme from this directory");
  if(item.source!=="catalogue")checks.push("Details have not been checked by SixthStep");
- const checked=daysUntil(item.checkedAt.slice(0,10));if(item.source==="catalogue"&&(checked===null||checked< -45))checks.push("Source may be stale; verify current criteria and dates");
- const deadline=daysUntil(item.deadlineDate);if(deadline!==null&&deadline>=0&&deadline<=30)reasons.push("Published applications close in "+deadline+" day"+(deadline===1?"":"s"));
- if(availability(item)==="Closed")conflicts.push("Applications are closed / the published deadline has passed");
+ const freshness=sourceFreshness(item,prepared.today);if(item.source==="catalogue"&&(freshness.stale||freshness.state==="Unknown")){checks.push("Source may be stale; verify current criteria and dates");rank--;}
+ const deadline=daysUntil(item.deadlineDate,prepared.today);if(deadline!==null&&deadline>=0&&deadline<=30){reasons.push("Recorded applications close in "+deadline+" day"+(deadline===1?"":"s"));rank++;}
+ if(availability(item,prepared.today)==="Closed")conflicts.push("Applications are closed / the published deadline has passed");
  return {reasons:[...new Set(reasons)],checks:[...new Set(checks)],conflicts,rank,eligible:!conflicts.some(c=>/age band|school year|closed/.test(c))};
 }
 export function recommendations(items:RichOpportunity[],profile:StudentProfile,exclude:string[]=[],context:RecommendationContext={}) {
- const ranked=items.map(item=>({item,match:matchOpportunity(item,profile,context)})).filter(v=>v.match.eligible&&v.match.rank>=3&&v.item.sourceKind==="Programme"&&!exclude.includes(v.item.id)&&!(context.feedback||[]).some(f=>f.opportunityId===v.item.id&&["Not for me","Already done something similar"].includes(f.signal)))
+ const match=recommendationMatcher(profile,context),excluded=new Set(exclude),hidden=new Set((context.feedback||[]).filter(f=>["Not for me","Already done something similar"].includes(f.signal)).map(f=>f.opportunityId));
+ const ranked=items.map(item=>({item,match:match(item)})).filter(v=>v.match.eligible&&v.match.rank>=3&&v.item.sourceKind==="Programme"&&!excluded.has(v.item.id)&&!hidden.has(v.item.id))
  .sort((a,b)=>b.match.rank-a.match.rank||a.item.title.localeCompare(b.item.title));
  return diversifyRecommendations(ranked,profile.direction);
 }

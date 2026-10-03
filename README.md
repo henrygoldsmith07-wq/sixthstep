@@ -240,3 +240,11 @@ Each record also retains its source URLs and check date in the catalogue. A prog
 - [Career Shapers: Inspiring Women](https://www.deloitte.com/uk/en/careers/early-careers/early-careers-programmes.html) — Deloitte
 - [Career Shapers: Inspiring Black Talent](https://www.deloitte.com/uk/en/careers/early-careers/early-careers-programmes.html) — Deloitte
 - [AI Futures Challenge 2027](https://www.nulondon.ac.uk/study/ai-futures/ai-futures-faq/) — Northeastern University London
+
+## Weekly workflow and maintenance
+
+The [weekly workflow audit](docs/weekly-workflow.md) records each page’s job, controls and limitations. The [storage contract](docs/storage-contract.md) defines the future adapter boundary while retaining local v1/v2 migration and recovery.
+
+Run npm run review:catalogue for a source-linked JSON review queue; proposals require human review. Run npm run profile:workspace for a synthetic 3,000-entry / 500-record scale check. Recommendations are the main measured CPU cost at that scale, so Explore reuses a prepared matcher and keeps results memoised across unrelated UI changes; the published catalogue remains unchanged.
+
+Browser verification includes axe WCAG A/AA scans and targeted behavioural checks. Set SIXTHSTEP_TEST_PORT to an unused local port when testing alongside other projects. API caches and duplicate search coalescing are bounded per process; Upstash remains the option for distributed rate limiting.
