@@ -82,6 +82,13 @@ test("diversification keeps the best connection first and offers alternatives wi
 test("Home does not fill its first screen with low-level tasks from a single application",()=>{
  const data=workspace();data.records[0].intent="Applying";data.records[0].opportunity.deadlineDate="";data.records[0].requirements=Array.from({length:10},(_,i)=>({id:"r"+i,label:"Confirm requirement "+i,note:"",done:false}));
  const actions=priorityActions(data,[],today);assert.equal(actions.priority.length,1);assert.ok(actions.remaining.length>=9);
+ const applying=workspace();applying.records[0].intent="Applying";applying.records[0].opportunity.deadlineDate="2026-10-09";
+ applying.records[0].nextAction="Contact my teacher";applying.records[0].nextActionDate="2026-10-04";
+ applying.profile.interests=["Engineering"];applying.profile.careerInterests="Engineering";
+ const alternative=enrich({...applying.records[0].opportunity,id:"alternative",title:"Another engineering insight",sector:"Engineering",addedAt:today,deadlineDate:"",openingDate:"",startDate:""});
+ const mixed=priorityActions(applying,[alternative],today).priority;
+ assert.ok(mixed.some(i=>i.kind==="Explore"));assert.equal(mixed.filter(i=>i.recordId===applying.records[0].opportunity.id).length,2);
+ assert.ok(mixed.every((item,index)=>index===0||mixed[index-1].score>=item.score),"Selected urgent application work stays before less urgent discovery");
 });
 test("local funnel counts use actual recorded actions, preserve unknown timings and never infer submission",()=>{
  const data=workspace();let metrics=measure(data.metrics,"view",at);metrics=measure(metrics,"save","2026-10-03T12:03:00Z");data.metrics=metrics;data.records[0].intent="Applying";data.records[0].nextAction="Check criteria";

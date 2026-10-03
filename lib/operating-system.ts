@@ -66,7 +66,7 @@ export function priorityActions(data:AppData,collection:RichOpportunity[]=[],tod
  const all=actionableItems(data,collection,today),chosen:WorkspaceItem[]=[],seen=new Set<string>();
  for(const item of all){const group=item.recordId||item.experienceId||item.opportunityId||item.id;if(seen.has(group))continue;seen.add(group);chosen.push(item);if(chosen.length===limit)break;}
  if(chosen.length<limit)for(const item of all){const group=item.recordId||item.experienceId||item.opportunityId||item.id;const same=chosen.filter(c=>(c.recordId||c.experienceId||c.opportunityId||c.id)===group).length;if(!chosen.some(c=>c.id===item.id)&&same<2&&item.score>=300){chosen.push(item);if(chosen.length===limit)break;}}
- return {priority:chosen,remaining:all.filter(i=>!chosen.some(c=>c.id===i.id))};
+ return {priority:chosen.sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id)),remaining:all.filter(i=>!chosen.some(c=>c.id===i.id))};
 }
 export function calendarItems(data:AppData,collection:RichOpportunity[]=[],today=todayISO()){
  return workspaceItems(data,collection,today).filter(item=>item.kind!=="Explore").flatMap(item=>{
