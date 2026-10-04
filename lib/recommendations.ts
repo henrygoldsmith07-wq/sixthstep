@@ -3,6 +3,7 @@ import type { DiscoveryFeedback } from "./workspace-events";
 import { relatedAreas, opportunityContent } from "./careers";
 import { recordedCoverage, recordedSupport, unrecordedAreas } from "./coverage";
 import { sourceFreshness } from "./opportunity-repository";
+import { matchLocation, readLocation } from "./geo";
 export type RecommendationContext={records?:TrackedRecord[];experiences?:Experience[];feedback?:DiscoveryFeedback[]};
 export type Match={reasons:string[];checks:string[];conflicts:string[];rank:number;eligible:boolean};
 export const varietyReason="A different provider or opportunity type adds variety to your exploration";
@@ -114,8 +115,23 @@ export function diversifyRecommendations(ranked:{item:RichOpportunity;match:Matc
  }
  return [...result,...pool];
 }
-export type FinderFilters={query:string;sector:string;category:string;format:string;age:string;year:string;subject:string;free:boolean;open:boolean;deadline:string;duration:string;location:string;provider:string;verified:boolean};
-export const defaultFilters:FinderFilters={query:"",sector:"All sectors",category:"Any",format:"Any",age:"",year:"Any",subject:"",free:false,open:false,deadline:"Any",duration:"Any",location:"",provider:"Any",verified:false};
+export type FinderFilters={query:string;sector:string;category:string;format:string;age:string;year:string;subject:string;free:boolean;open:boolean;deadline:string;duration:string;location:string;includeUnplaced:boolean;provider:string;verified:boolean};
+export const defaultFilters:FinderFilters={query:"",sector:"All sectors",category:"Any",format:"Any",age:"",year:"Any",subject:"",free:false,open:false,deadline:"Any",duration:"Any",location:"",includeUnplaced:false,provider:"Any",verified:false};
+export type LocationCoverage={near:number;online:number;unplaced:number;elsewhere:number};
+// A location filter hides opportunities it cannot judge. This reports that instead of letting
+// the count silently imply they were considered and rejected.
+export function locationCoverage(items:RichOpportunity[],location:string):LocationCoverage {
+ const coverage:LocationCoverage={near:0,online:0,unplaced:0,elsewhere:0};
+ if(!location.trim())return coverage;
+ for(const item of items){
+  const verdict=matchLocation(readLocation(item.location),location);
+  if(verdict==="here"||verdict==="region")coverage.near++;
+  else if(verdict==="remote")coverage.online++;
+  else if(verdict==="unknown")coverage.unplaced++;
+  else coverage.elsewhere++;
+ }
+ return coverage;
+}
 export function discover(items:RichOpportunity[],filters:FinderFilters,today?:string) {
  return items.filter(item=>{
   const searchable=[item.title,item.provider,item.description,item.sector,...item.tags,...item.subjects].join(" ").toLowerCase();
@@ -129,7 +145,8 @@ export function discover(items:RichOpportunity[],filters:FinderFilters,today?:st
   if(filters.free&&item.cost!=="Free")return false;
   if(filters.open&&!["Open","Rolling"].includes(availability(item,today)))return false;
   if(filters.duration!=="Any"&&item.durationBand!==filters.duration)return false;
-  if(filters.location&&!item.location.toLowerCase().includes(filters.location.toLowerCase())&&item.format!=="Virtual")return false;
+  // An opportunity whose place cannot be resolved is kept only when the student asks for it.
+  if(filters.location){const verdict=matchLocation(readLocation(item.location),filters.location);if(verdict==="elsewhere"||(verdict==="unknown"&&!filters.includeUnplaced))return false;}
   if(filters.verified&&(item.source!=="catalogue"||item.sourceKind!=="Programme"))return false;
   if(filters.age){
    const age=Number(filters.age);
@@ -162,7 +179,7 @@ export function discoverySections(items:RichOpportunity[],profile:StudentProfile
  // Source-check dates are not publication dates: never label rechecked records as new.
  add("New opportunities","Recently added to the collection, not necessarily recently launched.",items.filter(i=>{const d=daysUntil(i.addedAt,today);return !!i.addedAt&&d!==null&&d<=0&&d>=-30&&i.sourceKind==="Programme";}));
  const available=items.filter(i=>i.sourceKind==="Programme"&&availability(i,today)!=="Closed");
- if(profile.location)add("Local opportunities","Matches your stated town or region; check the actual journey.",available.filter(i=>i.format!=="Virtual"&&i.location!=="Not stated"&&overlap(profile.location,i.location)));
+  if(profile.location)add("Local opportunities","Matches your stated town or region; check the actual journey.",available.filter(i=>{const verdict=matchLocation(readLocation(i.location),profile.location);return verdict==="here"||verdict==="region";}));
  add("Medicine and healthcare","Explore healthcare, clinical and biomedical connections.",available.filter(i=>relatedAreas(opportunityContent(i)).some(a=>a.area==="Medicine")));
  add("Engineering and technology","Design, engineering and computing possibilities.",available.filter(i=>["Engineering","Technology"].includes(i.sector)));
  add("Science and research","Try research and scientific challenges.",available.filter(i=>i.sector==="Science & research"));

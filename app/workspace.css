@@ -36,3 +36,33 @@
 .plan-steps span{color:#5d6c51;font-variant-numeric:tabular-nums}
 .comparison-table .fit-summary{font-size:11px;line-height:1.6;color:#4c5f45;font-weight:400;margin:8px 0 0;max-width:230px}
 .mobile-comparison-item .fit-summary{font-size:11px;line-height:1.6;color:#4c5f45;margin:8px 0 0}
+
+/* Map mode: a schematic UK outline with one marker per named place. The land shape only
+   orients the reader, so it is muted; markers carry the meaning. Nothing is fetched from a
+   tile server and no device location is requested. */
+.map-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:26px;align-items:start;margin-top:20px}
+.map-figure{position:relative;background:#f8faf4;border:1px solid var(--line);border-radius:10px;padding:14px}
+.map-outline{width:100%;height:auto;display:block;max-height:560px;margin:0 auto}
+.map-land{fill:#e7ede0;stroke:#c4d2bb;stroke-width:1.2}
+.map-halo{fill:rgba(72,105,63,.16);stroke:none}
+.map-halo.chosen{fill:rgba(72,105,63,.3)}
+.map-markers{list-style:none;margin:0;padding:0;position:absolute;inset:14px}
+.map-markers li{position:absolute;width:24px;height:24px;margin:0}
+.map-pin{position:absolute;inset:0;width:100%;height:100%;padding:0;border-radius:50%;border:2px solid #48693f;background:#fff;cursor:pointer;display:grid;place-items:center}
+.map-pin:hover,.map-pin.chosen{background:#48693f}
+.map-pin.hybrid{border-style:dashed}
+.map-pin.home{box-shadow:0 0 0 4px rgba(72,105,63,.2)}
+.map-pin-count{font:600 10px/1 var(--sans);color:#2f4329}
+.map-pin:hover .map-pin-count,.map-pin.chosen .map-pin-count{color:#fff}
+.map-caption{font-size:11px;line-height:1.6;color:#526257;margin:12px 0 0}
+.map-panel h3{font-size:14px;margin-bottom:6px}
+.map-panel .fine-print{display:flex;align-items:center;gap:6px}
+.map-list,.map-gap-detail{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.map-gaps{margin-top:24px;border-top:1px solid var(--line);padding-top:16px}
+.map-gap-list{list-style:none;margin:0;padding:0;font-size:12px;line-height:1.8;color:#4c5f45}
+.map-gap-count{font-variant-numeric:tabular-nums;font-weight:600}
+.view-toggle{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.view-toggle button{background:#fff;border:0;padding:8px 16px;min-height:40px;font:inherit;font-size:13px;cursor:pointer;color:#4c5f45}
+.view-toggle button[aria-pressed=true]{background:#48693f;color:#fff}
+.location-coverage{margin:0 0 8px;font-variant-numeric:tabular-nums}
+@media(max-width:820px){.map-workspace{grid-template-columns:1fr}}
