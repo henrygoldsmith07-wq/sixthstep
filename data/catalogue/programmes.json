@@ -1428,16 +1428,16 @@
     "subSector": "Not stated",
     "location": "Bristol",
     "format": "In person",
-    "duration": "Summer school; exact next dates not confirmed",
-    "durationBand": "Not stated",
-    "eligibility": "Year 12 students of colour; home fee, state school, academic and other conditions. Confirm the current cohort rules.",
+    "duration": "Summer school in July 2027 with accommodation provided",
+    "durationBand": "1–3 days",
+    "eligibility": "Year 12 students of colour. The provider states you must be in year 12 in the 2025-26 academic year and under 18 during the summer school dates, identify as Asian, Black, or of mixed heritage featuring one of these groups, and not have taken part in another University of Bristol outreach programme.",
     "years": [
       "Year 12"
     ],
     "subjects": [],
     "subjectRequirements": "Not stated",
     "geography": "Not stated",
-    "wideningParticipation": "Ethnicity and other access criteria apply; review the complete current rules.",
+    "wideningParticipation": "Eligibility also requires home fee status and currently attending a state, non-fee-paying school, sixth form or college. Priority is given to applicants meeting additional criteria.",
     "careerAreas": [],
     "applicationRequirements": [],
     "cost": "Free",
@@ -1447,25 +1447,33 @@
     "openingDate": "",
     "openingPeriod": "",
     "closingPeriod": "",
-    "applicationState": "Unknown",
+    "applicationState": "Open",
     "applicationUrl": "https://www.bristol.ac.uk/study/outreach/post-16/insight/",
     "url": "https://www.bristol.ac.uk/study/outreach/post-16/insight/",
-    "description": "Residential subject exploration; the page offers interest registration for 2026–27 while retaining earlier cohort criteria.",
-    "activities": [],
+    "description": "A free residential summer school giving Year 12 students of colour academic sessions in an assigned subject stream.",
+    "activities": [
+      "Staying in student accommodation",
+      "Academic sessions in an assigned subject stream",
+      "Social activities throughout the week"
+    ],
     "skills": [],
-    "tags": [],
+    "tags": [
+      "Widening participation",
+      "Summer school",
+      "Free",
+      "Bristol"
+    ],
     "certificate": "Not stated",
-    "selection": "Not stated",
-    "checkedAt": "2026-10-03",
+    "selection": "The programme is often oversubscribed; priority is given to applicants who meet one or more additional criteria.",
+    "checkedAt": "2026-10-04",
     "source": "catalogue",
     "sourceKind": "Programme",
     "sourceUrls": [
       "https://www.bristol.ac.uk/study/outreach/post-16/insight/"
     ],
     "unconfirmed": [
-      "Current cohort eligibility",
-      "2027 dates",
-      "Application window"
+      "The page still says year 12 in the 2025-26 academic year while advertising a July 2027 programme",
+      "Only July 2027 is stated, with no day, so no exact start date is recorded"
     ],
     "addedAt": "2026-10-03"
   },
@@ -1895,6 +1903,1669 @@
     ],
     "unconfirmed": [
       "Access is by school partnership or enquiry, so a student cannot apply to this directly"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "uk-supreme-court-debate-days",
+    "title": "Student Debate Days",
+    "provider": "The UK Supreme Court",
+    "sector": "Law",
+    "type": "Masterclass",
+    "category": "Masterclass",
+    "subSector": "Civics",
+    "location": "London",
+    "format": "Hybrid",
+    "duration": "Not stated",
+    "durationBand": "Not stated",
+    "eligibility": "Open to accredited teaching institutions (schools or colleges) for Years 12 to 13 in England and Wales, Years 12 to 14 in Northern Ireland and S5 and S6 students in Scotland.",
+    "years": [
+      "Year 12",
+      "Year 13"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Not stated",
+    "wideningParticipation": "Priority is given to institutions who have not visited before and those a considerable distance from London",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "An application is made through your school or college, not individually"
+    ],
+    "cost": "Not stated",
+    "deadline": "Applications close on 18 October 2026 at 5pm",
+    "deadlineDate": "2026-10-18",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "The 2026-27 programme is open for applications",
+    "closingPeriod": "18 October 2026 at 5pm",
+    "applicationState": "Open",
+    "applicationUrl": "https://supremecourt.uk/education/debate-days",
+    "url": "https://supremecourt.uk/education/debate-days",
+    "description": "Debate a key legal issue drawn from a real Supreme Court case, coached by practising lawyers, with a careers question-and-answer session.",
+    "activities": [
+      "Tour of the Supreme Court building",
+      "Coached debate in For, Against and Judges teams",
+      "Question-and-answer session about careers in law"
+    ],
+    "skills": [],
+    "tags": [
+      "Law",
+      "Politics",
+      "Debate",
+      "Civics"
+    ],
+    "certificate": "Not stated",
+    "selection": "Priority for institutions that have not visited before and those far from London; named English deprivation areas are encouraged to apply",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://supremecourt.uk/education/debate-days"
+    ],
+    "unconfirmed": [
+      "The provider does not state a cost or the number of places per institution"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "bath-step-into-bath",
+    "title": "Step into Bath",
+    "provider": "University of Bath",
+    "sector": "Explore careers",
+    "type": "Summer school",
+    "category": "Summer school",
+    "subSector": "University outreach",
+    "location": "Bath",
+    "format": "In person",
+    "duration": "2-night residential",
+    "durationBand": "1–3 days",
+    "eligibility": "Year 12 or Lower Sixth students who are on track to meet the typical offer for their chosen course and are planning to start a university course in 2028, taking the relevant A levels (or equivalent) and able to provide expected grades.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Relevant A levels (or equivalent) for the chosen course",
+    "geography": "Not stated",
+    "wideningParticipation": "Widening-participation students are directed to Discover Bath instead",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "Expected grades, which do not need to be official or awarded by your school"
+    ],
+    "cost": "£365 per person, covering accommodation, food and all activities",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "2027-07-26",
+    "openingDate": "",
+    "openingPeriod": "Applications for summer 2027 will open at the end of January",
+    "closingPeriod": "",
+    "applicationState": "Not yet open",
+    "applicationUrl": "https://www.bath.ac.uk/campaigns/step-into-bath/",
+    "url": "https://www.bath.ac.uk/campaigns/step-into-bath/",
+    "description": "A residential taster with lectures, a placement and employability session, and application advice from admissions selectors.",
+    "activities": [
+      "Taster lectures from lecturers, researchers and students",
+      "Placement and employability sessions",
+      "Two nights in undergraduate accommodation",
+      "Application-making sessions with admissions selectors"
+    ],
+    "skills": [],
+    "tags": [
+      "University outreach",
+      "Summer school",
+      "Residential"
+    ],
+    "certificate": "Not stated",
+    "selection": "On track to meet the typical offer for the chosen course",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.bath.ac.uk/campaigns/step-into-bath/"
+    ],
+    "unconfirmed": [
+      "Two streams run on different dates: 26-28 July 2027 for Engineering, Design and Science, and 28-30 July 2027 for Humanities, Social Science and Management"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "bath-discover-bath",
+    "title": "Discover Bath",
+    "provider": "University of Bath",
+    "sector": "Explore careers",
+    "type": "Widening participation",
+    "category": "Widening participation",
+    "subSector": "University outreach",
+    "location": "Bath",
+    "format": "In person",
+    "duration": "3 days, 2 nights",
+    "durationBand": "1–3 days",
+    "eligibility": "Available to all Year 12 (or equivalent) students who are academically able to study at Bath in their chosen subject and meet the University's widening participation criteria.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Not stated",
+    "wideningParticipation": "Must meet the University of Bath widening participation criteria",
+    "careerAreas": [],
+    "applicationRequirements": [],
+    "cost": "Fully subsidised, including on-campus accommodation, meals for the stay, and travel within the UK reimbursed",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "2027-08-02",
+    "openingDate": "",
+    "openingPeriod": "Applications for summer 2027 will open at the end of January",
+    "closingPeriod": "",
+    "applicationState": "Not yet open",
+    "applicationUrl": "https://www.bath.ac.uk/campaigns/discover-bath/",
+    "url": "https://www.bath.ac.uk/campaigns/discover-bath/",
+    "description": "A fully funded subject taster with personal statement and UCAS support, for students who meet widening participation criteria.",
+    "activities": [
+      "Study in a chosen subject area with lecturers and students",
+      "Two nights in undergraduate accommodation",
+      "Personal statement, UCAS and student finance support"
+    ],
+    "skills": [],
+    "tags": [
+      "Widening participation",
+      "Summer school",
+      "Free"
+    ],
+    "certificate": "Not stated",
+    "selection": "Widening participation criteria; the full criteria list is on the provider's page",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.bath.ac.uk/campaigns/discover-bath/"
+    ],
+    "unconfirmed": [
+      "Two subject streams run on different dates in August 2027"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "kcl-pre-university-summer",
+    "title": "Pre-University Summer School",
+    "provider": "King's College London",
+    "sector": "Explore careers",
+    "type": "Summer school",
+    "category": "Summer school",
+    "subSector": "University outreach",
+    "location": "London",
+    "format": "In person",
+    "duration": "One week per course, with several courses over two or three weeks",
+    "durationBand": "1–2 weeks",
+    "eligibility": "Academically motivated students aged 16 or 17 who are about to start, or enrolled in, the final three years of high school. Your 18th birthday must be after the last day of the programme.",
+    "years": [],
+    "subjects": [],
+    "subjectRequirements": "English studied to at least level B2 in the Common European Framework",
+    "geography": "Not stated",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "Official confirmation of your most recent high school grades",
+      "Evidence of English language proficiency",
+      "Personal statement",
+      "£65 application fee"
+    ],
+    "cost": "£3,295 for a one-week course (£3,195 applied by 29 January 2027); £4,095 residential package (£3,995 early). Application fee £65.",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "2027-07-05",
+    "openingDate": "2026-11-09",
+    "openingPeriod": "Applications open on 9 November 2026",
+    "closingPeriod": "",
+    "applicationState": "Not yet open",
+    "applicationUrl": "https://www.kcl.ac.uk/summer/summer-on-campus/pre-university-summer-school",
+    "url": "https://www.kcl.ac.uk/summer/summer-on-campus/pre-university-summer-school",
+    "description": "One-week taught courses across several faculties at central London, in mixed lectures, seminars, discussion groups, role play and simulations.",
+    "activities": [
+      "Lectures and seminars across faculties including business, law, psychology, medical science, neuroscience and computing",
+      "Discussion groups and simulation games",
+      "Sessions with guest speakers"
+    ],
+    "skills": [],
+    "tags": [
+      "University outreach",
+      "Summer school",
+      "Residential",
+      "Paid"
+    ],
+    "certificate": "Not stated",
+    "selection": "Grades confirmation, English at B2 or above and a personal statement; no acceptance prediction is offered",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.kcl.ac.uk/summer/summer-on-campus/pre-university-summer-school"
+    ],
+    "unconfirmed": [
+      "Four sessions run across July 2027; the provider has not published a closing date for applications"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "ucl-summer-school",
+    "title": "UCL Summer School",
+    "provider": "University College London",
+    "sector": "Explore careers",
+    "type": "Residential programme",
+    "category": "Residential programme",
+    "subSector": "University outreach",
+    "location": "London",
+    "format": "In person",
+    "duration": "Three or six weeks",
+    "durationBand": "Longer programme",
+    "eligibility": "Not stated on the page checked; each module has its own participation requirements and capacity limits.",
+    "years": [],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Not stated",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [],
+    "cost": "£3,100 for one session or £5,100 for both; no application fee for applications received before 1 March 2027, otherwise £60",
+    "deadline": "Session One and both sessions: 2 June 2027. Session Two: 23 June 2027.",
+    "deadlineDate": "2027-06-02",
+    "startDate": "2027-06-28",
+    "openingDate": "2026-12-01",
+    "openingPeriod": "Applications open on 1 December 2026",
+    "closingPeriod": "",
+    "applicationState": "Not yet open",
+    "applicationUrl": "https://www.ucl.ac.uk/prospective-students/summer-school/",
+    "url": "https://www.ucl.ac.uk/prospective-students/summer-school/",
+    "description": "Over 50 undergraduate modules taught face to face on the central London campus, with an optional social and cultural programme.",
+    "activities": [
+      "Study one undergraduate module per session",
+      "Face-to-face interactive classes",
+      "Optional social and cultural events"
+    ],
+    "skills": [],
+    "tags": [
+      "University outreach",
+      "Residential",
+      "Paid"
+    ],
+    "certificate": "Not stated",
+    "selection": "Modules have minimum participation requirements and maximum capacity numbers",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.ucl.ac.uk/prospective-students/summer-school/"
+    ],
+    "unconfirmed": [
+      "Two closing dates are published; this record shows the earlier one"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "wadham-summer-schools",
+    "title": "Wadham College Summer Schools",
+    "provider": "Wadham College, University of Oxford",
+    "sector": "Humanities & social sciences",
+    "type": "Residential programme",
+    "category": "Residential programme",
+    "subSector": "Humanities",
+    "location": "Oxford",
+    "format": "In person",
+    "duration": "Five-day residential",
+    "durationBand": "4–7 days",
+    "eligibility": "Year 12 pupils in UK state schools or sixth-form colleges.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Not stated",
+    "wideningParticipation": "Open to UK state schools and sixth-form colleges",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "A teacher reference form is required"
+    ],
+    "cost": "Free, with accommodation and meals provided and financial support to cover travel",
+    "deadline": "Applications have closed for the 2026 Summer Schools",
+    "deadlineDate": "",
+    "startDate": "2027-08-16",
+    "openingDate": "",
+    "openingPeriod": "Applications will open in February 2027",
+    "closingPeriod": "",
+    "applicationState": "Not yet open",
+    "applicationUrl": "https://www.wadham.ox.ac.uk/schools-and-outreach/summer-schools",
+    "url": "https://www.wadham.ox.ac.uk/schools-and-outreach/summer-schools",
+    "description": "Five-day residentials in Classics, Climate Change and Modern Languages, with an academic programme, College life and student ambassadors.",
+    "activities": [
+      "Seminar series led by the Faculty of Classics",
+      "Language classes in Ancient Greek",
+      "Visit to the Ashmolean Museum",
+      "Assignment with tutor feedback",
+      "Meet student ambassadors"
+    ],
+    "skills": [],
+    "tags": [
+      "University outreach",
+      "Residential",
+      "Free",
+      "Humanities"
+    ],
+    "certificate": "Not stated",
+    "selection": "Year 12 pupils in UK state schools or sixth-form colleges",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.wadham.ox.ac.uk/schools-and-outreach/summer-schools"
+    ],
+    "unconfirmed": [],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "sheffield-access-summer",
+    "title": "Access to Sheffield Summer School",
+    "provider": "University of Sheffield",
+    "sector": "Explore careers",
+    "type": "Widening participation",
+    "category": "Widening participation",
+    "subSector": "University outreach",
+    "location": "Sheffield",
+    "format": "In person",
+    "duration": "Over four days",
+    "durationBand": "4–7 days",
+    "eligibility": "Year 12 in England or Wales, Year 13 in Northern Ireland, or S5 in Scotland (or equivalent). Because the programme is for under-18s, Year 12 students must be no older than 17 as of 1 September 2026. Students must meet one or more listed criteria, have at least five GCSEs at grades 9-6 including a grade 4 in English and Maths, and be studying at least three A levels or equivalent.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "At least three A level or equivalent qualifications",
+    "geography": "England or Wales; Year 13 in Northern Ireland; S5 in Scotland",
+    "wideningParticipation": "Must meet one or more criteria including free school meals, living in an area of disadvantage, being care experienced, being a young carer, estrangement or forced migration",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "Minimum five GCSEs at grades 9-6 plus grade 4 English and Maths",
+      "At least three A levels or equivalent"
+    ],
+    "cost": "All activities, equipment, overnight accommodation, meals and travel to and from the University are funded",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "A 2027 interest form is available",
+    "closingPeriod": "",
+    "applicationState": "Unknown",
+    "applicationUrl": "https://sheffield.ac.uk/schools/summer-schools/access-sheffield",
+    "url": "https://sheffield.ac.uk/schools/summer-schools/access-sheffield",
+    "description": "A non-subject-based summer school of academic skills sessions and social activities, fully funded including travel.",
+    "activities": [
+      "Academic skills sessions",
+      "Transferable skills work",
+      "Social activities",
+      "Support from student ambassadors"
+    ],
+    "skills": [],
+    "tags": [
+      "Widening participation",
+      "Summer school",
+      "Free"
+    ],
+    "certificate": "Not stated",
+    "selection": "Widening-participation criteria plus published GCSE and A level requirements",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://sheffield.ac.uk/schools/summer-schools/access-sheffield"
+    ],
+    "unconfirmed": [
+      "The page publishes 2026 dates only; 2027 dates are not yet stated"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "royal-holloway-summer-university",
+    "title": "Summer University - Year 12",
+    "provider": "Royal Holloway University of London",
+    "sector": "Explore careers",
+    "type": "Residential programme",
+    "category": "Residential programme",
+    "subSector": "University outreach",
+    "location": "Egham",
+    "format": "In person",
+    "duration": "Two days, one night",
+    "durationBand": "1–3 days",
+    "eligibility": "Be in Year 12, study A levels or equivalent with predicted grades no lower than CCC, hold five GCSEs at grades 9-4 including Maths and English, not attend a fee-paying school, and have lived in the UK for at least three years. Applicants must also meet two further widening access criteria.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "A levels or equivalent with CCC predicted or higher",
+    "geography": "Not stated",
+    "wideningParticipation": "Must meet two further widening access criteria such as free school meals, disability, deprivation, first generation, care experience or refugee status",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "Five GCSEs at grades 9-4 including Maths and English"
+    ],
+    "cost": "Free, covering accommodation, all food and drink, academic resources and social activities",
+    "deadline": "Applications close once full capacity is reached",
+    "deadlineDate": "",
+    "startDate": "2027-07-08",
+    "openingDate": "",
+    "openingPeriod": "Applications for Summer University 2027 are not yet open",
+    "closingPeriod": "",
+    "applicationState": "Not yet open",
+    "applicationUrl": "https://www.royalholloway.ac.uk/studying-here/schools-and-colleges/widening-access/summer-university-year-12/",
+    "url": "https://www.royalholloway.ac.uk/studying-here/schools-and-colleges/widening-access/summer-university-year-12/",
+    "description": "Subject insight sessions, university student meetings and social activities at Royal Holloway, fully funded for eligible students.",
+    "activities": [
+      "Group seminars and lectures",
+      "Practical department sessions",
+      "Subject question-and-answer sessions",
+      "Student-led interactive workshops"
+    ],
+    "skills": [],
+    "tags": [
+      "Widening participation",
+      "Residential",
+      "Free"
+    ],
+    "certificate": "Not stated",
+    "selection": "Core criteria plus two widening access criteria; applications close at full capacity",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.royalholloway.ac.uk/studying-here/schools-and-colleges/widening-access/summer-university-year-12/"
+    ],
+    "unconfirmed": [],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "winchester-discover-summer",
+    "title": "Discover Winchester Year 12 Summer School",
+    "provider": "University of Winchester",
+    "sector": "Explore careers",
+    "type": "Widening participation",
+    "category": "Widening participation",
+    "subSector": "University outreach",
+    "location": "Winchester",
+    "format": "In person",
+    "duration": "Three days, two nights",
+    "durationBand": "1–3 days",
+    "eligibility": "16 and 17 year olds. The wider Discover Winchester Scheme also covers applicants whose parents have no previous experience of higher education, who are estranged from their family, who have caring responsibilities, or who have previously received free school meals.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Not stated",
+    "wideningParticipation": "Discover Winchester Scheme criteria",
+    "careerAreas": [],
+    "applicationRequirements": [],
+    "cost": "Free, three-day two-night residential",
+    "deadline": "Applications close on Friday 29 January at 15:00",
+    "deadlineDate": "",
+    "startDate": "2027-07-06",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "Friday 29 January at 15:00",
+    "applicationState": "Unknown",
+    "applicationUrl": "https://winchester.ac.uk/collaborate/Schools-and-colleges/Discover-Winchester-Scheme/",
+    "url": "https://winchester.ac.uk/collaborate/Schools-and-colleges/Discover-Winchester-Scheme/",
+    "description": "A free residential with academic taster sessions, student life activities and a chance to stay on campus.",
+    "activities": [
+      "Academic taster sessions",
+      "Student life activities",
+      "On-campus stay"
+    ],
+    "skills": [],
+    "tags": [
+      "Widening participation",
+      "Summer school",
+      "Free"
+    ],
+    "certificate": "Not stated",
+    "selection": "Ages 16 and 17, with Discover Winchester Scheme criteria",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://winchester.ac.uk/collaborate/Schools-and-colleges/Discover-Winchester-Scheme/"
+    ],
+    "unconfirmed": [
+      "The closing date is stated as 29 January with no year"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "southampton-sutton-trust-summer",
+    "title": "University of Southampton and The Sutton Trust Summer School",
+    "provider": "University of Southampton",
+    "sector": "Science & research",
+    "type": "Residential programme",
+    "category": "Residential programme",
+    "subSector": "University outreach",
+    "location": "Southampton",
+    "format": "In person",
+    "duration": "Four days, three nights",
+    "durationBand": "4–7 days",
+    "eligibility": "Year 12 or Level 3 Year 1 students who attend, and have always attended, a state-funded non-fee-paying school or college, and are studying qualifications relevant to the subject area. Widening participation criteria apply.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Subjects relevant to the subject area applied for",
+    "geography": "Not stated",
+    "wideningParticipation": "First generation, free school meals, below-average attainment school, low rate of progression, or care experience",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "Participants must confirm availability for all dates"
+    ],
+    "cost": "Free of charge, including food, accommodation and prebookable travel with up to £100 claimed back",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "2027-07-13",
+    "openingDate": "",
+    "openingPeriod": "Applications for the 2027 Summer School will open in the Autumn Term",
+    "closingPeriod": "",
+    "applicationState": "Not yet open",
+    "applicationUrl": "https://www.southampton.ac.uk/schools-colleges/experience-summer-event.page",
+    "url": "https://www.southampton.ac.uk/schools-colleges/experience-summer-event.page",
+    "description": "A subject taster with a lecture and group workshop or practical, an alumni talk and a stay in student halls.",
+    "activities": [
+      "Taster lecture and group workshop or practical in a degree programme",
+      "Alumni talk",
+      "Budget a meal",
+      "Tour of the city with a current student",
+      "Stay in student halls with an ensuite room"
+    ],
+    "skills": [],
+    "tags": [
+      "Widening participation",
+      "Residential",
+      "Free"
+    ],
+    "certificate": "Not stated",
+    "selection": "Widening-participation criteria plus relevant subjects",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.southampton.ac.uk/schools-colleges/experience-summer-event.page"
+    ],
+    "unconfirmed": [],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "cardiff-step-up",
+    "title": "Step Up Summer School",
+    "provider": "Cardiff University",
+    "sector": "Explore careers",
+    "type": "Widening participation",
+    "category": "Widening participation",
+    "subSector": "University outreach",
+    "location": "Cardiff",
+    "format": "In person",
+    "duration": "Three-day residential",
+    "durationBand": "1–3 days",
+    "eligibility": "Live in Wales with a Welsh postcode, attend and have always attended a state-funded non-fee-paying school or college, be aged 16 or 17 and in Year 12, have at least five GCSEs at grades A*-C including at least a C in English and Maths, and meet at least one additional criterion.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Wales, with a Welsh postcode",
+    "wideningParticipation": "Additional criteria include living where few go to university, free school meals, first generation, young carer, disabled, estranged or low household income",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "Welsh postcode",
+      "At least five GCSEs at A*-C including English and Maths"
+    ],
+    "cost": "Free, including all meals and travel to and from the Cardiff campus",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "Applications are usually open between April and May",
+    "closingPeriod": "Applications are usually open between April and May",
+    "applicationState": "Unknown",
+    "applicationUrl": "https://www.cardiff.ac.uk/community/education-for-all/widening-participation/our-work/step-up-programme/summer-school",
+    "url": "https://www.cardiff.ac.uk/community/education-for-all/widening-participation/our-work/step-up-programme/summer-school",
+    "description": "A three-day residential with subject tasters across arts, health sciences, STEM and law, politics and business.",
+    "activities": [
+      "Taster lectures across subject streams",
+      "Personal statement support",
+      "Budgeting and life skills support",
+      "Study preparation"
+    ],
+    "skills": [],
+    "tags": [
+      "Widening participation",
+      "Summer school",
+      "Free",
+      "Wales"
+    ],
+    "certificate": "Not stated",
+    "selection": "Welsh postcode, state school, GCSEs and at least one additional widening-participation criterion",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.cardiff.ac.uk/community/education-for-all/widening-participation/our-work/step-up-programme/summer-school"
+    ],
+    "unconfirmed": [
+      "The provider has not published 2027 dates"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "swansea-summer-school",
+    "title": "Undergraduate Summer School",
+    "provider": "Swansea University",
+    "sector": "Science & research",
+    "type": "Summer school",
+    "category": "Summer school",
+    "subSector": "University outreach",
+    "location": "Swansea",
+    "format": "In person",
+    "duration": "Three days",
+    "durationBand": "1–3 days",
+    "eligibility": "Year 12 students curious about university life or considering a degree.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Not stated",
+    "wideningParticipation": "Financial assistance may be available for successful UK applicants where cost is a barrier",
+    "careerAreas": [],
+    "applicationRequirements": [],
+    "cost": "£225 for the three-day residential, or £80 for a day pass, including accommodation, activities and meals",
+    "deadline": "The application deadline for 2026 was the 18th of May",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "Register your interest to hear about 2027 dates",
+    "closingPeriod": "",
+    "applicationState": "Unknown",
+    "applicationUrl": "https://www.swansea.ac.uk/undergraduate/summerschool/",
+    "url": "https://www.swansea.ac.uk/undergraduate/summerschool/",
+    "description": "A three-day residential or day pass exploring medicine, biomedical science, law, business and engineering.",
+    "activities": [
+      "Personal statement workshop",
+      "Poster project with presentations and prize giving",
+      "Campus tour",
+      "Scavenger hunt",
+      "Workshops"
+    ],
+    "skills": [],
+    "tags": [
+      "University outreach",
+      "Summer school",
+      "Wales",
+      "Paid"
+    ],
+    "certificate": "Not stated",
+    "selection": "Not stated",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.swansea.ac.uk/undergraduate/summerschool/"
+    ],
+    "unconfirmed": [
+      "Only 2026 dates are published; the 2027 cycle is not yet announced"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "imperial-accelerate",
+    "title": "Accelerate",
+    "provider": "Imperial College London",
+    "sector": "Science & research",
+    "type": "STEM programme",
+    "category": "STEM programme",
+    "subSector": "University outreach",
+    "location": "Online",
+    "format": "Virtual",
+    "duration": "March 2027 to February 2028",
+    "durationBand": "Longer programme",
+    "eligibility": "In Year 12 at the time of application, attending a state-funded non-fee-paying school or college, studying Maths plus either Physics or Chemistry at A level, with at least eight GCSEs including five at grades 7-9 and a grade 5 in GCSE English Language.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [
+      "Mathematics",
+      "Physics",
+      "Chemistry"
+    ],
+    "subjectRequirements": "Maths, plus Physics or Chemistry at A level",
+    "geography": "Not stated",
+    "wideningParticipation": "Attending a state-funded, non-fee-paying school or college",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "Teacher or guardian references are required and close a week after applications"
+    ],
+    "cost": "Not stated",
+    "deadline": "Applications close on 12 January 2027 at 23:59; teacher and guardian references close on 19 January 2027 at 23:59",
+    "deadlineDate": "2027-01-12",
+    "startDate": "2027-03-01",
+    "openingDate": "2026-10-15",
+    "openingPeriod": "Applications open on 15 October 2026",
+    "closingPeriod": "",
+    "applicationState": "Not yet open",
+    "applicationUrl": "https://www.imperial.ac.uk/be-inspired/schools-outreach/secondary-schools/stem-programmes/accelerate/",
+    "url": "https://www.imperial.ac.uk/be-inspired/schools-outreach/secondary-schools/stem-programmes/accelerate/",
+    "description": "A year-long academic and pastoral support programme delivered through fortnightly after-school online tutorials.",
+    "activities": [
+      "Self-study tutorial content a week before each session",
+      "One-hour online tutorials with a tutor",
+      "Cohort sessions on personal statements, student finance, admissions tests, interviews and mock interviews"
+    ],
+    "skills": [],
+    "tags": [
+      "STEM",
+      "Virtual",
+      "University outreach",
+      "Long term"
+    ],
+    "certificate": "Not stated",
+    "selection": "The provider does not describe a round structure",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.imperial.ac.uk/be-inspired/schools-outreach/secondary-schools/stem-programmes/accelerate/"
+    ],
+    "unconfirmed": [
+      "The provider states March 2027 to February 2028 without a day, so the start date here is the first of the stated month"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "imperial-work-experience",
+    "title": "Year 12 Work Experience Programme",
+    "provider": "Imperial College London",
+    "sector": "Science & research",
+    "type": "Work experience",
+    "category": "Work experience",
+    "subSector": "University outreach",
+    "location": "London",
+    "format": "In person",
+    "duration": "Five days, non-residential",
+    "durationBand": "4–7 days",
+    "eligibility": "In Year 12 at the time of application, studying at a state school in the UK, able to travel to and from Imperial College London each day, and holding at least eight GCSEs with five at grades 7-9. Not eligible: students at fee-paying schools, students studying abroad, and students at an international school based in the UK.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "UK; must be able to travel to central London daily",
+    "wideningParticipation": "State school students only; fee-paying and international schools are excluded",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "Eight GCSEs with five at grades 7-9"
+    ],
+    "cost": "Fully funded for successful applicants, including fees, materials and lunch. Travel is not included.",
+    "deadline": "Applications close early March 2027",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "Applications re-open in January 2027",
+    "closingPeriod": "",
+    "applicationState": "Not yet open",
+    "applicationUrl": "https://www.imperial.ac.uk/be-inspired/schools-outreach/secondary-schools/summer-schools/work-experience/",
+    "url": "https://www.imperial.ac.uk/be-inspired/schools-outreach/secondary-schools/summer-schools/work-experience/",
+    "description": "A five-day programme at the end of June with a department placement and a final oral presentation.",
+    "activities": [
+      "Campus tour and talks",
+      "Work placement in a department",
+      "Presentation preparation and networking event",
+      "Oral presentation finale",
+      "Access to research labs and workshops"
+    ],
+    "skills": [],
+    "tags": [
+      "Work experience",
+      "University outreach",
+      "Free"
+    ],
+    "certificate": "Not stated",
+    "selection": "The provider does not describe a round structure",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.imperial.ac.uk/be-inspired/schools-outreach/secondary-schools/summer-schools/work-experience/"
+    ],
+    "unconfirmed": [
+      "Decisions are stated to be made in May 2027, and the programme runs at the end of June 2027, without exact dates"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "tdi-challenge",
+    "title": "2027 TDI Challenge",
+    "provider": "Manufacturing Technologies Association",
+    "sector": "Engineering",
+    "type": "Competition",
+    "category": "Competition",
+    "subSector": "Design and engineering",
+    "location": "Worcester",
+    "format": "Hybrid",
+    "duration": "Not stated",
+    "durationBand": "Not stated",
+    "eligibility": "Open to students aged 14-19 living in England and Wales to submit innovative product ideas via a two-minute video. Individuals only, although multiple entries from a school or college are allowed.",
+    "years": [
+      "Year 12",
+      "Year 13"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "England and Wales",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "A two-minute video",
+      "Individuals only"
+    ],
+    "cost": "Free to enter",
+    "deadline": "Deadline for online entries: 3 June 2027",
+    "deadlineDate": "2027-06-03",
+    "startDate": "2027-07-08",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "3 June 2027 for online entries",
+    "applicationState": "Open",
+    "applicationUrl": "https://thetdichallenge.co.uk/enter-the-challenge/",
+    "url": "https://thetdichallenge.co.uk/challenge-rules/",
+    "description": "Design and enter a new product concept by video, or present a poster at one of four regional events.",
+    "activities": [
+      "Submit a two-minute video of an innovative product idea",
+      "Optional regional events with poster boards and judging",
+      "Final event at the Yamazaki Mazak facility in Worcester"
+    ],
+    "skills": [],
+    "tags": [
+      "Engineering",
+      "Design",
+      "Competition",
+      "Free"
+    ],
+    "certificate": "Not stated",
+    "selection": "Judges select finalists from video submissions, assessed on research, innovation, development and solution. The top three in each category win a prize.",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://thetdichallenge.co.uk/challenge-rules/",
+      "https://thetdichallenge.co.uk/enter-the-challenge/"
+    ],
+    "unconfirmed": [
+      "Finalists are notified by 25 June 2027; regional event dates are not stated"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "paribus-essay-prize",
+    "title": "The Paribus Essay Prize",
+    "provider": "Paribus",
+    "sector": "Law",
+    "type": "Competition",
+    "category": "Competition",
+    "subSector": "Writing",
+    "location": "Not stated",
+    "format": "Not stated",
+    "duration": "Not stated",
+    "durationBand": "Not stated",
+    "eligibility": "Open to sixth-form students, or equivalent students worldwide, who are interested in law. One entry per person.",
+    "years": [],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Worldwide",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "One entry per person",
+      "Maximum 1,250 words",
+      "PDF or DOCX submitted by online form"
+    ],
+    "cost": "Not stated",
+    "deadline": "31st October at 23:59",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "31st October at 23:59",
+    "applicationState": "Unknown",
+    "applicationUrl": "https://paribus.uk/essay-prize",
+    "url": "https://paribus.uk/essay-prize",
+    "description": "An essay prize on legal topics including justice and rights, public law, criminal law, legal philosophy and access to justice.",
+    "activities": [
+      "Write an essay of up to 1,250 words on a legal topic",
+      "Submit by online form"
+    ],
+    "skills": [],
+    "tags": [
+      "Law",
+      "Writing",
+      "Competition"
+    ],
+    "certificate": "Not stated",
+    "selection": "Judges' decision is final. Prizes of £250, £150 and £100; top five submissions receive free access to Paribus Premium.",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://paribus.uk/essay-prize"
+    ],
+    "unconfirmed": [
+      "The closing date is stated as 31st October with no year",
+      "No entry fee is stated"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "orwell-youth-prize",
+    "title": "The Orwell Youth Prize",
+    "provider": "The Orwell Foundation",
+    "sector": "Creative & media",
+    "type": "Competition",
+    "category": "Competition",
+    "subSector": "Writing",
+    "location": "Not stated",
+    "format": "Not stated",
+    "duration": "Not stated",
+    "durationBand": "Not stated",
+    "eligibility": "Open to anyone in years 7-13 at school or college in the United Kingdom, or studying a British curriculum abroad.",
+    "years": [
+      "Year 12",
+      "Year 13"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "United Kingdom, or British curriculum abroad",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "1,000 words for years 7-11, 1,500 for years 12-13",
+      "Submitted as an anonymised PDF with no name in the document or filename"
+    ],
+    "cost": "Not stated",
+    "deadline": "Final deadline stated as Wednesday 28th April; the deadline for feedback is Wednesday 3rd March",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "Open for entries on the theme 'Acts of Courage'",
+    "closingPeriod": "Wednesday 28th April",
+    "applicationState": "Open",
+    "applicationUrl": "https://www.orwellfoundation.com/the-orwell-youth-prize/",
+    "url": "https://www.orwellfoundation.com/the-orwell-youth-prize/",
+    "description": "Write about your own world in any form you choose: essay, poetry, short story, journalism or game design.",
+    "activities": [
+      "Write an entry on the theme 'Acts of Courage'",
+      "Submit an anonymised PDF"
+    ],
+    "skills": [],
+    "tags": [
+      "Writing",
+      "Competition",
+      "Creative"
+    ],
+    "certificate": "Not stated",
+    "selection": "Judged across year-group categories; no round structure is described",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.orwellfoundation.com/the-orwell-youth-prize/"
+    ],
+    "unconfirmed": [
+      "The page is internally inconsistent: one line states a closing date of 29th April 2026 while the 2027 form states 28th April",
+      "No year is given with the April date"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "lse-thrive",
+    "title": "LSE Thrive: Years 12-13",
+    "provider": "London School of Economics and Political Science",
+    "sector": "Humanities & social sciences",
+    "type": "University outreach",
+    "category": "University outreach",
+    "subSector": "Widening participation",
+    "location": "London",
+    "format": "Hybrid",
+    "duration": "Ten months",
+    "durationBand": "Longer programme",
+    "eligibility": "Year 12 students of Black heritage who live in or close to London, have always attended a UK state school or college, and have achieved at least a grade 6 in GCSE English Language and Mathematics.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Live in or close to London",
+    "wideningParticipation": "Year 12 students of Black heritage at a state school, with additional priority criteria",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "At least grade 6 in GCSE English Language and Mathematics"
+    ],
+    "cost": "Free, with activities, resources, catering and travel to and from campus covered",
+    "deadline": "Applications for LSE Thrive are now closed for 2025-26",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "Applications for the next cohort will open in Autumn 2026",
+    "closingPeriod": "",
+    "applicationState": "Not yet open",
+    "applicationUrl": "https://www.lse.ac.uk/study-at-lse/undergraduate/widening-participation/activities/lse-thrive-years-12-13",
+    "url": "https://www.lse.ac.uk/study-at-lse/undergraduate/widening-participation/activities/lse-thrive-years-12-13",
+    "description": "A ten-month access programme with campus visits, personal statement feedback and student mentoring, linked to contextual offers at LSE.",
+    "activities": [
+      "Four campus visits with interactive workshops",
+      "Personal statement feedback and an Admissions appointment",
+      "Virtual sessions on applying, finance, budgeting and wellbeing",
+      "Work with LSE student mentors"
+    ],
+    "skills": [],
+    "tags": [
+      "Widening participation",
+      "Free",
+      "Long term",
+      "University outreach"
+    ],
+    "certificate": "Not stated",
+    "selection": "Successful completion enables LSE applicants to be considered for a contextual offer",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.lse.ac.uk/study-at-lse/undergraduate/widening-participation/activities/lse-thrive-years-12-13"
+    ],
+    "unconfirmed": [
+      "Dates listed on the page belong to the 2025-26 cohort; 2026-27 dates are not yet stated"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "techniquest-destination-stem",
+    "title": "Destination STEM: Research Placements and Experiences",
+    "provider": "Techniquest",
+    "sector": "Science & research",
+    "type": "Research placement",
+    "category": "Research placement",
+    "subSector": "STEM",
+    "location": "Across the UK",
+    "format": "In person",
+    "duration": "Two-week research placement, or five-day experience placement",
+    "durationBand": "1–2 weeks",
+    "eligibility": "Year 12 students studying science, technology, engineering and mathematics subjects at a state-maintained school or college in the UK.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "STEM subjects",
+    "geography": "UK-wide, administered in Wales by Techniquest",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [],
+    "cost": "Not stated",
+    "deadline": "The page states applications for 2026 are open and that applications closed on 31 March",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "31 March",
+    "applicationState": "Unknown",
+    "applicationUrl": "https://www.techniquest.org/education/research-placements-and-experiences/",
+    "url": "https://www.techniquest.org/education/research-placements-and-experiences/",
+    "description": "Two-week research placements on live research questions, or five-day experiences with industry experts, across the UK.",
+    "activities": [
+      "Work on a live research question or development area",
+      "Produce a scientific research report, presentation and poster",
+      "Contribute to the host's current projects",
+      "Identify essential STEM employment skills"
+    ],
+    "skills": [],
+    "tags": [
+      "STEM",
+      "Research",
+      "Placement"
+    ],
+    "certificate": "Not stated",
+    "selection": "Not stated",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.techniquest.org/education/research-placements-and-experiences/"
+    ],
+    "unconfirmed": [
+      "The page states both that applications are open and that they closed on 31 March"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "dorset-healthcare-work-experience",
+    "title": "Work experience",
+    "provider": "Dorset HealthCare University NHS Foundation Trust",
+    "sector": "Healthcare",
+    "type": "Work experience",
+    "category": "Work experience",
+    "subSector": "Clinical",
+    "location": "Dorset; the trust does not name individual sites",
+    "format": "In person",
+    "duration": "Two to four days",
+    "durationBand": "1–3 days",
+    "eligibility": "Year 12 students can apply throughout the year; the trust's table lists ages 16-18 as eligible for both work experience and the NHS programmes.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Dorset",
+    "wideningParticipation": "Priority for Dorset addresses, schools in areas of deprivation, EHCP holders, those considered NEET, care leavers and recent Armed Forces leavers",
+    "careerAreas": [],
+    "applicationRequirements": [],
+    "cost": "Not stated",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "",
+    "applicationState": "Unknown",
+    "applicationUrl": "https://careers.dorsethealthcare.nhs.uk/roles-and-career-pathways/work-experience",
+    "url": "https://careers.dorsethealthcare.nhs.uk/roles-and-career-pathways/work-experience",
+    "description": "Seasonal placements giving an introduction to the NHS and to specific career paths within the trust.",
+    "activities": [
+      "Introduction to the NHS and to specific services",
+      "Psychiatry in July, mental health services in October, children and young person services in February and physical health services at Easter"
+    ],
+    "skills": [],
+    "tags": [
+      "Healthcare",
+      "Work experience",
+      "NHS"
+    ],
+    "certificate": "Not stated",
+    "selection": "Published priority criteria based on address, deprivation, EHCP, NEET status, care experience and Armed Forces",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://careers.dorsethealthcare.nhs.uk/roles-and-career-pathways/work-experience"
+    ],
+    "unconfirmed": [
+      "The trust promotes opportunities through local schools when applications open for a specific programme, and does not publish a single closing date"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "future-leaders-uk",
+    "title": "Leadership Programme for Year 12 and 13",
+    "provider": "Future Leaders",
+    "sector": "Explore careers",
+    "type": "Career exploration",
+    "category": "Career exploration",
+    "subSector": "Leadership",
+    "location": "London, Birmingham, Bristol, Manchester, Sheffield, Telford, Buckinghamshire, Milton Keynes, Kent and Medway; also online UK-wide",
+    "format": "Hybrid",
+    "duration": "A year",
+    "durationBand": "Longer programme",
+    "eligibility": "Open to students in Years 10-13. Everyone who applies is guaranteed a place.",
+    "years": [
+      "Year 12",
+      "Year 13"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "UK-wide, with in-person events in named cities",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [],
+    "cost": "Free",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "",
+    "applicationState": "Unknown",
+    "applicationUrl": "https://www.futureleaders.uk/",
+    "url": "https://www.futureleaders.uk/",
+    "description": "A free year-long programme of weekly hybrid workshops plus in-person opportunities such as visits, residentials and placements.",
+    "activities": [
+      "Weekly online video and interactive task",
+      "Workshops on career-ready skills and tackling racism and discrimination",
+      "In-person university visits, residentials, work experience and apprenticeship placements"
+    ],
+    "skills": [],
+    "tags": [
+      "Leadership",
+      "Free",
+      "Long term",
+      "Hybrid"
+    ],
+    "certificate": "Not stated",
+    "selection": "Everyone who applies is guaranteed a place",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.futureleaders.uk/"
+    ],
+    "unconfirmed": [
+      "The provider states no start or closing date"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "courtauld-summer-university",
+    "title": "Summer University",
+    "provider": "Courtauld Institute of Art",
+    "sector": "Humanities & social sciences",
+    "type": "University outreach",
+    "category": "University outreach",
+    "subSector": "Art history",
+    "location": "London",
+    "format": "Hybrid",
+    "duration": "Online five days, or an in-person three-day programme",
+    "durationBand": "1–2 weeks",
+    "eligibility": "Live in the UK, aged 16-18, in Year 12 or equivalent as of September 2025, currently at a state school or college or home educated, with an interest in exploring History of Art. Year 12 students are given priority.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "UK residents",
+    "wideningParticipation": "State school, college or home educated",
+    "careerAreas": [],
+    "applicationRequirements": [],
+    "cost": "Free, with travel bursaries for in-person attendees",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "Applications open on 23 March and initially close at midday on 14 May",
+    "closingPeriod": "",
+    "applicationState": "Closed",
+    "applicationUrl": "https://courtauld.ac.uk/take-part/schools/young-people/summer-university/",
+    "url": "https://courtauld.ac.uk/take-part/schools/young-people/summer-university/",
+    "description": "An online or in-person programme of lectures and collection-based sessions led by Courtauld academics and PhD researchers.",
+    "activities": [
+      "Lunchtime lectures from Conservation, Curating and Prints and Drawings",
+      "PhD-supported live discussion classes",
+      "In-person exploration of the collection and surrounding architecture"
+    ],
+    "skills": [],
+    "tags": [
+      "Art history",
+      "Free",
+      "University outreach"
+    ],
+    "certificate": "Not stated",
+    "selection": "UK residents aged 16-18 at a state school, college or home educated, with Year 12 prioritised",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://courtauld.ac.uk/take-part/schools/young-people/summer-university/"
+    ],
+    "unconfirmed": [
+      "The page lists 2026 dates and refers to September 2025; the 2027 cycle is not published"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "npg-lab",
+    "title": "NPG LAB",
+    "provider": "National Portrait Gallery",
+    "sector": "Creative & media",
+    "type": "Academic programme",
+    "category": "Academic programme",
+    "subSector": "Creative and cultural",
+    "location": "London",
+    "format": "In person",
+    "duration": "Ten months",
+    "durationBand": "Longer programme",
+    "eligibility": "Aged 16-21 when applications close in January.",
+    "years": [],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Not stated",
+    "wideningParticipation": "50% of places are reserved for young people who identify as disabled, neurodiverse, working-class, care-experienced, young carers, or part of the global majority",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "Applications are anonymised and shortlisted to a group interview day"
+    ],
+    "cost": "A bursary scheme covers travel, food and other costs, with £600 per person",
+    "deadline": "Application deadline stated as Monday 26 January at 12 noon",
+    "deadlineDate": "2026-01-26",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "",
+    "applicationState": "Closed",
+    "applicationUrl": "https://www.npg.org.uk/learning/young-people/npg-lab",
+    "url": "https://www.npg.org.uk/learning/young-people/npg-lab",
+    "description": "A ten-month creative programme where participants plan, promote and co-host events responding to the Portrait Gallery collection.",
+    "activities": [
+      "Planning and promoting events",
+      "Creating resources",
+      "Co-hosting a large Youth Late event",
+      "Roles across event production, marketing, social media, press, workshops, music and design",
+      "A Creative Futures career day"
+    ],
+    "skills": [],
+    "tags": [
+      "Creative",
+      "Arts",
+      "Free",
+      "Long term"
+    ],
+    "certificate": "Not stated",
+    "selection": "Anonymised applications, then a relaxed informal group interview day; 50% of places reserved for named groups",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.npg.org.uk/learning/young-people/npg-lab"
+    ],
+    "unconfirmed": [
+      "The published deadline and programme dates belong to the 2026 cycle, which has closed; the next cohort is not yet announced"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "npg-link",
+    "title": "NPG LINK",
+    "provider": "National Portrait Gallery",
+    "sector": "Creative & media",
+    "type": "Masterclass",
+    "category": "Masterclass",
+    "subSector": "Creative and cultural",
+    "location": "London",
+    "format": "In person",
+    "duration": "Not stated",
+    "durationBand": "Not stated",
+    "eligibility": "For young people aged 14-18; further age restrictions may apply.",
+    "years": [
+      "Year 12",
+      "Year 13"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Not stated",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "Booking required"
+    ],
+    "cost": "Free, booking required",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "",
+    "applicationState": "Unknown",
+    "applicationUrl": "https://www.npg.org.uk/learning/young-people/npg-link",
+    "url": "https://www.npg.org.uk/learning/young-people/npg-link",
+    "description": "Free art workshops, portfolio reviews and behind-the-scenes museum careers opportunities, including events listed for 31 October and 16 November 2026.",
+    "activities": [
+      "Portfolio mixed-media workshop",
+      "Portfolio and CV building",
+      "Youth Late events across the Gallery",
+      "Behind-the-scenes museum careers opportunities"
+    ],
+    "skills": [],
+    "tags": [
+      "Creative",
+      "Arts",
+      "Free",
+      "Portfolio"
+    ],
+    "certificate": "Not stated",
+    "selection": "Not stated",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.npg.org.uk/learning/young-people/npg-link"
+    ],
+    "unconfirmed": [
+      "Individual events are booked separately and each carries its own dates"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "mediatrust-miq-work-experience",
+    "title": "MiQ and Media Trust Work Experience Week",
+    "provider": "Media Trust and MiQ",
+    "sector": "Creative & media",
+    "type": "Work experience",
+    "category": "Work experience",
+    "subSector": "Media and advertising",
+    "location": "London",
+    "format": "In person",
+    "duration": "Four days",
+    "durationBand": "4–7 days",
+    "eligibility": "Aged 15-18, in school years 11, 12 or 13 or equivalent, based in London and the surrounding areas, from a working class or less advantaged socioeconomic background, looking to build knowledge for a career in advertising, and available 10am to 4pm for the placement week. Those aged 15 need parental or guardian consent.",
+    "years": [
+      "Year 12",
+      "Year 13"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "London and surrounding areas",
+    "wideningParticipation": "Working class or less advantaged socioeconomic background, for example eligibility for free school meals or neither parent attended university",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "Available 10am to 4pm for the full placement week"
+    ],
+    "cost": "Travel expenses and lunch are covered",
+    "deadline": "Applications are now closed",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "",
+    "applicationState": "Closed",
+    "applicationUrl": "https://mediatrust.org/youth-programmes/miq-and-media-trust-work-experience-week/",
+    "url": "https://mediatrust.org/youth-programmes/miq-and-media-trust-work-experience-week/",
+    "description": "A four-day advertising placement at MiQ's Holborn headquarters, with knowledge sessions and a group presentation.",
+    "activities": [
+      "Knowledge sessions and set tasks",
+      "Group presentation of learning back to MiQ facilitators"
+    ],
+    "skills": [],
+    "tags": [
+      "Media",
+      "Advertising",
+      "Work experience",
+      "London"
+    ],
+    "certificate": "Not stated",
+    "selection": "No previous experience is required to apply",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://mediatrust.org/youth-programmes/miq-and-media-trust-work-experience-week/"
+    ],
+    "unconfirmed": [
+      "The page states the placement ran 23-26 March 2026 and that applications are closed"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "bfi-film-academy",
+    "title": "BFI Film Academy",
+    "provider": "British Film Institute",
+    "sector": "Creative & media",
+    "type": "Academic programme",
+    "category": "Academic programme",
+    "subSector": "Film and television",
+    "location": "Delivered across the UK through local hubs",
+    "format": "In person",
+    "duration": "Not stated",
+    "durationBand": "Not stated",
+    "eligibility": "A free, UK-wide training programme for 16 to 25-year-olds looking to start a career in the film and TV industry.",
+    "years": [],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "UK-wide",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [],
+    "cost": "Free",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "",
+    "applicationState": "Not yet open",
+    "applicationUrl": "https://www.bfi.org.uk/bfi-film-academy",
+    "url": "https://www.bfi.org.uk/bfi-film-academy",
+    "description": "Hands-on collaborative filmmaking delivered through local hubs, focused on technical and transferable skills.",
+    "activities": [
+      "Collaborative filmmaking",
+      "Development of technical and transferable skills",
+      "Local hubs offering career support and industry contact"
+    ],
+    "skills": [],
+    "tags": [
+      "Film",
+      "Creative",
+      "Free",
+      "UK-wide"
+    ],
+    "certificate": "Not stated",
+    "selection": "Not stated",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.bfi.org.uk/bfi-film-academy"
+    ],
+    "unconfirmed": [
+      "The provider says to watch this space for further announcements about the new programme; no dates or application route are published"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "bhf-young-volunteering",
+    "title": "Volunteering for young people and students",
+    "provider": "British Heart Foundation",
+    "sector": "Explore careers",
+    "type": "Volunteering",
+    "category": "Volunteering",
+    "subSector": "Charity shops",
+    "location": "British Heart Foundation shops across the UK",
+    "format": "In person",
+    "duration": "Not stated",
+    "durationBand": "Not stated",
+    "eligibility": "The BHF is an Approved Activity Provider for the volunteering section of the DofE award, offering volunteering opportunities to participants from 17 years old.",
+    "years": [],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "UK-wide through charity shops",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [],
+    "cost": "Not stated",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "",
+    "applicationState": "Rolling",
+    "applicationUrl": "https://www.bhf.org.uk/how-you-can-help/volunteer/volunteering-for-young-people",
+    "url": "https://www.bhf.org.uk/how-you-can-help/volunteer/volunteering-for-young-people",
+    "description": "Volunteering in charity shops or community fundraising groups, countable towards the DofE award from age 17.",
+    "activities": [
+      "Volunteering in BHF shops",
+      "Community fundraising groups",
+      "Cheering the crowd at events",
+      "Work experience placements"
+    ],
+    "skills": [],
+    "tags": [
+      "Volunteering",
+      "DofE",
+      "UK-wide"
+    ],
+    "certificate": "Counts towards the volunteering section of the DofE award",
+    "selection": "Not stated",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.bhf.org.uk/how-you-can-help/volunteer/volunteering-for-young-people"
+    ],
+    "unconfirmed": [
+      "No individual shop locations or dates are published on this page"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "newcastle-bitesize-uni",
+    "title": "Bitesize Uni: Y12 Summer School",
+    "provider": "Newcastle University",
+    "sector": "Humanities & social sciences",
+    "type": "University outreach",
+    "category": "University outreach",
+    "subSector": "University outreach",
+    "location": "Newcastle",
+    "format": "In person",
+    "duration": "Two three-day periods",
+    "durationBand": "1–3 days",
+    "eligibility": "Only for UK students in Year 12, or first year of college, or the equivalent in Northern Ireland and Scotland.",
+    "years": [
+      "Year 12"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "United Kingdom",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "Contact details of a parent or carer and a teacher from your school or college"
+    ],
+    "cost": "All costs are covered, including travel to and from Newcastle upon Tyne",
+    "deadline": "Applications for 2026 closed on 15 March 2026",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "Check back in early 2027 for information about applying next year",
+    "closingPeriod": "",
+    "applicationState": "Closed",
+    "applicationUrl": "https://www.ncl.ac.uk/schools/visit-us-on-campus/other-on-campus-events/bitesize-uni/",
+    "url": "https://www.ncl.ac.uk/schools/visit-us-on-campus/other-on-campus-events/bitesize-uni/",
+    "description": "Try a subject, experience student life in campus accommodation and meet current students, with all costs covered.",
+    "activities": [
+      "Subject tasters including historical studies, archaeology, classics, linguistics and modern languages",
+      "Campus accommodation experience",
+      "Sessions with current university students"
+    ],
+    "skills": [],
+    "tags": [
+      "University outreach",
+      "Free",
+      "Summer school"
+    ],
+    "certificate": "Not stated",
+    "selection": "If oversubscribed, summer school eligibility criteria may be used to allocate places",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://www.ncl.ac.uk/schools/visit-us-on-campus/other-on-campus-events/bitesize-uni/"
+    ],
+    "unconfirmed": [
+      "The 2027 programme is not yet announced; the page states it will be announced in early 2027"
     ],
     "addedAt": "2026-10-04"
   }

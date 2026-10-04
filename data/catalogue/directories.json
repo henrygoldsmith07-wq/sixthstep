@@ -1315,5 +1315,175 @@
       "England-focused gateway rather than an application point; no under-18 pathway is stated"
     ],
     "addedAt": "2026-10-04"
+  },
+  {
+    "id": "sutton-trust-pathways",
+    "title": "Sutton Trust Pathways",
+    "provider": "The Sutton Trust",
+    "sector": "Explore careers",
+    "type": "Provider directory",
+    "category": "Provider directory",
+    "subSector": "Widening participation",
+    "location": "Within a 90 minute commuting distance of the chosen university; online programmes are open UK-wide",
+    "format": "Hybrid",
+    "duration": "Not stated",
+    "durationBand": "Not stated",
+    "eligibility": "Attend, and have always attended, a state-funded non-fee-paying school or college; study in Year 12 in England or Wales, Year 13 in Northern Ireland, or S5 in Scotland; hold at least five GCSEs at grades 9-6 including English and Maths. In-person programmes additionally require living within a 90 minute commuting distance of the university.",
+    "years": [
+      "Year 12",
+      "Year 13"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "England, Wales, Northern Ireland and Scotland, with a commuting-distance rule for in-person programmes",
+    "wideningParticipation": "The more criteria met, the more likely a place; not meeting all does not disqualify an applicant",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "A brief personal statement of no more than 300 words"
+    ],
+    "cost": "Free",
+    "deadline": "Applications usually close between the end of September and early December",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "Applications are now open",
+    "closingPeriod": "Usually between the end of September and early December",
+    "applicationState": "Open",
+    "applicationUrl": "https://pathwaysprogrammes.suttontrust.com/",
+    "url": "https://pathwaysprogrammes.suttontrust.com/",
+    "description": "A directory of free subject pathways in Engineering, Banking and Finance, Law, Medicine and Veterinary Medicine, with individual in-person and online courses.",
+    "activities": [
+      "Work experience and employability skill sessions",
+      "Undergraduate taster lectures",
+      "University and apprenticeship application support"
+    ],
+    "skills": [],
+    "tags": [
+      "Widening participation",
+      "Directory",
+      "Free"
+    ],
+    "certificate": "Not stated",
+    "selection": "State school, year, GCSE and widening-participation criteria; a 300-word personal statement",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Directory",
+    "sourceUrls": [
+      "https://pathwaysprogrammes.suttontrust.com/"
+    ],
+    "unconfirmed": [
+      "SixthStep holds separate records for individual Pathways courses; this record is the browse hub"
+    ],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "courtauld-young-people",
+    "title": "Young People (16-18)",
+    "provider": "Courtauld Institute of Art",
+    "sector": "Humanities & social sciences",
+    "type": "Provider directory",
+    "category": "Provider directory",
+    "subSector": "Art history",
+    "location": "London",
+    "format": "In person",
+    "duration": "Not stated",
+    "durationBand": "Not stated",
+    "eligibility": "Young people aged 16-18 exploring the Courtauld Gallery collection and engaging with art history and art practice.",
+    "years": [
+      "Year 12",
+      "Year 13"
+    ],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Not stated",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [],
+    "cost": "Free workshops, courses and events",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "",
+    "applicationState": "Unknown",
+    "applicationUrl": "https://courtauld.ac.uk/take-part/schools/young-people/",
+    "url": "https://courtauld.ac.uk/take-part/schools/young-people/",
+    "description": "A browse hub of free workshops, courses and events for 16-18s, including Seminar Sessions led by art historians from across the UK.",
+    "activities": [
+      "Seminar sessions with art historians",
+      "Workshops responding to the collection",
+      "Art History Link-Up offering free fast-track EPQ and A level courses"
+    ],
+    "skills": [],
+    "tags": [
+      "Art history",
+      "Directory",
+      "Free"
+    ],
+    "certificate": "Not stated",
+    "selection": "Not stated",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Directory",
+    "sourceUrls": [
+      "https://courtauld.ac.uk/take-part/schools/young-people/"
+    ],
+    "unconfirmed": [],
+    "addedAt": "2026-10-04"
+  },
+  {
+    "id": "redcross-young-volunteering",
+    "title": "Opportunities for young people",
+    "provider": "British Red Cross",
+    "sector": "Explore careers",
+    "type": "Provider directory",
+    "category": "Provider directory",
+    "subSector": "Volunteering",
+    "location": "Not stated",
+    "format": "Hybrid",
+    "duration": "From one-week work experience placements to volunteering for up to 12 weeks",
+    "durationBand": "Not stated",
+    "eligibility": "Many roles are open to anyone aged 15-25, and many placements are open to anyone aged 15 and over.",
+    "years": [],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "Not stated",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [],
+    "cost": "Not stated",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "",
+    "applicationState": "Unknown",
+    "applicationUrl": "https://www.redcross.org.uk/get-involved/opportunities-for-young-people",
+    "url": "https://www.redcross.org.uk/get-involved/opportunities-for-young-people",
+    "description": "A browse hub of volunteering routes, including a one-week work experience placement for 15-18s and a five-week humanitarian actor course in the Derry,Londonderry and Strabane area.",
+    "activities": [
+      "Supporting events and charity shops",
+      "Community research and project support",
+      "HumanKind humanitarian actor course"
+    ],
+    "skills": [],
+    "tags": [
+      "Volunteering",
+      "Directory"
+    ],
+    "certificate": "Not stated",
+    "selection": "Not stated",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Directory",
+    "sourceUrls": [
+      "https://www.redcross.org.uk/get-involved/opportunities-for-young-people"
+    ],
+    "unconfirmed": [
+      "Individual opportunities carry their own locations and dates"
+    ],
+    "addedAt": "2026-10-04"
   }
 ]
