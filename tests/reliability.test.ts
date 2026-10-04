@@ -56,7 +56,9 @@ test("corrupt data and backup write failures remain recoverable instead of being
  const throwing={getItem:backend.getItem,setItem:()=>{throw new Error("Quota exceeded");}},failed=new LocalWorkspaceStorage(throwing);await failed.load();await assert.rejects(()=>failed.replace(workspace()));assert.equal(backend.getItem(storageKey),"{broken");
 });
 test("the structured catalogue preserves every existing record, order and provenance exactly",()=>{
- assert.equal(catalogue.length,53);assert.equal(createHash("sha256").update(JSON.stringify(catalogue)).digest("hex"),"9a0f5bbf1c9f351d3d3f1fa51357e0d8e313153926f74250f90fa9231bdacd72");
+ const added=["engineering-college-steam","parliament-education","national-archives-education","british-library-schools","nhs-health-careers","apprenticeships-gov-uk"],preserved=catalogue.filter(i=>!added.includes(i.id));
+ assert.equal(preserved.length,53);assert.equal(createHash("sha256").update(JSON.stringify(preserved)).digest("hex"),"9a0f5bbf1c9f351d3d3f1fa51357e0d8e313153926f74250f90fa9231bdacd72");
+ assert.equal(catalogue.length,59);assert.equal(createHash("sha256").update(JSON.stringify(catalogue)).digest("hex"),"fb3735570f18bc9fb3b28ac295acf15ce61efbe4ed070f9b9129feea6e5229a8");
  assert.throws(()=>validateCatalogue([{...catalogue[0],typo:"unreviewed"}]));assert.throws(()=>validateCatalogue([{...catalogue[0],checkedAt:"yesterday"}]));assert.throws(()=>validateCatalogue([catalogue[0],catalogue[0]]));assert.throws(()=>validateCatalogue(catalogue,[catalogue[0].id]));
 });
 test("review queues expose stale, conflicting and approaching dates without trusting proposed changes",()=>{
