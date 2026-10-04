@@ -61,7 +61,7 @@ export type ApplicationQuestion=z.infer<typeof questionSchema>;
 export const requirementSchema=z.object({id:text(180),label:text(250).min(1),note:text(1000).default(""),done:z.boolean().default(false)});
 export const recordSchema=z.object({
  opportunity:opportunitySchema,status:z.enum(statuses).default("Saved"),savedAt:text(50),
- deadlineDate:dateSchema.default(""),deadlineOverride:z.boolean().default(false),
+ deadlineDate:dateSchema.default(""),deadlineOverride:z.boolean().default(false),planDate:dateSchema.default(""),
  applicationUrl:text(2000).default(""),nextAction:text(300).default(""),nextActionDate:dateSchema.default(""),
  notes:text(6000).default(""),appliedAt:dateSchema.default(""),eventDate:dateSchema.default(""),
  outcome:text(1000).default(""),priority:z.enum(["Normal","High","Low"]).default("Normal"),

@@ -1,16 +1,18 @@
 import { daysUntil, todayISO, recordDeadline, type AppData, type RichOpportunity, type TrackedRecord, type Experience } from "./domain";
+import { shiftDate } from "./domain-dates";
+import { applicationPlan } from "./deadline-plan";
 import { sourceFreshness } from "./opportunity-repository";
 import { recommendations } from "./recommendations";
 import type { ActivityEvent } from "./workspace-events";
 export type DateBasis="Confirmed source date"|"Source date · needs review"|"Student-entered date"|"Suggested date"|"Approximate period"|"Unknown date";
-export type WorkspaceItem={id:string;recordId:string;experienceId?:string;opportunityId?:string;title:string;detail:string;kind:"Deadline"|"Opening"|"Next action"|"Interview"|"Reference"|"Follow up"|"Programme"|"Reflection"|"Personal"|"Milestone"|"Requirement"|"Question"|"Explore";date:string;originalDate:string;period:string;basis:DateBasis;score:number;sourceId?:string;priority:string;snoozed:boolean;actionId?:string};
+export type WorkspaceItem={id:string;recordId:string;experienceId?:string;opportunityId?:string;title:string;detail:string;kind:"Deadline"|"Opening"|"Next action"|"Interview"|"Reference"|"Follow up"|"Programme"|"Reflection"|"Personal"|"Milestone"|"Requirement"|"Question"|"Plan"|"Explore";date:string;originalDate:string;period:string;basis:DateBasis;score:number;sourceId?:string;priority:string;snoozed:boolean;actionId?:string};
 const inactive=new Set(["Unsuccessful","Not pursuing","Completed"]);
-export function plusDays(date:string,days:number){return new Date(Date.parse(date+"T12:00:00Z")+days*86400000).toISOString().slice(0,10);}
+export const plusDays=shiftDate;
 export function workspaceItems(data:AppData,collection:RichOpportunity[]=[],today=todayISO()):WorkspaceItem[]{
  const items:WorkspaceItem[]=[];
  function add(r:TrackedRecord,kind:WorkspaceItem["kind"],title:string,date="",basis:DateBasis="Unknown date",suffix:string=kind,detail="",period="",sourceId=""){
   const days=daysUntil(date,today);
-  const weights:Record<WorkspaceItem["kind"],number>={Deadline:80,Opening:35,"Next action":75,Interview:90,Reference:65,"Follow up":25,Programme:30,Reflection:20,Personal:50,Milestone:40,Requirement:55,Question:60,Explore:10};
+  const weights:Record<WorkspaceItem["kind"],number>={Deadline:80,Opening:35,"Next action":75,Interview:90,Reference:65,"Follow up":25,Programme:30,Reflection:20,Personal:50,Milestone:40,Requirement:55,Question:60,Plan:78,Explore:10};
   const score=(days!==null&&days<0?1000:days!==null&&days<=7?300-days*5:days!==null&&days<=30?120-days:0)+weights[kind]+(r.priority==="High"?15:r.priority==="Low"?-10:0);
   items.push({id:r.opportunity.id+":"+kind+":"+suffix+":"+date,recordId:r.opportunity.id,title,detail:detail||r.opportunity.title,kind,date,originalDate:kind==="Deadline"&&r.deadlineOverride?r.opportunity.deadlineDate:date,period,basis,score,sourceId,priority:r.priority,snoozed:false});
  }
@@ -40,6 +42,14 @@ export function workspaceItems(data:AppData,collection:RichOpportunity[]=[],toda
    if(!r.nextAction&&!r.requirements.some(t=>!t.done)&&!r.questions.some(q=>q.status==="Draft")&&!recordDeadline(r))add(r,"Next action","Check requirements and set a next action","","Unknown date","plan",o.title);
   }
   if(r.status==="Applied"&&r.appliedAt){const suggested=plusDays(r.appliedAt,21);add(r,"Follow up","Check response expectations: "+o.title,suggested,"Suggested date","response","Three weeks after your recorded submission; the provider may publish a different response schedule.");}
+  // A student's own plan date can be earlier than the provider's, so the pace signal
+  // still works when the provider states no closing date at all.
+  if(r.intent==="Applying"&&!r.nextAction.trim()){
+   const plan=applicationPlan(r,today);
+   if(plan.total>0&&plan.daysLeft!==null&&plan.daysLeft<plan.total){
+    add(r,"Plan",(plan.daysLeft<0?"Decide whether to continue: ":"Finish or decide: ")+o.title,plan.target,plan.basis==="Provider deadline"?source:"Student-entered date","pace",plan.note);
+   }
+  }
   for(const stage of r.applicationSteps){const date=r.milestoneDates.find(m=>m.stage===stage)?.date||"";add(r,"Milestone",stage,date,date?"Student-entered date":"Unknown date",stage,date?"Recorded milestone · student-entered completion date":"Recorded complete · completion date was not recorded");}
  }
  for(const e of data.experiences.filter(e=>e.opportunityId===""&&!e.whatDid.trim()))items.push({id:"experience:"+e.id+":Reflection",recordId:"",experienceId:e.id,title:"Record what you did: "+e.name,detail:"Capture one real action while it is fresh.",kind:"Reflection",date:"",originalDate:"",period:"",basis:"Unknown date",score:20,priority:"Normal",snoozed:false});

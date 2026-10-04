@@ -38,6 +38,16 @@ export function suggestEvidence(question:string,entries:ReturnType<typeof eviden
   return {evidence:e,reasons,rank};
  }).filter(v=>v.rank>0).sort((a,b)=>b.rank-a.rank||Number(starComplete(b.evidence))-Number(starComplete(a.evidence))||Number(!!b.evidence.whatHappened.trim()&&!!b.evidence.learning.trim())-Number(!!a.evidence.whatHappened.trim()&&!!a.evidence.learning.trim())||a.evidence.experienceName.localeCompare(b.evidence.experienceName));
 }
+// Skills a question implies, used to report a gap as a gap rather than returning a shorter list.
+export function impliedSkills(question:string){return [...new Set(evidenceRelations.filter(r=>r.terms.some(t=>question.toLowerCase().includes(t))).flatMap(r=>r.skills))];}
+// Implied skills with nothing recorded for them. This reports an absence and never fills it in.
+export function evidenceGaps(question:string,entries:ReturnType<typeof evidenceBank>){return impliedSkills(question).filter(skill=>!entries.some(e=>e.skill===skill));}
+// Spread the visible suggestions across experiences so one rich experience cannot fill the list.
+export function diversifyEvidence<T extends {evidence:{experienceId:string}}>(results:T[],perExperience=1):T[] {
+ const chosen:T[]=[],rest:T[]=[],used=new Map<string,number>();
+ for(const value of results){const count=used.get(value.evidence.experienceId)||0;if(count<perExperience){chosen.push(value);used.set(value.evidence.experienceId,count+1);}else rest.push(value);}
+ return [...chosen,...rest];
+}
 export type InAppAlert={id:string;title:string;detail:string;recordId?:string;experienceId?:string;kind:"urgent"|"review"|"explore"};
 export function workspaceAlerts(data:AppData,catalogue:RichOpportunity[],today=todayISO()){
  const alerts:InAppAlert[]=[];

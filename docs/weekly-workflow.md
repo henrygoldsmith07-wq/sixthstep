@@ -14,7 +14,21 @@ Persisted intentions and application stages are unchanged. UI labels translate `
 
 Home's upcoming preview uses recorded exact dates from saved work. Attention groups actual recorded issues by opportunity and links directly to the workspace; it does not declare an opportunity invalid or predict an outcome. Source-check dates and student overrides retain their labels.
 
-Explore shows one paginated result list by default. Collections render only while expanded. Explicit negative feedback persists, and diversification changes feed order without changing eligibility. Concise reasons show the student's subject/interest connections; full reasoning and eligibility checks remain in the detail dialog.
+Explore shows one paginated result list by default. Collections render only while expanded. Explicit negative feedback persists, and diversification changes feed order without changing eligibility. Concise reasons show the student's subject/interest connections; full reasoning and eligibility checks remain in the detail dialog. A comparison shows one scanned fit summary above each column, the time left against each deadline, and how much recorded evidence already sits behind each option — or that nothing is recorded there yet.
+
+## Recorded pathway
+
+Evidence readiness additionally reports where the student has actually recorded work, and names the career areas they declared an interest in that hold nothing recorded yet. Both derive from experiences and evidence only. An empty area is reported as empty; it is never filled from a programme's advertised activities.
+
+Recommendations may add two further explanations: that an opportunity builds on experiences already recorded in a related area, and that an area of declared interest holds no recorded example yet. Neither changes eligibility, and neither appears for an area the student did not ask about.
+
+## Planning from the student's own date
+
+Most providers state no exact closing date, so a countdown alone leaves a student with nothing to plan against. Each application therefore carries an optional **plan date**: the student's own intention, distinct from the provider's deadline and from a manual deadline correction. The plan resolves in a fixed order — plan date, then manual deadline correction, then provider deadline, then none.
+
+From that target SixthStep counts backwards across recorded outstanding work: outstanding references first (longest lead time), then draft responses, remaining requirements and checklist tasks. Each step's date is the student's own working date and is labelled as such; a step whose date would already have passed is shown against today rather than left in the past. The plan states remaining items beside remaining days and stops there. It does not predict success, and where a plan date falls after the provider's recorded deadline it says so, because the provider's date is the one that decides.
+
+A plan only becomes a Home action when more preparation is recorded than the days remaining, and never when the student has already written their own next action.
 
 The API body limit is enforced during streaming. Tavily errors and malformed successes have actionable messages. Duplicate searches share bounded in-flight work; both the TTL cache and local rate buckets are bounded. Changed client searches abort outstanding work and cannot be overwritten by obsolete results. No API keys enter local data or backups.
 
