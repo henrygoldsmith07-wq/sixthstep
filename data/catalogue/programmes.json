@@ -1838,5 +1838,64 @@
       "Cost"
     ],
     "addedAt": "2026-10-03"
+  },
+  {
+    "id": "engineering-college-steam",
+    "title": "Schools programme (STEAM)",
+    "provider": "The Engineering College",
+    "sector": "Engineering",
+    "type": "STEM programme",
+    "category": "STEM programme",
+    "subSector": "Engineering",
+    "location": "North West England; provider states no site address",
+    "format": "In person",
+    "duration": "Over the course of an academic year, two days every week",
+    "durationBand": "Longer programme",
+    "eligibility": "Students aged 16 to 17; school years not stated. Delivered alongside partner schools, so access is by school or enquiry rather than an open application.",
+    "years": [],
+    "subjects": [],
+    "subjectRequirements": "Not stated",
+    "geography": "North West England; a school partnership is required",
+    "wideningParticipation": "Not stated",
+    "careerAreas": [],
+    "applicationRequirements": [
+      "Enquiry through the provider's contact form, or through a partner school"
+    ],
+    "cost": "Not stated",
+    "deadline": "Not stated",
+    "deadlineDate": "",
+    "startDate": "",
+    "openingDate": "",
+    "openingPeriod": "",
+    "closingPeriod": "",
+    "applicationState": "Unknown",
+    "applicationUrl": "https://theengineeringcollege.co.uk/our-learning-pathways/our-schools-programme-steam/",
+    "url": "https://theengineeringcollege.co.uk/our-learning-pathways/our-schools-programme-steam/",
+    "description": "Project-based engineering, science, technology, art and mathematics training delivered with partner schools, feeding the provider's apprenticeship pathways.",
+    "activities": [
+      "Study across science, technology, engineering, art and mathematics",
+      "Hands-on work across practical engineering disciplines",
+      "Engineering calculations, principles and health and safety",
+      "Meet the employer events and open days"
+    ],
+    "skills": [],
+    "tags": [
+      "Engineering",
+      "STEM",
+      "Apprenticeships"
+    ],
+    "certificate": "Students work towards a Level 2 qualification in Engineering; 'STEAM Learner of the Year' Award at the annual celebration",
+    "selection": "Not stated; the provider publishes no selection process or open application window",
+    "checkedAt": "2026-10-04",
+    "source": "catalogue",
+    "sourceKind": "Programme",
+    "sourceUrls": [
+      "https://theengineeringcollege.co.uk/our-learning-pathways/our-schools-programme-steam/",
+      "https://theengineeringcollege.co.uk/"
+    ],
+    "unconfirmed": [
+      "Access is by school partnership or enquiry, so a student cannot apply to this directly"
+    ],
+    "addedAt": "2026-10-04"
   }
 ]
