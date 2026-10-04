@@ -1,16 +1,20 @@
 import { availability, daysUntil, todayISO, type RichOpportunity, type StudentProfile, type TrackedRecord, type Experience } from "./domain";
 import type { DiscoveryFeedback } from "./workspace-events";
 import { relatedAreas, opportunityContent } from "./careers";
+import { recordedCoverage, recordedSupport, unrecordedAreas } from "./coverage";
 import { sourceFreshness } from "./opportunity-repository";
 export type RecommendationContext={records?:TrackedRecord[];experiences?:Experience[];feedback?:DiscoveryFeedback[]};
 export type Match={reasons:string[];checks:string[];conflicts:string[];rank:number;eligible:boolean};
+export const varietyReason="A different provider or opportunity type adds variety to your exploration";
 export function conciseReason(match:Match){
  const feedback=match.reasons.find(r=>r.startsWith("You asked for more"));
  if(feedback)return feedback.replace(/ · shared .+$/,"")+".";
  const subject=match.reasons.find(r=>r.startsWith("Related to "));
  const interest=match.reasons.find(r=>r.startsWith("Matches your ")&&r.endsWith(" interest"));
  if(subject&&interest)return subject+" and your "+interest.slice("Matches your ".length)+".";
- return (subject||interest||match.reasons.find(r=>r.startsWith("Relates to")||r.startsWith("Builds on")||r.startsWith("Connected to"))||match.reasons[0]||"").replace(/ through .+$/,"");
+ // Diversification explains ordering rather than fit, so it never stands in for a real reason.
+ const concrete=match.reasons.find(r=>r!==varietyReason&&!/^A different provider/.test(r));
+ return (subject||interest||match.reasons.find(r=>r.startsWith("Relates to")||r.startsWith("Builds on")||r.startsWith("Connected to"))||concrete||"").replace(/ through .+$/,"");
 }
 function words(value:string) {return value.toLowerCase().replace(/mathematics/g,"maths").replace(/computer science/g,"computing").split(/[^a-z0-9]+/).filter(v=>v.length>2);}
 function overlap(a:string,b:string) {const tokens=words(a);return tokens.some(w=>words(b).includes(w));}
@@ -20,7 +24,8 @@ function prepareMatcher(profile:StudentProfile,context:RecommendationContext){
  for(const e of context.experiences||[])if(e.interestChange==="Decreased"&&(e.disliked.trim()||e.careerImpact.trim()))for(const area of e.careerAreas)if(!decreased.has(area))decreased.set(area,e);
  const enjoyed=(context.experiences||[]).filter(e=>e.interestChange==="Increased"&&(e.enjoyed.trim()||e.careerImpact.trim())).map(experience=>({experience,areas:new Set(experience.careerAreas.flatMap(a=>relatedAreas(a).map(v=>v.area)))}));
  const tokens=new Map<string,string[]>(),get=(text:string)=>{let value=tokens.get(text);if(!value){value=words(text);tokens.set(text,value);}return value;};
- return {today:todayISO(),direct:new Map(signals.map(f=>[f.opportunityId,f])),more:signals.filter(f=>f.signal==="Show me more like this"),fewer:signals.filter(f=>f.signal==="Show fewer like this"),signals,saved,decreased,enjoyed,careerAreas:relatedAreas([profile.careerInterests,...profile.interests].join(" ")),overlap:(a:string,b:string)=>{const bs=get(b);return get(a).some(w=>bs.includes(w));}};
+ const coverage=recordedCoverage(context.experiences||[]);
+ return {today:todayISO(),direct:new Map(signals.map(f=>[f.opportunityId,f])),more:signals.filter(f=>f.signal==="Show me more like this"),fewer:signals.filter(f=>f.signal==="Show fewer like this"),signals,saved,decreased,enjoyed,careerAreas:relatedAreas([profile.careerInterests,...profile.interests].join(" ")),coverage,unrecorded:new Set(unrecordedAreas(profile,coverage)),overlap:(a:string,b:string)=>{const bs=get(b);return get(a).some(w=>bs.includes(w));}};
 }
 export function recommendationMatcher(profile:StudentProfile,context:RecommendationContext={}){
  const prepared=prepareMatcher(profile,context);return (item:RichOpportunity)=>matchOpportunity(item,profile,context,prepared);
@@ -49,6 +54,10 @@ export function matchOpportunity(item:RichOpportunity,profile:StudentProfile,con
  if(saved){reasons.push("In the same sector as "+saved.opportunity.title+", which you saved");rank+=2;}
  const completed=prepared.enjoyed.find(e=>itemAreas.some(area=>e.areas.has(area.area)))?.experience;
  if(completed){reasons.push("Builds on "+completed.name+", where you recorded increased interest");rank+=2;}
+ const support=recordedSupport(item,prepared.coverage);
+ if(support.length){const top=support[0];reasons.push("Builds on "+top.experiences+" experience"+(top.experiences===1?"":"s")+" you have recorded in "+top.area.toLowerCase());rank+=2;}
+ const gap=itemAreas.map(area=>area.area).find(area=>prepared.unrecorded.has(area));
+ if(gap)checks.push("You have not recorded an example in "+gap.toLowerCase()+" yet — this could be a way to start");
  const decreased=prepared.decreased.get(item.sector);
  if(decreased){rank-=2;checks.push("Lower after you recorded decreased interest in "+decreased.name);}
  const similarDone=signals.find(f=>f.signal==="Already done something similar"&&f.opportunityId!==item.id&&f.provider===item.provider&&f.category===item.category);
@@ -100,7 +109,7 @@ export function diversifyRecommendations(ranked:{item:RichOpportunity;match:Matc
  while(pool.length&&result.length<12){
   const value=(v:typeof ranked[number])=>v.match.rank-(providers.get(v.item.provider)||0)*(direction==="Exploring"?3:1)-(types.get(v.item.category)||0)*(direction==="Exploring"?1:0);
   let index=0;for(let i=1;i<pool.length;i++)if(value(pool[i])>value(pool[index]))index=i;
-  const [chosen]=pool.splice(index,1),next={...chosen,match:index>0&&direction==="Exploring"?{...chosen.match,reasons:[...chosen.match.reasons,"A different provider or opportunity type adds variety to your exploration"]}:chosen.match};
+  const [chosen]=pool.splice(index,1),next={...chosen,match:index>0&&direction==="Exploring"?{...chosen.match,reasons:[...chosen.match.reasons,varietyReason]}:chosen.match};
   providers.set(next.item.provider,(providers.get(next.item.provider)||0)+1);types.set(next.item.category,(types.get(next.item.category)||0)+1);result.push(next);
  }
  return [...result,...pool];

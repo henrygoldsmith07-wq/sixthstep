@@ -14,7 +14,7 @@ Calendar exports individual dates, selected date groups or every exact date as `
 
 The catalogue lives in `data/catalogue/` with strict runtime and CI validation. Its review helpers identify stale, incomplete/conflicting and approaching dated records; proposed source changes remain pending confirmation. Run `npm run validate:catalogue` after editing records. All 53 existing records and their provenance are preserved.
 
-Recommendations retain explicit profile/activity/feedback reasons and diversify exploration across providers and opportunity types. Evidence retrieval uses recorded skills, shared topics, career labels and experience type; every result explains its connection. Local aggregate funnel metrics are available under Profile without transmitting student data or assigning achievement scores.
+Recommendations retain explicit profile/activity/feedback reasons and diversify exploration across providers and opportunity types. They also read what the student has actually recorded: an opportunity may explain that it builds on experiences already recorded in a related area, and a declared area of interest with nothing recorded in it yet is named as a gap rather than filled in. Evidence retrieval uses recorded skills, shared topics, career labels and experience type; every result explains its connection, spreads across different experiences, and says plainly when a question implies a skill the student has not recorded yet. Local aggregate funnel metrics are available under Profile without transmitting student data or assigning achievement scores.
 
 Authenticated cloud sync, direct Google Calendar integration, external reminder delivery, automated provider monitoring and semantic embeddings are deliberately deferred. The storage, calendar and catalogue boundaries support those additions without making them dependencies of the current student workflow.
 
@@ -26,8 +26,9 @@ SixthStep supports the full student journey: **discover → evaluate → choose 
 - A quick editable profile: school year, optional age, subjects, interests and career direction, with optional format, time, travel and opportunity preferences.
 - Explained recommendations using actual profile connections. Known age/year conflicts prevent recommendations; unknown criteria remain checks, with no invented match percentages.
 - A home dashboard with next actions, overdue tasks, upcoming deadlines, applications awaiting a response, recent saves and experiences ready to reflect on.
-- Decision filters, removable filter chips, deadline sorting and side-by-side comparison of 2–4 opportunities.
+- Decision filters, removable filter chips, deadline sorting and side-by-side comparison of 2–4 opportunities. Each compared column carries a scanned fit summary, the time left against its deadline, and how much recorded evidence already sits behind it.
 - Nine application stages, next actions and due dates, manual deadline corrections, priority, notes, outcomes, application links, checklists, and custom reminders.
+- An optional **plan date** per application — the student's own intention, kept separate from the provider's deadline — with a schedule counted backwards from it across outstanding references, draft responses, requirements and tasks.
 - Link/text extraction into an editable review screen. Reviewed imports and manually entered opportunities become ordinary tracked records. Manual entry needs no keys.
 - Classified live search that prioritises official sources and opportunity platforms, removes duplicates/unsafe links and detected articles or irrelevant pages, and labels all web results as unverified.
 - Individual experience journals linked to completed opportunities, plus independent entries for volunteering, work, events and projects.
@@ -75,14 +76,14 @@ Application drafting, evidence matching, career relationships, the Exploration M
 1. Start with your year, subjects and interests; further preferences are optional.
 2. Browse the collection and read the fit explanations and eligibility checks. Compare alternatives if helpful.
 3. Save a programme, paste an external link/text, or use **Add myself**. Review extracted details before adding.
-4. Choose an application stage, your next action, a date and any required documents. The dashboard brings these back when you return.
+4. Choose an application stage, your next action, a date and any required documents. Add a plan date when the provider states none; the schedule counts back from it across what is outstanding.
 5. Mark an opportunity completed and open its journal entry. Metadata is carried across; your personal notes and skill evidence start blank.
 6. Write what you actually did and learned. Add an evidence example yourself, or review AI wording before explicitly using a suggested example.
 7. Save an edited reflection and export examples for future applications.
 
 Reminders appear in the workspace when it is opened; they do not send email or background notifications. Nothing submits applications on the student's behalf.
 
-Only confirmed full dates produce countdowns. Rolling, vague, missing-year and unknown deadlines do not. A personal deadline override can be corrected, cleared, or reset to the source date. Curated application-open information becomes unknown 45 days after its source check unless refreshed.
+Only confirmed full dates produce countdowns. Rolling, vague, missing-year and unknown deadlines do not. A personal deadline override can be corrected, cleared, or reset to the source date. A plan date is the student's own intention: it schedules their own outstanding work but never becomes a provider deadline, and a plan set after the provider's recorded date is flagged as the provider's date deciding. Curated application-open information becomes unknown 45 days after its source check unless refreshed.
 
 ## Data migration and backup
 
@@ -194,6 +195,8 @@ Directories link to the provider for current programme-specific requirements. Fo
 - `components/application-workspace.tsx`, `reuse-evidence.tsx`: question preparation and source-linked evidence reuse.
 - `components/journal.tsx`, `reflection-guide.tsx`, `exploration-map.tsx`, `evidence.tsx`, `profile.tsx`: reflection, exploration, evidence and preferences.
 - `lib/careers.ts`, `intelligence.ts`: transparent career relationships, evidence relevance, deadline context and alert rules.
+- `lib/coverage.ts`: what the student has actually recorded by area and skill, and which declared areas hold nothing yet.
+- `lib/deadline-plan.ts`: plan target resolution, recorded outstanding work and the schedule counted back from the student's own date.
 - `lib/domain.ts`: validated opportunity/profile/application/experience models and deadline/action/evidence helpers.
 - `lib/recommendations.ts`: transparent matching, decision filters and discovery sections.
 - `lib/persistence.ts`: v1 migration and JSON backup validation.
