@@ -15,7 +15,9 @@ export function OpportunityMap({ items, onOpen, origin = "" }: { items: RichOppo
   // top one would swallow the click. Bigger places keep their true position; any pin that still
   // collides is nudged straight down by the overlap, so every marker stays reachable.
   const placed = useMemo(() => {
-    const gap = 26, taken: { x: number; y: number }[] = [];
+    // Targets are 44px so neighbouring towns stay individually tappable, so the collision
+    // distance has to clear the whole target rather than the 24px dot.
+    const gap = 48, taken: { x: number; y: number }[] = [];
     return [...groups].sort((a, b) => b.pins.length - a.pins.length || a.place.name.localeCompare(b.place.name)).map(group => {
       const { x, y } = project(group.place.lat, group.place.lng);
       let shift = 0;

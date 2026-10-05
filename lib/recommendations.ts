@@ -17,7 +17,11 @@ export function conciseReason(match:Match){
  const concrete=match.reasons.find(r=>r!==varietyReason&&!/^A different provider/.test(r));
  return (subject||interest||match.reasons.find(r=>r.startsWith("Relates to")||r.startsWith("Builds on")||r.startsWith("Connected to"))||concrete||"").replace(/ through .+$/,"");
 }
-function words(value:string) {return value.toLowerCase().replace(/mathematics/g,"maths").replace(/computer science/g,"computing").split(/[^a-z0-9]+/).filter(v=>v.length>2);}
+// Stop words carried no meaning but matched almost everything: "I would like to study law
+// and become a lawyer" shared "and" with half the catalogue and earned a stated match reason.
+// A shared function word is not a connection, so they are removed before matching.
+const stopWords=new Set(["and","the","for","with","are","not","but","all","any","can","our","out","its","was","has","have","had","new","use","one","two","get","how","who","via","per","own","set","may","see","way","day","work","people","help","want","would","like","from","they","them","this","that","there","here","what","when","where","which","your","you","their","been","being","into","than","then","also","some","more","most","only","just","over","such","very","will","shall","does","done","each"]);
+function words(value:string) {return value.toLowerCase().replace(/mathematics/g,"maths").replace(/computer science/g,"computing").split(/[^a-z0-9]+/).filter(v=>v.length>2&&!stopWords.has(v));}
 function overlap(a:string,b:string) {const tokens=words(a);return tokens.some(w=>words(b).includes(w));}
 function prepareMatcher(profile:StudentProfile,context:RecommendationContext){
  const signals=context.feedback||[],saved=new Map<string,TrackedRecord[]>(),decreased=new Map<string,Experience>();
@@ -83,19 +87,32 @@ export function matchOpportunity(item:RichOpportunity,profile:StudentProfile,con
  }
  if(item.years.length&&/^(Year [0-9]+|S[56])/.test(profile.year)){
   if(item.years.includes(profile.year)){reasons.push("Your school year is listed; check regional equivalents");rank++;}
-  else conflicts.push("Your school year is not listed");
+  else{
+   const convention=/^S[56]/.test(profile.year)?"S":"Year",uses=new Set(item.years.map(y=>/^S[56]/.test(y)?"S":"Year"));
+   if(uses.has(convention))conflicts.push("Your school year is not listed");
+   else checks.push("School year is listed as "+item.years.join(", ")+"; regional naming differs, so check whether it includes your year");
+  }
  }else if(profile.configured&&!item.years.length)checks.push("School year eligibility is not stated");
  if(item.format!=="Virtual"&&profile.location){
-  if(relatedOverlap(profile.location,item.location)){reasons.push("In your preferred area");rank+=2;}
-  else if(profile.travel==="Local only"&&item.location!=="Not stated")conflicts.push("Travel area needs checking");
+  const verdict=matchLocation(readLocation(item.location),profile.location);
+  if(verdict==="here"||verdict==="region"){reasons.push(verdict==="here"?"In the place you named":"Somewhere in your region");rank+=2;}
+  else if(profile.travel==="Local only"&&verdict==="elsewhere")conflicts.push("Travel area needs checking");
   else checks.push("Check the journey and geographic restrictions");
  }
  if(item.geography!=="Not stated"||item.subjectRequirements!=="Not stated")checks.push("Check all subject, location and additional eligibility criteria");
  if(item.sourceKind==="Directory")checks.push("Choose a specific programme from this directory");
  if(item.source!=="catalogue")checks.push("Details have not been checked by SixthStep");
  const freshness=sourceFreshness(item,prepared.today);if(item.source==="catalogue"&&(freshness.stale||freshness.state==="Unknown")){checks.push("Source may be stale; verify current criteria and dates");rank--;}
- const deadline=daysUntil(item.deadlineDate,prepared.today);if(deadline!==null&&deadline>=0&&deadline<=30){reasons.push("Recorded applications close in "+deadline+" day"+(deadline===1?"":"s"));rank++;}
- if(availability(item,prepared.today)==="Closed")conflicts.push("Applications are closed / the published deadline has passed");
+ const deadline=daysUntil(item.deadlineDate,prepared.today);
+ // Urgency is not a fit reason. A deadline worth acting on earns a small boost; one that is
+ // almost gone becomes a check, because a sixth-form student cannot apply overnight.
+ if(deadline!==null&&deadline>=0&&deadline<=30){
+  if(deadline<8)checks.push("Recorded applications close in "+deadline+" day"+(deadline===1?"":"s")+" — very little time to apply");
+  else{reasons.push("Recorded applications close in "+deadline+" days");rank++;}
+ }
+ const state=availability(item,prepared.today);
+ if(state==="Closed")conflicts.push("Applications are closed / the published deadline has passed");
+ else if(state==="Not yet open")checks.push("Applications have not opened yet — check the stated opening date");
  return {reasons:[...new Set(reasons)],checks:[...new Set(checks)],conflicts,rank,eligible:!conflicts.some(c=>/age band|school year|closed/.test(c))};
 }
 export function recommendations(items:RichOpportunity[],profile:StudentProfile,exclude:string[]=[],context:RecommendationContext={}) {
@@ -175,7 +192,7 @@ export function discoverySections(items:RichOpportunity[],profile:StudentProfile
  add("Closing soon","Published deadlines within the next 30 days.",items.filter(i=>{const d=daysUntil(i.deadlineDate,today);return i.sourceKind==="Programme"&&d!==null&&d>=0&&d<=30&&availability(i,today)!=="Closed";}).sort(deadlineOrder));
  add("Virtual opportunities","Explore from wherever you are.",items.filter(i=>i.format==="Virtual"&&i.sourceKind==="Programme"&&availability(i,today)!=="Closed"));
  add("Related to your subjects","A starting point for going beyond the syllabus.",items.filter(i=>profile.subjects.some(s=>i.subjects.some(v=>overlap(s,v)))&&i.sourceKind==="Programme"&&availability(i,today)!=="Closed"));
- if(profile.interests.length)add("Explore something different","Try an interest outside your usual sectors.",items.filter(i=>!profile.interests.includes(i.sector)&&i.sourceKind==="Programme"&&availability(i,today)!=="Closed"));
+ if(profile.interests.length)add("Explore something different","Try an interest outside your usual sectors.",items.filter(i=>!profile.interests.includes(i.sector)&&i.sector!=="Explore careers"&&i.sourceKind==="Programme"&&availability(i,today)!=="Closed"));
  // Source-check dates are not publication dates: never label rechecked records as new.
  add("New opportunities","Recently added to the collection, not necessarily recently launched.",items.filter(i=>{const d=daysUntil(i.addedAt,today);return !!i.addedAt&&d!==null&&d<=0&&d>=-30&&i.sourceKind==="Programme";}));
  const available=items.filter(i=>i.sourceKind==="Programme"&&availability(i,today)!=="Closed");

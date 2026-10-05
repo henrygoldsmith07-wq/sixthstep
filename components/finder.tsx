@@ -11,6 +11,17 @@ import { useWorkspace } from "./workspace-context";
 import { Heading, Notice, Field, Empty } from "./shared";
 import { OpportunityCard, Comparison } from "./opportunity";
 import { OpportunityMap } from "./opportunity-map";
+import { matchLocation, readLocation } from "@/lib/geo";
+
+// "Local first" has to agree with the location filter, so it asks geo.ts the same
+// question: does this provider name a place in, or in the region of, where the student is?
+// Raw substring matching put a Cardiff course below an Edinburgh one for a student in Wales.
+function localityRank(item:RichOpportunity,location:string){
+  if(!location||item.format==="Virtual")return false;
+  const verdict=matchLocation(readLocation(item.location),location);
+  return verdict==="here"||verdict==="region";
+}
+
 export function Finder(){
  const {data,connections,navigate,setFeedback,clearFeedback,discoveryArea,openOpportunity}=useWorkspace();
  const [view,setView]=useState<"list"|"map">("list"),[collectionOpen,setCollectionOpen]=useState(false),[collection,setCollection]=useState("Highlights"),[knownBands,setKnownBands]=useState(false);
@@ -33,7 +44,7 @@ export function Finder(){
   const match=recommendationMatcher(data.profile,context),ranked=candidates.map(item=>({item,match:match(item)}));
   if(knownBands)candidates=ranked.filter(v=>!!data.profile.age&&v.item.source==="catalogue"&&(v.item.minAge!==undefined||v.item.maxAge!==undefined)&&v.item.years.includes(data.profile.year)&&v.match.eligible).map(v=>v.item);
   if(sort==="Best fit"){const allowed=new Set(candidates.map(i=>i.id));return diversifyRecommendations(ranked.filter(v=>allowed.has(v.item.id)).sort((a,b)=>b.match.rank-a.match.rank||a.item.title.localeCompare(b.item.title)),data.profile.direction).map(v=>v.item);}
-  return [...candidates].sort((a,b)=>sort==="Deadline"?deadlineOrder(a,b):sort==="A–Z"?a.title.localeCompare(b.title):sort==="Least time first"?["A few hours","1–3 days","4–7 days","1–2 weeks","Several weeks","Longer programme","Self-paced","Not stated"].indexOf(a.durationBand)-["A few hours","1–3 days","4–7 days","1–2 weeks","Several weeks","Longer programme","Self-paced","Not stated"].indexOf(b.durationBand):Number(!!data.profile.location&&b.format!=="Virtual"&&b.location.toLowerCase().includes(data.profile.location.toLowerCase()))-Number(!!data.profile.location&&a.format!=="Virtual"&&a.location.toLowerCase().includes(data.profile.location.toLowerCase())));
+  return [...candidates].sort((a,b)=>sort==="Deadline"?deadlineOrder(a,b):sort==="A–Z"?a.title.localeCompare(b.title):sort==="Least time first"?["A few hours","1–3 days","4–7 days","1–2 weeks","Several weeks","Longer programme","Self-paced","Not stated"].indexOf(a.durationBand)-["A few hours","1–3 days","4–7 days","1–2 weeks","Several weeks","Longer programme","Self-paced","Not stated"].indexOf(b.durationBand):Number(localityRank(b,data.profile.location))-Number(localityRank(a,data.profile.location)));
  },[live,collectionItems,filters,showHidden,knownBands,sort,data.profile,data.records,data.experiences,data.feedback]);
  const coverage=useMemo(()=>locationCoverage(live??collectionItems,filters.location),[live,collectionItems,filters.location]);
  const sections=useMemo(()=>collectionOpen?discoverySections(collectionItems,data.profile,data.records,undefined,data.experiences,data.feedback):[],[collectionOpen,collectionItems,data.profile,data.records,data.experiences,data.feedback]);

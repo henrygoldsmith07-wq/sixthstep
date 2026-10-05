@@ -7,7 +7,7 @@ import { useWorkspace } from "./workspace-context";
 import { calendarExport, exactCalendarItems } from "@/lib/calendar-export";
 import { download } from "./shared";
 export function ActionItem({item,onOpportunity}:{item:WorkspaceItem;onOpportunity?:(id:string)=>void}){
- const {data,navigate,setActiveRecord,setActiveExperience,startExperience,setActionState,updateRecord}=useWorkspace();
+ const {data,navigate,setActiveRecord,setActiveQuestion,setActiveExperience,startExperience,setActionState,updateRecord}=useWorkspace();
  const [controls,setControls]=useState(false),[date,setDate]=useState(plusDays(todayISO(),3));
  const controlsId=useId();
  const actionId=item.actionId||item.id,originalTitle=item.actionId?item.title.replace(/^Reminder: /,""):item.title;
@@ -15,14 +15,23 @@ export function ActionItem({item,onOpportunity}:{item:WorkspaceItem;onOpportunit
  function open(){
   if(item.experienceId){setActiveExperience(item.experienceId);navigate("reflect");}
   else if(record&&item.kind==="Reflection")startExperience(record);
-  else if(record){setActiveRecord(record.opportunity.id);navigate("saved");}
+  else if(record){
+  setActiveRecord(record.opportunity.id);
+  // A question item carries its id in sourceId. Without this the workspace opened on the first
+  // question, so "Draft response: Why medicine?" landed the student somewhere else entirely.
+  if(item.kind==="Question"&&item.sourceId)setActiveQuestion(item.sourceId);
+  navigate("saved");
+ }
   else if(item.opportunityId&&onOpportunity)onOpportunity(item.opportunityId);
   else navigate("finder");
  }
  function complete(){
   setActionState({id:actionId,state:"Completed",date:"",at:new Date().toISOString()});
   if(!record)return;
-  if(item.kind==="Next action"&&record.nextAction===originalTitle)updateRecord(record.opportunity.id,{nextAction:"",nextActionDate:""});
+  // Only the record's own next action clears the stored text. A reminder reuses the "Next action"
+// kind, so completing one used to delete the real next action and its date. The item is hidden
+// either way, so clearing the text only destroyed the student own wording.
+if(item.kind==="Next action"&&!item.sourceId&&record.nextAction===originalTitle)updateRecord(record.opportunity.id,{nextAction:"",nextActionDate:""});
   else if(item.sourceId&&record.reminders.some(r=>r.id===item.sourceId))updateRecord(record.opportunity.id,{reminders:record.reminders.map(r=>r.id===item.sourceId?{...r,done:true}:r)});
   else if(item.sourceId&&["Requirement","Reference"].includes(item.kind))updateRecord(record.opportunity.id,{requirements:record.requirements.map(r=>r.id===item.sourceId?{...r,done:true}:r),checklist:record.checklist.map(r=>r.id===item.sourceId?{...r,done:true}:r)});
  }

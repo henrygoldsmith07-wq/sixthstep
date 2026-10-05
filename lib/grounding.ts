@@ -5,5 +5,7 @@ export function studentEvidenceText(experience:Experience) {
 function normalise(text:string){return text.replace(/\s+/g," ").trim().toLowerCase();}
 export function hasGroundedQuotes(reflection:RichReflection,experience:Experience){
  const evidence=normalise(studentEvidenceText(experience));
- return reflection.skills.every(skill=>normalise(skill.evidenceQuote).length>=8 && evidence.includes(normalise(skill.evidenceQuote)));
+ // An empty skill list satisfies every(), so a reflection with no skills passed the gate with
+  // no quote checked at all. A reflection that claims grounded evidence must contain some.
+  return reflection.skills.length>0&&reflection.skills.every(skill=>normalise(skill.evidenceQuote).length>=8 && evidence.includes(normalise(skill.evidenceQuote)));
 }

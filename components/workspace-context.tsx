@@ -9,7 +9,7 @@ import { useWorkspaceStorage } from "./use-workspace-storage";
 export type { View } from "@/lib/navigation";
 export type Connections={ai:boolean;search:boolean;aiProvider?:string;aiSetup?:"ready"|"missing"|"invalid"};
 type Workspace=ReturnType<typeof useWorkspaceNavigation>&{
- data:AppData;ready:boolean;error:string;conflict:boolean;connections:Connections|null;recovery:()=>Promise<Record<string,string|null>>;reloadStored:()=>Promise<void>;
+ data:AppData;ready:boolean;error:string;conflict:boolean;stalled:boolean;connections:Connections|null;recovery:()=>Promise<Record<string,string|null>>;reloadStored:()=>Promise<void>;
  discoveryArea:string;startDiscovery:(area:string)=>void;
  save:(item:RichOpportunity)=>void;updateRecord:(id:string,patch:Partial<TrackedRecord>)=>void;removeRecord:(id:string)=>void;
  updateProfile:(value:StudentProfile)=>void;updateExperience:(entry:Experience)=>void;removeExperience:(id:string)=>void;
