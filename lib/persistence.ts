@@ -16,16 +16,29 @@ export function loadWorkspace(storage:StorageReader):{data:AppData;error:string;
     const record=createRecord(enrich(item),typeof item.savedAt==="string"?item.savedAt:"");
     record.status=item.status==="Applied"?"Applied":item.status==="Completed"?"Completed":"Saved";
     if(!data.records.some(r=>r.opportunity.id===record.opportunity.id))data.records.push(record);
-   }catch {error="Some old saved opportunities could not be migrated. Your original v1 data is still retained.";}
+   }catch {error += (error?" ":"")+"Some old saved opportunities could not be migrated. Your original v1 data is still retained.";}
   }
  }catch{error="Old saved opportunities could not be loaded. Your original v1 data is still retained.";}
  try {
   const old=parseLegacy(storage,"sixthstep-profile-v1");
   if(old&&typeof old==="object")data.profile={...defaultProfile,year:typeof old.year==="string"?old.year:"Year 12",subjects:typeof old.subjects==="string"?old.subjects.split(/[,;\n]/).map((s:string)=>s.trim()).filter(Boolean):[],interests:Array.isArray(old.interests)?old.interests.filter((s:unknown)=>typeof s==="string"):[],configured:!!(old.interests?.length||old.subjects)};
- }catch{error ||= "Old profile data could not be loaded. Original data is retained.";}
+ }catch{error += (error?" ":"")+"Old profile data could not be loaded. Original data is retained.";}
  try {
   const old=parseLegacy(storage,"sixthstep-journal-v1");
-  if(typeof old==="string"&&old.trim())data.experiences.push(experienceSchema.parse({id:"legacy-notes",name:"My previous experience notes",whatDid:old.slice(0,4500),learned:old.length>4500?old.slice(4500,7000):"",updatedAt:new Date().toISOString()}));
+  if(typeof old==="string"&&old.trim()){
+    const stamp=new Date().toISOString();
+    data.experiences.push(experienceSchema.parse({id:"legacy-notes",name:"My previous experience notes",whatDid:old.slice(0,4500),learned:old.length>4500?old.slice(4500,7000):"",updatedAt:stamp}));
+    // Anything past the first entry used to be discarded silently. It is kept as another entry
+    // so no writing is lost, and the student is told their notes were split.
+    let remainder=old.slice(7000),part=1;
+    while(remainder.trim()){
+      const chunk=remainder.slice(0,4500);remainder=remainder.slice(4500);
+      data.experiences.push(experienceSchema.parse({id:"legacy-notes-"+part,name:"My previous experience notes (continued "+part+")",whatDid:chunk,learned:remainder?remainder.slice(0,2500):"",updatedAt:stamp}));
+      if(remainder)remainder=remainder.slice(2500);
+      part++;
+    }
+    if(part>1)error ||= "Your previous journal was longer than one entry allows, so it was split into "+part+" entries in date order. Nothing was removed.";
+   }
  }catch{error ||= "Old journal data could not be loaded. Original data is retained.";}
  return {data:appSchema.parse(data),error,migrated:data.records.length>0||data.experiences.length>0||data.profile.configured};
 }

@@ -38,12 +38,14 @@ test("rich reflections send only selected student evidence and return reusable g
  setup(t);let submitted="";
  global.fetch=async(_input,init)=>{submitted=JSON.parse(init?.body as string).messages[1].content;return completion(reflection);};
  const response=await reflect(request(entry));assert.equal(response.status,200);assert.equal(response.headers.get("Cache-Control"),"no-store");
- const result=await response.json();assert.deepEqual(result.reflection,reflection);assert.match(submitted,/I compared two design options/);assert.doesNotMatch(submitted,/other-student|test-secret/);
+ const result=await response.json();assert.deepEqual(result.reflection,{...reflection,origin:"ai"});assert.match(submitted,/I compared two design options/);assert.doesNotMatch(submitted,/other-student|test-secret/);
 });
 test("reflection rejects invented or metadata-only evidence quotes and too little student evidence",async t=>{
  setup(t);global.fetch=async()=>completion({...reflection,skills:[{...reflection.skills[0],evidenceQuote:"Engineering simulation"}]});
  assert.equal((await reflect(request(entry))).status,502);
  global.fetch=async()=>completion({...reflection,skills:[{...reflection.skills[0],evidenceQuote:"I led a team of twenty engineers"}]});
+ assert.equal((await reflect(request(entry))).status,502);
+ global.fetch=async()=>completion({...reflection,cvBullet:"Improved design efficiency by 30% across the team.",applicationExample:""});
  assert.equal((await reflect(request(entry))).status,502);
  assert.equal((await reflect(request({...entry,whatDid:"",learned:""}))).status,400);
 });

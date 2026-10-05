@@ -1,6 +1,9 @@
 import { todayISO, type TrackedRecord } from "./domain";
 
 // Labels clarify the student workflow without changing persisted v2 values.
+// The same wording is used for the dropdown options so a card, its badge and the detail view
+// can never disagree about what stage a record is at.
+export const stageLabel=(stage:string)=>stage==="Applied"?"Submitted":stage==="Preparing application"?"Applying":stage==="Accepted"?"Offer / accepted":stage;
 export function lifecycleLabel(record: TrackedRecord): string {
   if (record.status === "Saved" || record.status === "Researching") return record.intent === "Applying" ? "Applying" : record.intent;
   return { "Preparing application": "Applying", Applied: "Submitted", "Interview / next stage": "Interview / next stage", Accepted: "Offer / accepted", Unsuccessful: "Unsuccessful", "Not pursuing": "Not pursuing", Completed: "Completed" }[record.status];

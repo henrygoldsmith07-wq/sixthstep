@@ -18,7 +18,7 @@ export function calendarExport(items:WorkspaceItem[],sources:RichOpportunity[]=[
   for(const [identity,item] of events){
     const source=sources.find(o=>o.id===(item.recordId||item.opportunityId));
     const sourceUrl=source?safePublicHref(source.url):"";
-    const route=item.experienceId?{view:"reflect" as const,experience:item.experienceId}:item.recordId?{view:"saved" as const,record:item.recordId}:{view:"finder" as const,opportunity:item.opportunityId};
+    const route=item.experienceId?{view:"reflect" as const,experience:item.experienceId}:item.recordId?{view:"saved" as const,record:item.recordId,question:item.kind==="Question"?item.sourceId:undefined}:{view:"finder" as const,opportunity:item.opportunityId};
     const description=[source?.title||item.title,item.detail,"Date provenance: "+item.basis,item.originalDate&&item.originalDate!==item.date?"Original date: "+item.originalDate:"",source?.checkedAt?"Source checked: "+source.checkedAt:"",sourceUrl?"Provider source: "+sourceUrl:"",baseUrl?"SixthStep workspace: "+baseUrl.replace(/\/$/,"")+"/"+routeHash(route):"","Provider remains the final authority. Recheck dates and eligibility."].filter(Boolean).join("\n");
     lines.push("BEGIN:VEVENT","UID:"+encodeURIComponent(identity)+"@sixthstep.local","DTSTAMP:"+stamp,"DTSTART;VALUE=DATE:"+item.date.replace(/-/g,""),"DTEND;VALUE=DATE:"+plusDays(item.date,1).replace(/-/g,""),"SUMMARY:"+escape(item.title),"DESCRIPTION:"+escape(description),"CATEGORIES:"+escape(item.kind),...(sourceUrl?["URL:"+sourceUrl]:[]),"END:VEVENT");
   }

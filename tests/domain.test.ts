@@ -40,6 +40,14 @@ test("filters compose real decisions and exclude unknown published eligibility",
  assert.equal(discover([deadline],{...defaultFilters,deadline:"Next 7 days"},"2026-10-03").length,1);
  assert.equal(discover([deadline],{...defaultFilters,deadline:"Deadline passed"},"2026-10-09").length,1);
  assert.equal(discover([programme],{...defaultFilters,deadline:"Next 30 days"},"2026-10-03").length,0);
+  // "Next 30 days" must also keep the records it is meant to keep, not only drop the undated one.
+  assert.equal(discover([deadline],{...defaultFilters,deadline:"Next 30 days"},"2026-10-03").length,1);
+  // "Deadline passed" had only ever been exercised in the keeping direction.
+  assert.equal(discover([deadline],{...defaultFilters,deadline:"Deadline passed"},"2026-10-03").length,0);
+  assert.equal(discover([deadline],{...defaultFilters,deadline:"Deadline passed"},"2026-10-09").length,1);
+  // "No fixed deadline" had no test at all.
+  assert.equal(discover([deadline],{...defaultFilters,deadline:"No fixed deadline"},"2026-10-03").length,0);
+  assert.equal(discover([programme],{...defaultFilters,deadline:"No fixed deadline"},"2026-10-03").length,1);
 });
 test("countdowns require real full dates and respect the student's UK calendar day",()=>{
  assert.equal(daysUntil("rolling","2026-10-03"),null);assert.equal(daysUntil("2026-02-30","2026-10-03"),null);

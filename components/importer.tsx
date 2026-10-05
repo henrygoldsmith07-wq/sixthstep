@@ -27,7 +27,9 @@ export function Importer({initialMode="text"}:{initialMode?:Mode}){
   try{
    const response=await fetch("/api/opportunity",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(mode==="link"?{url}:{text})});
    const result=await response.json();if(!response.ok)throw new Error(result.error||"The opportunity could not be read.");
-   setDraft(opportunitySchema.parse(result.opportunity));setNextAction(String(result.nextSteps?.[0]||"Check eligibility and application instructions").slice(0,300));
+   setDraft(opportunitySchema.parse(result.opportunity));// Not prefilled from the model. This field became the student own next action, reached a
+ // dashboard alert and a calendar entry, with no grounding and no marker of who wrote it.
+ setNextAction("Check eligibility and application instructions");
   }catch(e){setError(e instanceof Error?e.message:"Try again, paste the page text or add the details yourself.");}
   finally{setBusy(false);}
  }
@@ -40,8 +42,15 @@ export function Importer({initialMode="text"}:{initialMode?:Mode}){
   if([draft.url,draft.applicationUrl,...draft.sourceUrls].some(v=>v&&!safeHref(v))){setError("Links must be public HTTPS addresses without embedded credentials.");return;}
   if(!reviewed){setError("Review the details and tick the confirmation before adding.");return;}
   const recordId=existing?.opportunity.id||draft.id;
-  if(!existing){save(parsed.data);updateRecord(recordId,{nextAction});}
-  setActiveRecord(recordId);navigate("saved");toast(existing?"Opened your existing opportunity":"Added to your application workspace");
+  if(existing){
+   // The reviewed corrections and the typed next action belong to this opportunity, so they are
+   // applied to the record already in the workspace instead of being silently dropped. Fields the
+   // student owns (deadline override, questions, requirements) live on the record, not here.
+   updateRecord(recordId,{opportunity:{...existing.opportunity,...parsed.data},nextAction:nextAction.trim()||existing.nextAction});
+   setActiveRecord(recordId);navigate("saved");toast("Updated the details on your saved opportunity");return;
+  }
+  save(parsed.data);updateRecord(recordId,{nextAction});
+  setActiveRecord(recordId);navigate("saved");toast("Added to your application workspace");
  }
  const exported=draft?[draft.title,"Provider: "+draft.provider,draft.description,"Type: "+draft.category,"Format: "+draft.format,"Location: "+draft.location,"Duration: "+draft.duration,"Eligibility: "+draft.eligibility,"Subjects: "+draft.subjectRequirements,"Cost: "+draft.cost,"Deadline: "+draft.deadline+(draft.deadlineDate?" ("+draft.deadlineDate+")":""),"Activities:\n"+draft.activities.join("\n"),"Skills you could practise:\n"+draft.skills.join("\n"),"Certificate: "+draft.certificate,"Selection: "+draft.selection,"Source: "+draft.url,"Application: "+draft.applicationUrl,"Unconfirmed:\n"+draft.unconfirmed.join("\n"),"My next action: "+nextAction].join("\n\n"):"";
  return <><Heading eyebrow="READ IT. UNDERSTAND IT. TAKE THE NEXT STEP." title="Make an opportunity clearer." description="Paste a programme link or its text. Review the important details, then add it to the same workspace as your saved opportunities."/>

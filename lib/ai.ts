@@ -17,7 +17,7 @@ function configuration(): AiConfig {
  if(genericSelected()) {
   const key=process.env.OPENAI_API_KEY?.trim();
   const model=process.env.OPENAI_MODEL?.trim();
-  if(!key || !model) throw new ApiError(503,"AI setup is incomplete. The site owner must set OPENAI_API_KEY and OPENAI_MODEL in Vercel, then redeploy.");
+  if(!key || !model) throw new ApiError(503,"AI help is not switched on for this site. You can still record everything by hand in the fields below.");
   const base=process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1";
   let endpoint:string;
   try {
@@ -77,5 +77,5 @@ export async function generateJson<T>(schema:z.ZodType<T>,instruction:string,inp
   const fenced=content.trim().match(/^\x60\x60\x60(?:json)?\s*([\s\S]*?)\s*\x60\x60\x60$/i);
   const value=JSON.parse(fenced ? fenced[1] : content);
   return schema.parse(value);
- } catch { throw new ApiError(502,"The AI response wasn't complete. Please try again."); }
+ } catch (error) { throw new ApiError(502,error instanceof ApiError?error.message:"SixthStep could not read the AI response. Please try again."); }
 }

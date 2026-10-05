@@ -72,12 +72,18 @@ export type TrackedRecord=z.infer<typeof recordSchema>;
 export const starSchema=z.object({situation:text(1000),task:text(1000),action:text(1500),result:text(1000)});
 export const evidenceSchema=z.object({
  id:text(180),skill:text(100),whatHappened:text(1200),action:text(1500),learning:text(1200),
- quote:text(2000).default(""),star:starSchema.optional()
+ quote:text(2000).default(""),star:starSchema.optional(),
+  // Who wrote this. Anything a model drafted is labelled as such wherever it is shown, copied
+  // into a draft, or exported, so it is never mistaken for something the student wrote.
+  origin:z.enum(["student","ai"]).default("student")
 });
 export type SkillEvidence=z.infer<typeof evidenceSchema>;
 export const richReflectionSchema=z.object({
  summary:text(2200),skills:z.array(z.object({skill:text(100),evidenceQuote:text(2000).min(8),whatHappened:text(1000),action:text(1200),learning:text(1000)})).max(10),
- star:starSchema,cvBullet:text(700),applicationExample:text(1800),interviewTalkingPoint:text(1200),nextSteps:list(500).max(5)
+ star:starSchema,cvBullet:text(700),applicationExample:text(1800),interviewTalkingPoint:text(1200),nextSteps:list(500).max(5),
+  // Reflections are drafted by the model unless the student rewrites them wholesale, so the
+  // default is "ai". Anything exported or shown says so.
+  origin:z.enum(["student","ai"]).default("ai")
 });
 export type RichReflection=z.infer<typeof richReflectionSchema>;
 export const experienceSchema=z.object({

@@ -24,9 +24,15 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     if(!this.loaded)throw new Error("Load the workspace before saving.");
     if(this.needsRecovery)throw new Error("Restore a valid backup before replacing unreadable data.");
     const value=JSON.stringify(appSchema.parse(data)),current=this.storage.getItem(storageKey);
-    if(current!==this.baseline&&current!==value)return {status:"conflict",error:"Another tab changed this workspace. Your edits are kept here; choose which version to continue with before saving."};
+    if(current!==this.baseline&&current!==value&&this.authoredDiffers(current,value))return {status:"conflict",error:"Another tab changed this workspace. Your edits are kept here; choose which version to continue with before saving."};
     if(value!==current)this.storage.setItem(storageKey,value);
     this.baseline=value;return {status:"saved"};
+  }
+  // Local metrics are written on every view and every keystroke, so comparing them made two
+  // ordinary tabs look like a conflict and blocked autosave permanently.
+  private authoredDiffers(current:string|null,next:string):boolean {
+   const authored=(raw:string|null)=>{if(!raw)return "";try{const {metrics:_ignored,...rest}=JSON.parse(raw);return JSON.stringify(rest);}catch{return raw;}};
+   return authored(current)!==authored(next);
   }
   async replace(data:AppData){
     const value=JSON.stringify(appSchema.parse(data)),original=this.storage.getItem(storageKey);
