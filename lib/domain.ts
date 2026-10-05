@@ -142,7 +142,7 @@ export function nextSteps(records:TrackedRecord[],experiences:Experience[],today
    for(const q of record.questions.filter(q=>q.status==="Draft").slice(0,2))add("action","Finish "+title+": "+q.question.slice(0,80),record.nextActionDate||deadline,"question-"+q.id);
    const reference=record.requirements.find(r=>!r.done&&/reference/i.test(r.label));if(reference)add("action","Arrange reference: "+title,record.nextActionDate||deadline,"reference-"+reference.id);
   }
-  if(deadline && ["Saved","Researching","Preparing application"].includes(record.status))add("deadline","Apply: "+title,deadline);
+  if(deadline && ["Saved","Researching","Preparing application"].includes(record.status))add("deadline",(record.intent==="Applying"?"Apply: ":"Review before deadline: ")+title,deadline);
   if(record.eventDate && ["Applied","Interview / next stage","Accepted"].includes(record.status))add("event","Event / next stage: "+title,record.eventDate);
   for(const reminder of record.reminders)if(!reminder.done)add("reminder",reminder.label,reminder.date,reminder.id);
   if(!record.nextAction && !deadline && ["Saved","Researching"].includes(record.status))add("action","Check eligibility: "+title);

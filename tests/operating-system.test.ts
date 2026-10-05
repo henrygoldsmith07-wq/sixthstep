@@ -126,7 +126,11 @@ test("regional year labels use the actual published band and never silently assu
  assert.equal(matchOpportunity(regional,{...profile,year:"S5"}).eligible,true);
  assert.equal(matchOpportunity(regional,{...profile,year:"Year 13 (Northern Ireland)"}).eligible,true);
  assert.equal(matchOpportunity(regional,{...profile,year:"Year 13"}).eligible,false);
- assert.equal(matchOpportunity(programme,{...profile,year:"S5"}).eligible,false);
+ const scottish=matchOpportunity(programme,{...profile,year:"S5"});
+ // A difference in regional naming is not evidence of ineligibility, but it is never
+ // silent either: the student is told the provider's wording and asked to check it.
+ assert.equal(scottish.eligible,true);
+ assert.ok(scottish.checks.some(c=>/regional naming differs/.test(c)),"a regional mismatch must be surfaced, not silently assumed");
 });
 
 test("student deadline overrides retain the original source date and clearing a countdown does not erase known source facts",()=>{

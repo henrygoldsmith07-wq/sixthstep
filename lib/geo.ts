@@ -16,7 +16,7 @@ export const places: Place[] = [
   p("Sheffield", "Yorkshire and the Humber", 53.3811, -1.4701, "south yorkshire"),
   p("Bristol", "South West", 51.4545, -2.5879, "bristol and avon"),
   p("Edinburgh", "Scotland", 55.9533, -3.1883, "scotland and borders"),
-  p("Cardiff", "Welford", 51.4816, -3.1791, "wales"),
+  p("Cardiff", "Wales", 51.4816, -3.1791),
   p("Belfast", "Northern Ireland", 54.5973, -5.9301, "northern ireland", "n ireland"),
   p("Glasgow", "Scotland", 55.8642, -4.2518),
   p("Newcastle upon Tyne", "North East", 54.9783, -1.6178, "newcastle", "tyne and wear"),
@@ -64,8 +64,8 @@ export const places: Place[] = [
   p("Inverness", "Scotland", 57.4778, -4.2247, "highland"),
   p("Stirling", "Scotland", 56.1486, -3.9362),
   p("Perth", "Scotland", 56.3958, -3.4308),
-  p("Swansea", "Welford", 51.6214, -3.9436, "wales"),
-  p("Bangor", "Welford", 53.2440, -4.1353, "gwynedd"),
+  p("Swansea", "Wales", 51.6214, -3.9436),
+  p("Bangor", "Wales", 53.2440, -4.1353, "gwynedd"),
   p("St Albans", "South East", 51.7520, -0.3360),
   p("Norwich and East Anglia", "East of England", 52.6309, 1.2974, "east anglia"),
   p("London and the South East", "London", 51.5074, -0.1278, "south east"),
@@ -74,10 +74,9 @@ export const places: Place[] = [
   p("Worcester", "West Midlands", 52.1936, -2.2216, "worcestershire"),
 ];
 
-export const regions = ["North East", "North West", "Yorkshire and the Humber", "East Midlands", "West Midlands", "East of England", "London", "South East", "South West", "Scotland", "Welford", "Northern Ireland"];
+export const regions = ["North East", "North West", "Yorkshire and the Humber", "East Midlands", "West Midlands", "East of England", "London", "South East", "South West", "Scotland", "Wales", "Northern Ireland"];
 
-// Welford is not a region name; keep the public list honest.
-export const regionNames = regions.filter(r => r !== "Welford");
+export const regionNames = regions;
 
 const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const contains = (haystack: string, needle: string) => new RegExp(`(^|[^a-z])${escape(needle)}([^a-z]|$)`, "i").test(haystack);
@@ -156,18 +155,6 @@ export function distanceKm(a: Place, b: Place): number {
   return 2 * earthRadiusKm * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
-export function nearestPlace(place: Place, withinKm = 80): { place: Place; km: number }[] {
-  return places
-    .filter(candidate => candidate.name !== place.name && candidate.region !== "Welford")
-    .map(candidate => ({ place: candidate, km: distanceKm(place, candidate) }))
-    .filter(entry => entry.km <= withinKm)
-    .sort((a, b) => a.km - b.km);
-}
-
-export function placeFor(query: string): Place | undefined {
-  return findPlace(query);
-}
-
 // Equirectangular projection corrected for longitude convergence at this latitude.
 // The outline is deliberately schematic: it orients a reader, it is not a survey map.
 export const mapView = { width: 400, height: 606, minLng: -8.2, maxLng: 2.0, minLat: 49.8, maxLat: 58.8 };
@@ -226,10 +213,6 @@ export function buildMap(items: RichOpportunity[], origin?: string): MapBuild {
   }
   pins.sort((a, b) => (a.km ?? Infinity) - (b.km ?? Infinity) || a.item.title.localeCompare(b.item.title));
   return { pins, unplaced, remote };
-}
-
-export function nearbySummary(pins: MapPin[], km = 50): number {
-  return pins.filter(pin => pin.km !== null && pin.km <= km).length;
 }
 
 export type PlaceGroup = { key: string; place: Place; pins: MapPin[]; km: number | null; onlineToo: boolean };

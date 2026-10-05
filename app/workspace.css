@@ -47,11 +47,15 @@
 .map-halo{fill:rgba(72,105,63,.16);stroke:none}
 .map-halo.chosen{fill:rgba(72,105,63,.3)}
 .map-markers{list-style:none;margin:0;padding:0;position:absolute;inset:14px}
-.map-markers li{position:absolute;width:24px;height:24px;margin:0}
-.map-pin{position:absolute;inset:0;width:100%;height:100%;padding:0;border-radius:50%;border:2px solid #48693f;background:#fff;cursor:pointer;display:grid;place-items:center}
-.map-pin:hover,.map-pin.chosen{background:#48693f}
-.map-pin.hybrid{border-style:dashed}
-.map-pin.home{box-shadow:0 0 0 4px rgba(72,105,63,.2)}
+.map-markers li{position:absolute;width:44px;height:44px;margin:0}
+/* The visible dot stays 24px inside a 44px target, so neighbouring towns remain individually
+   tappable without the markers swamping the outline. */
+.map-pin{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;background:transparent;cursor:pointer;display:grid;place-items:center}
+.map-pin::before{content:"";grid-area:1/1;width:24px;height:24px;border-radius:50%;border:2px solid #48693f;background:#fff}
+.map-pin-count{grid-area:1/1}
+.map-pin:hover::before,.map-pin.chosen::before{background:#48693f}
+.map-pin.hybrid::before{border-style:dashed}
+.map-pin.home::before{box-shadow:0 0 0 4px rgba(72,105,63,.2)}
 .map-pin-count{font:600 10px/1 var(--sans);color:#2f4329}
 .map-pin:hover .map-pin-count,.map-pin.chosen .map-pin-count{color:#fff}
 .map-caption{font-size:11px;line-height:1.6;color:#526257;margin:12px 0 0}
