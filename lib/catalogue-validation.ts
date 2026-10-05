@@ -27,15 +27,32 @@ export function validateCatalogue(input:unknown,order?:string[]):RichOpportunity
   if(order.length!==records.length||new Set(order).size!==order.length||order.some(id=>!ids.has(id)))throw new Error("Catalogue index must contain every stable ID exactly once.");
   const byId=new Map(records.map(i=>[i.id,i]));return order.map(id=>byId.get(id)!);
 }
+// A record can be incomplete without being wrong. These grades separate the two so the
+// review queue is a worklist rather than a wall: a stated caveat is already shown to the
+// student on the card, but a contradiction, an impossible window or a source we have not
+// re-checked still needs a human to look.
+export type ReviewGrade="Conflict"|"Check"|"Note";
+export function reviewGrade(item:RichOpportunity,today?:string):ReviewGrade {
+  if(sourceFreshness(item,today).stale)return "Conflict";
+  if(item.openingDate&&item.deadlineDate&&item.openingDate>item.deadlineDate)return "Conflict";
+  if(/conflict|contradict|mixed|previous cohort/i.test(item.unconfirmed.join(" ")))return "Conflict";
+  if(item.applicationState==="Unknown")return "Check";
+  if(item.wideningParticipation!=="Not stated"&&item.eligibility==="Not stated")return "Check";
+  if(item.unconfirmed.length)return "Note";
+  return "Note";
+}
 export function catalogueReview(items:RichOpportunity[],today?:string){
   const within=(date:string)=>{const d=daysUntil(date,today);return d!==null&&d>=0&&d<=30;};
+  const grade=(level:ReviewGrade)=>items.filter(i=>reviewGrade(i,today)===level);
   return {
     duplicates:catalogueDuplicates(items),
     stale:items.filter(i=>sourceFreshness(i,today).stale),
     approachingOpenings:items.filter(i=>within(i.openingDate)),
     approachingDeadlines:items.filter(i=>within(i.deadlineDate)),
-    needsReview:items.filter(i=>sourceFreshness(i,today).stale||i.unconfirmed.length||i.applicationState==="Unknown"||i.wideningParticipation!=="Not stated"&&i.eligibility==="Not stated"||i.openingDate&&i.deadlineDate&&i.openingDate>i.deadlineDate),
-    conflicts:items.filter(i=>i.openingDate&&i.deadlineDate&&i.openingDate>i.deadlineDate||/conflict|contradict|mixed|previous cohort/i.test(i.unconfirmed.join(" ")))
+    conflicts:grade("Conflict"),
+    needsReview:grade("Conflict").concat(grade("Check")),
+    incomplete:grade("Note"),
+    counts:{total:items.length,conflict:grade("Conflict").length,check:grade("Check").length,note:grade("Note").length},
   };
 }
 const reviewFields=["eligibility","years","minAge","maxAge","subjectRequirements","geography","wideningParticipation","openingDate","openingPeriod","deadlineDate","deadline","startDate","cost","applicationRequirements","applicationState"] as const;

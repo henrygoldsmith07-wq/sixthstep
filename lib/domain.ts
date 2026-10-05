@@ -112,10 +112,18 @@ export function deadlineLabel(date:string,fallback="Not stated",today=todayISO()
  return days===null?fallback:days<0?"Deadline passed · "+dateLabel(date):days===0?"Closes today":days===1?"1 day remaining":days<=30?days+" days remaining":dateLabel(date);
 }
 export function availability(item:RichOpportunity,today=todayISO()) {
- if(item.deadlineDate && (daysUntil(item.deadlineDate,today)??0)<0)return "Closed";
- const age=daysUntil(item.checkedAt.slice(0,10),today);
- if(item.source!=="catalogue" || age===null || age>0 || age< -45)return "Unknown";
- return item.applicationState;
+  const deadline=daysUntil(item.deadlineDate,today);
+  if(deadline!==null&&deadline<0)return "Closed";
+  const age=daysUntil(item.checkedAt.slice(0,10),today);
+  if(item.source!=="catalogue" || age===null || age>0 || age< -45)return "Unknown";
+  // Verified dates settle this better than a state typed by hand, because most providers
+  // never publish the word "open". An opening date still ahead of today means it cannot be
+  // open yet, and a window that spans today means it is. Neither can open an application
+  // where no date was ever stated, so an undated record still falls back to the source record.
+  const opens=daysUntil(item.openingDate,today);
+  if(opens!==null&&opens>0)return "Not yet open";
+  if(opens!==null&&deadline!==null)return "Open";
+  return item.applicationState;
 }
 const terminal=new Set<string>(["Completed","Unsuccessful","Not pursuing"]);
 export type NextStep={id:string;recordId:string;title:string;date:string;kind:"action"|"deadline"|"event"|"reminder"|"reflection";overdue:boolean;priority:string};
