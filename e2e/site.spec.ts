@@ -77,7 +77,6 @@ test("a delayed AI response cannot attach to a different experience",async({page
  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("sixthstep-workspace-v2")!).experiences.every((e:{reflection?:unknown})=>!e.reflection))).toBe(true);
 });
 test("legacy bookmarks and notes migrate, and broken saved data is never overwritten",async({page})=>{
- await page.goto("/");await page.evaluate(()=>localStorage.clear());
  await page.addInitScript(item=>{localStorage.setItem("sixthstep-saved-v1",JSON.stringify([{...item,status:"Applied",savedAt:"2026-10-01"}]));localStorage.setItem("sixthstep-journal-v1",JSON.stringify("I compared two designs during my virtual experience."));},catalogue[1]);
  await page.goto("/#saved");await expect(page.getByLabel("Application status for Inside the world of Leonardo")).toHaveValue("Applied");await nav(page,"Experience journal");await expect(page.getByRole("heading",{name:"My previous experience notes",exact:true})).toBeVisible();await page.getByRole("button",{name:"Open experience",exact:false}).click();await expect(page.getByLabel("What I did",{exact:true})).toHaveValue("I compared two designs during my virtual experience.");
  const old=await page.evaluate(()=>localStorage.getItem("sixthstep-saved-v1"));expect(old).toContain("Applied");
