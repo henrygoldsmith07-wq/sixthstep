@@ -72,7 +72,9 @@ test("partial or invalid configuration fails before fetch and never falls back t
  setup(t,{...generic,GROQ_API_KEY:"legacy-key"});
  let calls=0;global.fetch=async()=>{calls++;throw new Error("Must not fetch");};
  delete process.env.OPENAI_MODEL;
- await assert.rejects(generateJson(z.object({}),"JSON","test"),(e:unknown)=>e instanceof ApiError && e.status===503 && /OPENAI_MODEL/.test(e.message));
+ await assert.rejects(generateJson(z.object({}),"JSON","test"),(e:unknown)=>e instanceof ApiError && e.status===503 && /not switched on/i.test(e.message));
+  // Students see this text verbatim, so it must not leak deployment instructions.
+  await assert.rejects(generateJson(z.object({}),"JSON","test"),(e:unknown)=>e instanceof ApiError && !/OPENAI_MODEL|site owner|Vercel/.test(e.message));
  assert.equal(aiStatus().aiSetup,"invalid");
  process.env.OPENAI_MODEL="test";
  for(const base of ["http://provider.example/v1","https://user:password@provider.example/v1","https://provider.example/v1?api-key=test","https://provider.example/v1#secret","https://127.0.0.1/v1","https://localhost/v1"]) {

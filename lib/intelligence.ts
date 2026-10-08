@@ -12,6 +12,9 @@ export function questionCount(question:ApplicationQuestion){return question.limi
 export function starComplete(e:SkillEvidence){return !!e.star&&Object.values(e.star).every(v=>v.trim());}
 export function evidenceStrength(e:SkillEvidence){return starComplete(e)?"Complete STAR":e.whatHappened.trim()&&e.learning.trim()?"Context, action & learning":"Personal action recorded";}
 export function evidenceKey(e:{experienceId:string;id:string}){return e.experienceId+"::"+e.id;}
+// Model-drafted wording is never presented as the student's own. The student must read it,
+// check it against what actually happened, and rewrite it in their own voice before using it.
+export const aiDraftedNote="Drafted by SixthStep from your own notes — check it is accurate and rewrite it in your own words before you use it.";
 export function evidenceText(e:ReturnType<typeof evidenceBank>[number],star=false){
  const parts=star?[["Situation",e.star?.situation||e.whatHappened],["Task",e.star?.task||""],["Action",e.star?.action||e.action],["Result",e.star?.result||""]]:[["Context",e.whatHappened],["My action",e.action],["Learning",e.learning]];
  return e.experienceName+" — "+e.skill+(e.date?" ("+e.date+")":"")+"\n"+parts.map(([key,value])=>key+": "+(value.trim()||"[Add your own detail]")).join("\n");

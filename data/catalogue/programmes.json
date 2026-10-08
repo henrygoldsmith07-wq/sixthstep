@@ -506,16 +506,14 @@
     ],
     "certificate": "Not stated",
     "selection": "Eligibility criteria apply",
-    "checkedAt": "2026-10-02",
+    "checkedAt": "2026-10-05",
     "source": "catalogue",
     "sourceKind": "Programme",
     "sourceUrls": [
       "https://www.stem.org.uk/sites/default/files/pages/downloads/Guide-for-Student-Applicants_Nuffield-Research-Placements.pdf"
     ],
     "unconfirmed": [
-      "Current application cycle",
-      "Current duration",
-      "Current programme requirements"
+      "The provider PDF link returned 404 when rechecked on 5 October 2026, so these details could not be confirmed against the source"
     ],
     "addedAt": "2026-10-02"
   },
@@ -834,7 +832,7 @@
     "openingDate": "",
     "openingPeriod": "",
     "closingPeriod": "",
-    "applicationState": "Open",
+    "applicationState": "Unknown",
     "applicationUrl": "https://suttontrust.tfaforms.net/5225546",
     "url": "https://applicationsupport.suttontrust.com/support/solutions/articles/203000057376-what-does-the-access-apprenticeships-programme-consist-of-",
     "description": "Work experience and skills support for students exploring apprenticeships in law, finance or engineering.",
@@ -851,7 +849,7 @@
     ],
     "certificate": "Not stated",
     "selection": "Not stated",
-    "checkedAt": "2026-10-02",
+    "checkedAt": "2026-10-05",
     "source": "catalogue",
     "sourceKind": "Programme",
     "sourceUrls": [
@@ -951,7 +949,7 @@
     "openingDate": "",
     "openingPeriod": "",
     "closingPeriod": "",
-    "applicationState": "Open",
+    "applicationState": "Unknown",
     "applicationUrl": "https://ukbiologycompetitions.org/british-biology-olympiad/",
     "url": "https://ukbiologycompetitions.org/british-biology-olympiad/",
     "description": "Test biology understanding and problem solving in two school-invigilated online papers.",
@@ -967,7 +965,7 @@
     ],
     "certificate": "E-certificate for participants via school",
     "selection": "Top scorers invited to further UK team-selection activities",
-    "checkedAt": "2026-10-02",
+    "checkedAt": "2026-10-05",
     "source": "catalogue",
     "sourceKind": "Programme",
     "sourceUrls": [
@@ -1067,7 +1065,7 @@
     "openingDate": "",
     "openingPeriod": "",
     "closingPeriod": "",
-    "applicationState": "Open",
+    "applicationState": "Unknown",
     "applicationUrl": "https://ukmt.org.uk/team-challenges/senior-team-mathematical-challenge",
     "url": "https://ukmt.org.uk/team-challenges/senior-team-mathematical-challenge",
     "description": "Take part in a four-student maths team through a registered UK school or college.",
@@ -1081,7 +1079,7 @@
     ],
     "certificate": "Not stated",
     "selection": "Not stated",
-    "checkedAt": "2026-10-02",
+    "checkedAt": "2026-10-05",
     "source": "catalogue",
     "sourceKind": "Programme",
     "sourceUrls": [
@@ -1447,7 +1445,7 @@
     "openingDate": "",
     "openingPeriod": "",
     "closingPeriod": "",
-    "applicationState": "Open",
+    "applicationState": "Unknown",
     "applicationUrl": "https://www.bristol.ac.uk/study/outreach/post-16/insight/",
     "url": "https://www.bristol.ac.uk/study/outreach/post-16/insight/",
     "description": "A free residential summer school giving Year 12 students of colour academic sessions in an assigned subject stream.",
@@ -1465,7 +1463,7 @@
     ],
     "certificate": "Not stated",
     "selection": "The programme is often oversubscribed; priority is given to applicants who meet one or more additional criteria.",
-    "checkedAt": "2026-10-04",
+    "checkedAt": "2026-10-05",
     "source": "catalogue",
     "sourceKind": "Programme",
     "sourceUrls": [
@@ -1750,9 +1748,7 @@
     "format": "Not stated",
     "duration": "Not stated",
     "durationBand": "Not stated",
-    "eligibility": "Advanced pathway for ages 16–18; check local access and availability.",
-    "minAge": 16,
-    "maxAge": 18,
+    "eligibility": "Not stated",
     "years": [],
     "subjects": [],
     "subjectRequirements": "Not stated",
@@ -1779,7 +1775,7 @@
     "tags": [],
     "certificate": "Not stated",
     "selection": "Not stated",
-    "checkedAt": "2026-10-03",
+    "checkedAt": "2026-10-05",
     "source": "catalogue",
     "sourceKind": "Programme",
     "sourceUrls": [
@@ -1787,9 +1783,8 @@
       "https://www.sja.org.uk/get-involved/young-people/cadets/"
     ],
     "unconfirmed": [
-      "Local group availability",
-      "Programme dates",
-      "Delivery format"
+      "The NHS England page returned 404 when rechecked on 5 October 2026; the only page still live describes cadets aged 11 to 17, so no age band is recorded here",
+      "SixthStep holds a separate record for the St John Ambulance cadets listing, which is the source that still loads"
     ],
     "addedAt": "2026-10-03"
   },
@@ -2113,8 +2108,8 @@
     "deadline": "Not stated",
     "deadlineDate": "",
     "startDate": "2027-07-05",
-    "openingDate": "2026-11-09",
-    "openingPeriod": "Applications open on 9 November 2026",
+    "openingDate": "",
+    "openingPeriod": "Applications opening early November 2026",
     "closingPeriod": "",
     "applicationState": "Not yet open",
     "applicationUrl": "https://www.kcl.ac.uk/summer/summer-on-campus/pre-university-summer-school",
@@ -2134,7 +2129,7 @@
     ],
     "certificate": "Not stated",
     "selection": "Grades confirmation, English at B2 or above and a personal statement; no acceptance prediction is offered",
-    "checkedAt": "2026-10-04",
+    "checkedAt": "2026-10-05",
     "source": "catalogue",
     "sourceKind": "Programme",
     "sourceUrls": [
@@ -2648,7 +2643,7 @@
     "cost": "Not stated",
     "deadline": "Applications close on 12 January 2027 at 23:59; teacher and guardian references close on 19 January 2027 at 23:59",
     "deadlineDate": "2027-01-12",
-    "startDate": "2027-03-01",
+    "startDate": "",
     "openingDate": "2026-10-15",
     "openingPeriod": "Applications open on 15 October 2026",
     "closingPeriod": "",
@@ -2670,14 +2665,14 @@
     ],
     "certificate": "Not stated",
     "selection": "The provider does not describe a round structure",
-    "checkedAt": "2026-10-04",
+    "checkedAt": "2026-10-05",
     "source": "catalogue",
     "sourceKind": "Programme",
     "sourceUrls": [
       "https://www.imperial.ac.uk/be-inspired/schools-outreach/secondary-schools/stem-programmes/accelerate/"
     ],
     "unconfirmed": [
-      "The provider states March 2027 to February 2028 without a day, so the start date here is the first of the stated month"
+      "The provider states March 2027 to February 2028 without a day, so no exact start date is recorded"
     ],
     "addedAt": "2026-10-04"
   },
@@ -2897,7 +2892,7 @@
     "openingDate": "",
     "openingPeriod": "Open for entries on the theme 'Acts of Courage'",
     "closingPeriod": "Wednesday 28th April",
-    "applicationState": "Open",
+    "applicationState": "Unknown",
     "applicationUrl": "https://www.orwellfoundation.com/the-orwell-youth-prize/",
     "url": "https://www.orwellfoundation.com/the-orwell-youth-prize/",
     "description": "Write about your own world in any form you choose: essay, poetry, short story, journalism or game design.",
@@ -2913,7 +2908,7 @@
     ],
     "certificate": "Not stated",
     "selection": "Judged across year-group categories; no round structure is described",
-    "checkedAt": "2026-10-04",
+    "checkedAt": "2026-10-05",
     "source": "catalogue",
     "sourceKind": "Programme",
     "sourceUrls": [
@@ -3240,7 +3235,7 @@
     ],
     "cost": "A bursary scheme covers travel, food and other costs, with £600 per person",
     "deadline": "Application deadline stated as Monday 26 January at 12 noon",
-    "deadlineDate": "2026-01-26",
+    "deadlineDate": "",
     "startDate": "",
     "openingDate": "",
     "openingPeriod": "",
@@ -3265,7 +3260,7 @@
     ],
     "certificate": "Not stated",
     "selection": "Anonymised applications, then a relaxed informal group interview day; 50% of places reserved for named groups",
-    "checkedAt": "2026-10-04",
+    "checkedAt": "2026-10-05",
     "source": "catalogue",
     "sourceKind": "Programme",
     "sourceUrls": [
@@ -3425,7 +3420,7 @@
     "openingDate": "",
     "openingPeriod": "",
     "closingPeriod": "",
-    "applicationState": "Not yet open",
+    "applicationState": "Unknown",
     "applicationUrl": "https://www.bfi.org.uk/bfi-film-academy",
     "url": "https://www.bfi.org.uk/bfi-film-academy",
     "description": "Hands-on collaborative filmmaking delivered through local hubs, focused on technical and transferable skills.",
@@ -3443,7 +3438,7 @@
     ],
     "certificate": "Not stated",
     "selection": "Not stated",
-    "checkedAt": "2026-10-04",
+    "checkedAt": "2026-10-05",
     "source": "catalogue",
     "sourceKind": "Programme",
     "sourceUrls": [
@@ -3481,7 +3476,7 @@
     "openingDate": "",
     "openingPeriod": "",
     "closingPeriod": "",
-    "applicationState": "Rolling",
+    "applicationState": "Unknown",
     "applicationUrl": "https://www.bhf.org.uk/how-you-can-help/volunteer/volunteering-for-young-people",
     "url": "https://www.bhf.org.uk/how-you-can-help/volunteer/volunteering-for-young-people",
     "description": "Volunteering in charity shops or community fundraising groups, countable towards the DofE award from age 17.",
@@ -3499,7 +3494,7 @@
     ],
     "certificate": "Counts towards the volunteering section of the DofE award",
     "selection": "Not stated",
-    "checkedAt": "2026-10-04",
+    "checkedAt": "2026-10-05",
     "source": "catalogue",
     "sourceKind": "Programme",
     "sourceUrls": [

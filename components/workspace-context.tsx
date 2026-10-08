@@ -31,7 +31,7 @@ export function WorkspaceProvider({children}:{children:ReactNode}){
  function openOpportunity(item:RichOpportunity){setData(current=>({...current,discoveries:item.source==="catalogue"||current.records.some(r=>r.opportunity.id===item.id)?current.discoveries:[item,...current.discoveries.filter(o=>o.id!==item.id)].slice(0,200)}));setActiveOpportunity(item.id);}
  function save(item:RichOpportunity){
   setData(current=>current.records.some(r=>r.opportunity.id===item.id||["imported","manual"].includes(item.source)&&!!item.url&&r.opportunity.url===item.url)?current:{...current,metrics:measure(current.metrics,"save"),records:[createRecord(item),...current.records],activity:appendEvents(current,[{kind:"Saved",at:new Date().toISOString(),recordId:item.id,experienceId:"",title:item.title,themes:item.careerAreas.length?item.careerAreas:[item.sector]}])});
-  setMessage("Saved to your opportunities");
+  setMessage("Added to this workspace");
  }
  function updateRecord(id:string,patch:Partial<TrackedRecord>){setData(current=>{const previous=current.records.find(r=>r.opportunity.id===id);if(!previous)return current;const next={...previous,...patch};return {...current,metrics:previous.intent!=="Shortlisted"&&next.intent==="Shortlisted"?measure(current.metrics,"shortlist"):current.metrics,records:current.records.map(r=>r.opportunity.id===id?next:r),activity:appendEvents(current,recordEvents(previous,next,new Date().toISOString()))};});}
  function removeRecord(id:string){setData(current=>({...current,records:current.records.filter(r=>r.opportunity.id!==id)}));setMessage("Removed from tracker. Existing experiences are kept.");}

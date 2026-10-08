@@ -13,7 +13,11 @@ test("cross-origin paid API requests are rejected",()=>{
  assert.doesNotThrow(()=>sameOrigin(new Request("https://sixthstep.example/api/search",{headers:{origin:"https://sixthstep.example"}})));
 });
 test("unknown ages are never silently claimed eligible",()=>{
- const unknown=catalogue[0],known={...unknown,id:"eligible",minAge:16,maxAge:17};
+ // The premise is asserted rather than assumed: the day a catalogue edit gives record 0 an age
+ // band, this test would otherwise pass while exercising nothing.
+ const unknown={...catalogue[0],id:"unknown-age",minAge:undefined,maxAge:undefined};
+ assert.equal(unknown.minAge,undefined);
+ const known={...unknown,id:"eligible",minAge:16,maxAge:17};
  assert.equal(filterOpportunities([unknown,known],{...filters,age:"16"}).length,2);
  assert.deepEqual(filterOpportunities([unknown,known],{...filters,age:"16",verifiedAge:true}).map(v=>v.id),["eligible"]);
  assert.equal(filterOpportunities([known],{...filters,age:"18"}).length,0);
