@@ -79,6 +79,32 @@ test("both a bookmarks failure and a profile failure are reported, not just the 
   assert.match(result.error, /profile/);
 });
 
+test("a quota-blocked save fails loudly and stays blocked rather than pretending to persist", async () => {
+ const base = memory();
+ const backend = { ...base, setItem: () => { throw new DOMException("quota", "QuotaExceededError"); } };
+ const adapter = new LocalWorkspaceStorage(backend);
+ await adapter.load();
+ await assert.rejects(() => adapter.save(withRecord()), /quota/);
+ assert.equal(backend.getItem(storageKey), null, "the failed write must not half-persist");
+});
+
+test("corrupt stored bytes block saving, surface a recovery error, and are never overwritten", async () => {
+ const backend = memory({ [storageKey]: "{corrupt bytes" });
+ const adapter = new LocalWorkspaceStorage(backend);
+ const loaded = await adapter.load();
+ assert.ok(loaded.error, "corruption must be reported");
+ await assert.rejects(() => adapter.save(withRecord()), /Restore/);
+ assert.equal(backend.getItem(storageKey), "{corrupt bytes", "the unreadable original must be retained, not clobbered");
+});
+
+test("duplicate IDs in stored v2 data make the normal load path fail, as restore already does", () => {
+ const valid = JSON.stringify(withRecord());
+ const duplicate = JSON.parse(valid);
+ duplicate.records.push(duplicate.records[0]);
+ const loaded = loadWorkspace(memory({ [storageKey]: JSON.stringify(duplicate) }));
+ assert.ok(loaded.error, "stored duplicates must block the workspace instead of loading mangled data");
+});
+
 test("loading never writes to storage", () => {
   const backend = memory();
   const result = loadWorkspace(backend);

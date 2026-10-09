@@ -5,7 +5,7 @@ function parseLegacy(storage:StorageReader,key:string) {const raw=storage.getIte
 export function loadWorkspace(storage:StorageReader):{data:AppData;error:string;migrated:boolean} {
  const current=storage.getItem(storageKey);
  if(current){
-  try{return {data:appSchema.parse(JSON.parse(current)),error:"",migrated:false};}
+  try{const data=appSchema.parse(JSON.parse(current));assertNoDuplicateIds(data);return {data,error:"",migrated:false};}
   catch{return {data:structuredClone(emptyData),error:"Saved workspace data could not be loaded. Export the original backup before replacing it. Changes are temporary until you restore a valid backup.",migrated:false};}
  }
  const data=structuredClone(emptyData);let error="";
@@ -37,20 +37,28 @@ export function loadWorkspace(storage:StorageReader):{data:AppData;error:string;
       if(remainder)remainder=remainder.slice(2500);
       part++;
     }
-    if(part>1)error ||= "Your previous journal was longer than one entry allows, so it was split into "+part+" entries in date order. Nothing was removed.";
+    // Only whitespace ever remains here, but "Nothing was removed" must stay true.
+    if(part>1)error ||= "Your previous journal was longer than one entry allows, so it was split into "+part+" entries in date order. "+(remainder.length?"Only trailing blank space was removed.":"Nothing was removed.");
    }
  }catch{error ||= "Old journal data could not be loaded. Original data is retained.";}
  return {data:appSchema.parse(data),error,migrated:data.records.length>0||data.experiences.length>0||data.profile.configured};
 }
 export function backupJSON(data:AppData){return JSON.stringify(data,null,2);}
+export function assertNoDuplicateIds(data:AppData) {
+ if(new Set(data.feedback.map(f=>f.opportunityId)).size!==data.feedback.length||new Set(data.actionStates.map(s=>s.id)).size!==data.actionStates.length||new Set(data.activity.map(e=>e.id)).size!==data.activity.length)throw new Error("This workspace has duplicate feedback, reminder or activity IDs.");
+ if(new Set(data.records.map(r=>r.opportunity.id)).size!==data.records.length||new Set(data.experiences.map(e=>e.id)).size!==data.experiences.length)throw new Error("This workspace has duplicate record IDs.");
+ for(const record of data.records)if(new Set(record.questions.map(q=>q.id)).size!==record.questions.length||new Set(record.requirements.map(r=>r.id)).size!==record.requirements.length||new Set(record.milestoneDates.map(m=>m.stage)).size!==record.milestoneDates.length)throw new Error("This workspace has duplicate question, requirement or milestone IDs.");
+ for(const experience of data.experiences)if(new Set(experience.skills.map(s=>s.id)).size!==experience.skills.length)throw new Error("This workspace has duplicate evidence IDs.");
+}
 export function restoreWorkspace(text:string):AppData {
  if(text.length>5000000)throw new Error("This backup is too large.");
  const parsed=appSchema.safeParse(JSON.parse(text));
  if(!parsed.success)throw new Error("This is not a valid SixthStep workspace backup.");
- const data=parsed.data;
- if(new Set(data.feedback.map(f=>f.opportunityId)).size!==data.feedback.length||new Set(data.actionStates.map(s=>s.id)).size!==data.actionStates.length||new Set(data.activity.map(e=>e.id)).size!==data.activity.length)throw new Error("This backup has duplicate feedback, reminder or activity IDs.");
- if(new Set(data.records.map(r=>r.opportunity.id)).size!==data.records.length||new Set(data.experiences.map(e=>e.id)).size!==data.experiences.length)throw new Error("This backup has duplicate record IDs.");
- for(const record of data.records)if(new Set(record.questions.map(q=>q.id)).size!==record.questions.length||new Set(record.requirements.map(r=>r.id)).size!==record.requirements.length||new Set(record.milestoneDates.map(m=>m.stage)).size!==record.milestoneDates.length)throw new Error("This backup has duplicate question, requirement or milestone IDs.");
- for(const experience of data.experiences)if(new Set(experience.skills.map(s=>s.id)).size!==experience.skills.length)throw new Error("This backup has duplicate evidence IDs.");
- return data;
+ // Zod strips unknown keys silently. A backup written by a newer version would lose every
+ // field this version does not know, mid-restore, while reporting success. Refuse instead
+ // and name what is not understood, so nothing is dropped without the student's knowledge.
+ const unknown=Object.keys(JSON.parse(text)).filter(key=>!(key in appSchema.shape));
+ if(unknown.length)throw new Error("This backup contains fields this version does not understand ("+unknown.slice(0,5).join(", ")+"). Update SixthStep before restoring, or nothing written by the newer version can be kept.");
+ assertNoDuplicateIds(parsed.data);
+ return parsed.data;
 }

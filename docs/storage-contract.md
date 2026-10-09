@@ -8,7 +8,7 @@
 - `save` validates the full snapshot and atomically compares the loaded baseline with the current revision. Return a conflict rather than overwriting another revision. Repeated identical saves are idempotent.
 - `replace` is the user's explicit replacement after review. Preserve the previous version first; if preserving it fails, do not replace anything.
 - `recovery` exports retained original data, without requiring a successful parse.
-- `subscribe` signals external changes, including deletion. Return a cleanup function. A notification blocks saving until the user chooses a version.
+- `subscribe` signals external changes to student-authored content, including deletion. Metrics-only writes never signal. Return a cleanup function. A notification blocks saving until the user chooses a version.
 
 The local adapter stores the existing v2 JSON format and retains v1 migration behaviour. Web Locks coordinate compare/write transactions across tabs where supported; the baseline comparison also detects conflicts. Browsers without Web Locks cannot guarantee an atomic simultaneous write across tabs. Export backups regularly.
 

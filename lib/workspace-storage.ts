@@ -11,6 +11,12 @@ export interface WorkspaceStorage {
   recovery():Promise<Record<string,string|null>>;
   subscribe?(changed:()=>void):()=>void;
 }
+// Metrics change on every view, so a raw byte comparison turns ordinary two-tab use into
+// a permanent conflict. Strip metrics before comparing; a corrupted raw value is never equal.
+export function authoredEqual(a:string|null,b:string|null):boolean {
+ const authored=(raw:string|null)=>{if(!raw)return "";try{const {metrics:_ignored,...rest}=JSON.parse(raw);return JSON.stringify(rest);}catch{return raw;}};
+ return authored(a)===authored(b);
+}
 export const conflictBackupKey="sixthstep-before-replacement-v2";
 const originalKeys=[storageKey,"sixthstep-saved-v1","sixthstep-profile-v1","sixthstep-journal-v1",conflictBackupKey];
 
@@ -18,7 +24,14 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
   private baseline:string|null=null;
   private loaded=false;
   private needsRecovery=false;
-  constructor(private storage:StorageBackend,public subscribe?:WorkspaceStorage["subscribe"]){}
+  subscribe?:WorkspaceStorage["subscribe"];
+  constructor(private storage:StorageBackend,hook?:WorkspaceStorage["subscribe"]){
+   // A storage event fires for every external write, including the metrics-only writes another
+   // tab makes on every view. Blocking autosave on those re-created the permanent two-tab
+   // deadlock the save path's metrics-aware comparison prevents, so only surface a change
+   // when the student-authored content of the stored value actually differs.
+   this.subscribe=hook?changed=>hook(()=>{if(!authoredEqual(this.storage.getItem(storageKey),this.baseline))changed();}):undefined;
+  }
   async load(){const result=loadWorkspace(this.storage);this.baseline=this.storage.getItem(storageKey);this.loaded=true;this.needsRecovery=!!result.error;return result;}
   async save(data:AppData):Promise<SaveOutcome>{
     if(!this.loaded)throw new Error("Load the workspace before saving.");
@@ -30,10 +43,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
   }
   // Local metrics are written on every view and every keystroke, so comparing them made two
   // ordinary tabs look like a conflict and blocked autosave permanently.
-  private authoredDiffers(current:string|null,next:string):boolean {
-   const authored=(raw:string|null)=>{if(!raw)return "";try{const {metrics:_ignored,...rest}=JSON.parse(raw);return JSON.stringify(rest);}catch{return raw;}};
-   return authored(current)!==authored(next);
-  }
+  private authoredDiffers(current:string|null,next:string):boolean {return !authoredEqual(current,next);}
   async replace(data:AppData){
     const value=JSON.stringify(appSchema.parse(data)),original=this.storage.getItem(storageKey);
     // Preserve the replaced version first. A failed backup must not overwrite it.
