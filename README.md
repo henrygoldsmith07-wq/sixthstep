@@ -12,7 +12,7 @@ Calendar exports individual dates, selected date groups or every exact date as `
 
 `WorkspaceStorage` in `lib/workspace-storage.ts` provides asynchronous load/save/replace/recovery/subscription operations. The local adapter retains the v2 schema and original v1 data, blocks automatic replacement of corrupt data, detects changes from another tab, and backs up the previous version before an explicit replacement. Web Locks coordinate writes where available. A future authenticated adapter can implement this interface; there is no unused database or cloud account requirement.
 
-The catalogue lives in `data/catalogue/` with strict runtime and CI validation. Its review helpers identify stale, incomplete/conflicting and approaching dated records; proposed source changes remain pending confirmation. Run `npm run validate:catalogue` after editing records. All 53 existing records and their provenance are preserved.
+The catalogue lives in `data/catalogue/` with strict runtime and CI validation. Its review helpers identify stale, incomplete/conflicting and approaching dated records; proposed source changes remain pending confirmation. Run `npm run validate:catalogue` after editing records. All 90 existing records and their provenance are preserved.
 
 Recommendations retain explicit profile/activity/feedback reasons and diversify exploration across providers and opportunity types. They also read what the student has actually recorded: an opportunity may explain that it builds on experiences already recorded in a related area, and a declared area of interest with nothing recorded in it yet is named as a gap rather than filled in. Evidence retrieval uses recorded skills, shared topics, career labels and experience type; every result explains its connection, spreads across different experiences, and says plainly when a question implies a skill the student has not recorded yet. Local aggregate funnel metrics are available under Profile without transmitting student data or assigning achievement scores.
 
@@ -22,7 +22,7 @@ Authenticated cloud sync, direct Google Calendar integration, external reminder 
 
 SixthStep supports the full student journey: **discover → evaluate → choose → apply → complete → reflect → build evidence → reuse evidence → explore next**.
 
-- A source-linked collection of 53 entries: 33 named programmes/events and 20 clearly labelled directories. It spans employer insights, medical experiences, university outreach, summer schools, STEM, research, mentoring, apprenticeship insight, competitions and academic events.
+- A source-linked collection of 90 records: 62 named programmes and 28 clearly labelled directories. It spans employer insights, medical experiences, university outreach, summer schools, STEM, research, mentoring, apprenticeship insight, competitions and academic events.
 - A quick editable profile: school year, optional age, subjects, interests and career direction, with optional format, time, travel and opportunity preferences.
 - Explained recommendations using actual profile connections. Known age/year conflicts prevent recommendations; unknown criteria remain checks, with no invented match percentages.
 - A home dashboard with next actions, overdue tasks, upcoming deadlines, applications awaiting a response, recent saves and experiences ready to reflect on.
@@ -41,7 +41,7 @@ Source checking confirms the facts reviewed at that date, not a student's eligib
 ## Proactive planning and discovery
 
 - **First use:** Home offers three short setup steps (year/subjects, broad interests/career areas, approximate location/format). Optional details can be skipped. Completing setup opens explained discovery immediately.
-- **Scalable collection:** `opportunityCollection` combines curated sources, saved imports/manual records and live discoveries by stable ID. Distinct programmes sharing a provider URL remain distinct. Browse results render 18 entries per page; filter/search before paging. The checked collection currently has 53 entries, not thousands of invented placements. Provider directories expose many further routes without being counted as individual placements.
+- **Scalable collection:** `opportunityCollection` combines curated sources, saved imports/manual records and live discoveries by stable ID. Distinct programmes sharing a provider URL remain distinct. Browse results render 18 entries per page; filter/search before paging. The checked collection currently has 90 records, not thousands of invented placements. Provider directories expose many further routes without being counted as individual placements.
 - **Feedback:** Interested, Maybe, Not for me, Already done something similar, Show me more like this and Show fewer like this are explicit persisted signals. More/fewer changes ordering for a shared sector/provider with an explanation. The two hide signals hide only that programme from the personalised feed. Recovery controls reset signals or show hidden collection results. Feedback never changes eligibility, submitted status or saved records.
 - **Home:** “Do these next” shows up to four actions using shared rules: overdue tasks, near dates, interviews, incomplete confirmed preparation, openings and reflections. One action per application is chosen first, then remaining capacity is filled. The rest stays expandable. Newly saved possibilities get a suggested eligibility/programme-selection step without assuming an application has started.
 - **Calendar:** Upcoming, Month and Timeline combine openings, deadlines, programme/interview dates, next actions, typed personal reminders and explicitly dated milestones. Approximate periods and undated items stay separate. Follow-up after 21 days and reflection after recorded completion are labelled suggestions, not provider commitments.
@@ -162,7 +162,7 @@ Review that provider's data handling and age requirements before enabling it for
 
 Provider keys stay server-side. Zod validates inputs and structured outputs. Request sizes, processing times and origins are bounded/checked. URLs must be public HTTPS; unsafe addresses are rejected. The app never fetches arbitrary opportunity URLs directly: Tavily handles extraction. Supplied content is treated as untrusted data, and provider responses are rendered as text rather than HTML.
 
-Search results are cached for one hour in the running instance. The legacy URL-summary endpoint retains its one-hour public-content cache. New reviewed imports and experience reflections return `no-store`; personal notes are not server-cached. Instance caches reset on restart.
+Search results are cached for one hour in the running instance. Reviewed imports and experience reflections return `no-store`; personal notes are not server-cached. Instance caches reset on restart.
 
 The default limiter is **per running server instance**, not a global monthly cap. Optional `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` provide shared atomic limits across Vercel instances. Summary/import routes share 8 requests per hashed IP per minute; searches and reflection routes have 5. Hashes expire after a minute. Configured Redis failures fail closed. Provider quotas still apply.
 
@@ -176,7 +176,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-API tests use mocked upstream responses; no paid calls or keys are required. The suite includes 55 unit/API tests and 20 browser scenarios. Browser tests cover onboarding and recommendations, shortlist decisions, application requirements/questions, real evidence suggestions and reuse, guided reflection and exploration, deadline alerts, review/import/manual entry, stages, migrations and recovery, mocked AI responses, exports, narrow-width navigation and missing-key errors. GitHub Actions runs these checks.
+API tests use mocked upstream responses; no paid calls or keys are required. The suite includes 143 unit/API tests and 53 browser scenarios. Browser tests cover onboarding and recommendations, shortlist decisions, application requirements/questions, real evidence suggestions and reuse, guided reflection and exploration, deadline alerts, review/import/manual entry, stages, migrations and recovery, mocked AI responses, exports, narrow-width navigation and missing-key errors. GitHub Actions runs these checks.
 
 ## Source collection
 
@@ -202,7 +202,7 @@ Directories link to the provider for current programme-specific requirements. Fo
 - `lib/persistence.ts`: v1 migration and JSON backup validation.
 - `lib/extraction.ts`, `search-quality.ts`, `grounding.ts`: source-date checks, search classification and student-evidence checks.
 - `lib/catalogue.ts`: source-backed catalogue. Update the check date only after reviewing its sources.
-- `app/api/opportunity`, `experience-reflection`: integrated review/reflection APIs. Existing summary/reflection endpoints remain compatible.
+- `app/api/opportunity`, `app/api/experience-reflection`: the two integrated review/reflection APIs. There is no other AI endpoint; earlier summary/reflection routes were removed.
 - `lib/ai.ts`, `providers.ts`, `security.ts`: provider compatibility, extraction, safe URLs and rate limiting.
 - `tests` and `e2e`: unit/API and full student-journey browser checks.
 
