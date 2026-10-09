@@ -14,7 +14,6 @@ export const careerLinks=[
 // recommendations and the Home dashboard take over a second at a few thousand entries, so the
 // string is normalised once here and each term is tested against the result.
 function normalised(text:string){return " "+text.toLowerCase().replace(/[^a-z0-9]+/g," ")+" ";}
-export function containsTerm(text:string,term:string){return normalised(text).includes(" "+term.toLowerCase()+" ");}
 // The same opportunity content is classified two or three times in one render (scoring, then
 // coverage, then discovery sections), and every result is read-only, so a bounded memo removes
 // the repeats. It is keyed on the raw text and capped so a long session cannot grow it forever.
