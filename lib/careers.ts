@@ -9,8 +9,26 @@ export const careerLinks=[
  {area:"Creative & media",terms:["creative","media","art","music","journalism","film"],next:["Science communication","Digital design","Journalism"]},
  {area:"Humanities & social sciences",terms:["humanities","social","history","psychology","politics","geography"],next:["Public health","Public policy","Behavioural science"]}
 ] as const;
-export function containsTerm(text:string,term:string){return (" "+text.toLowerCase().replace(/[^a-z0-9]+/g," ")+" ").includes(" "+term.toLowerCase()+" ");}
-export function relatedAreas(text:string){return careerLinks.filter(link=>link.terms.some(term=>containsTerm(text,term)));}
+// Normalising the text is the expensive part, and relatedAreas asks the same string about
+// every term in every area (about 70 lookups per opportunity). Doing that work per term made
+// recommendations and the Home dashboard take over a second at a few thousand entries, so the
+// string is normalised once here and each term is tested against the result.
+function normalised(text:string){return " "+text.toLowerCase().replace(/[^a-z0-9]+/g," ")+" ";}
+export function containsTerm(text:string,term:string){return normalised(text).includes(" "+term.toLowerCase()+" ");}
+// The same opportunity content is classified two or three times in one render (scoring, then
+// coverage, then discovery sections), and every result is read-only, so a bounded memo removes
+// the repeats. It is keyed on the raw text and capped so a long session cannot grow it forever.
+const areaCache=new Map<string,ReturnType<typeof classifyAreas>>();
+const areaCacheLimit=4000;
+function classifyAreas(text:string){const haystack=normalised(text);return careerLinks.filter(link=>link.terms.some(term=>haystack.includes(" "+term+" ")));}
+export function relatedAreas(text:string){
+ const cached=areaCache.get(text);
+ if(cached)return cached;
+ const result=classifyAreas(text);
+ if(areaCache.size>=areaCacheLimit)areaCache.clear();
+ areaCache.set(text,result);
+ return result;
+}
 export function opportunityContent(item:RichOpportunity){return [item.title,item.sector,item.subSector,item.description,...item.tags,...item.subjects].join(" ");}
 export function explorationMap(experiences:Experience[]){
  return careerLinks.map(link=>{

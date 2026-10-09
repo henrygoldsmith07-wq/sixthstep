@@ -4,6 +4,7 @@ import { appSchema, enrich, defaultProfile, createRecord, emptyData, experienceS
 import { recordedCoverage, unrecordedAreas, missingSkills } from "../lib/coverage";
 import { applicationPlan, planTarget, plannedSchedule, outstandingItems } from "../lib/deadline-plan";
 import { matchOpportunity } from "../lib/recommendations";
+import { relatedAreas } from "../lib/careers";
 import { diversifyEvidence, evidenceGaps, impliedSkills, suggestEvidence } from "../lib/intelligence";
 import { workspaceItems } from "../lib/operating-system";
 const today="2026-10-03";
@@ -12,6 +13,20 @@ const engineering=enrich({id:"robotics",title:"Robotics engineering insight",pro
 const profile={...defaultProfile,configured:true,subjects:["Biology"],careerInterests:"Medicine and engineering",year:"Year 12"};
 const build=(fields:Partial<Experience>={})=>experienceSchema.parse({id:"e",name:"Engineering design",careerAreas:["Engineering"],whatDid:"I compared two designs and explained the trade-offs.",updatedAt:today,skills:[{id:"s",skill:"Problem solving",whatHappened:"Two design options",action:"I compared their costs.",learning:"Explain trade-offs"}],...fields});
 const withWork=(record:ReturnType<typeof createRecord>)=>appSchema.parse({...emptyData,profile,records:[record]});
+
+test("area classification is stable across repeated and interleaved calls",()=>{
+ // relatedAreas memoises its results, so a later caller must receive exactly the same
+ // classification as the first one, and a different string must not inherit a cached answer.
+ const first=relatedAreas("Engineering design challenge");
+ assert.deepEqual(first.map(a=>a.area),["Engineering"]);
+ assert.deepEqual(relatedAreas("Engineering design challenge").map(a=>a.area),["Engineering"]);
+ // Interleave a different input to prove the key really separates the two.
+ assert.deepEqual(relatedAreas("Clinical medicine insight").map(a=>a.area),["Medicine"]);
+ assert.deepEqual(relatedAreas("Engineering design challenge").map(a=>a.area),["Engineering"]);
+ // Word-boundary matching must survive: a substring inside a longer word is not a match.
+ assert.deepEqual(relatedAreas("Reengineered marketing").map(a=>a.area),[]);
+ assert.deepEqual(relatedAreas("A history of art").map(a=>a.area),["Creative & media","Humanities & social sciences"]);
+});
 
 test("coverage counts only experiences the student has actually written into",()=>{
  const empty=recordedCoverage([]);assert.equal(empty.experiences,0);assert.equal(empty.examples,0);assert.equal(empty.areas.size,0);
