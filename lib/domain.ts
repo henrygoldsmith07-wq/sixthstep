@@ -172,11 +172,8 @@ export function reflectionInput(experience:Experience) {
   "Challenges: "+experience.challenges,"Surprises: "+experience.surprised,"Enjoyed: "+experience.enjoyed,
   "Disliked: "+experience.disliked,"Career impact: "+experience.careerImpact,"Next step: "+experience.nextStep,
   // AI-drafted skills are excluded, exactly as the grounding gate excludes them. Feeding
-
   // model prose back as the student's own record would let a later reflection regurgitate
-
   // wording SixthStep itself wrote.
-
   ...experience.skills.filter(s=>s.origin!=="ai").map(s=>"Skill: "+s.skill+"; What happened: "+s.whatHappened+"; My action: "+s.action+"; Learning: "+s.learning)
  ].join("\n");
 }

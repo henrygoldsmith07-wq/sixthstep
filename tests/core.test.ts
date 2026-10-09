@@ -31,3 +31,11 @@ test("keyword, sector, free and format filters compose",()=>{
 
 import { csvCell } from "../lib/csv";
 test("CSV exports neutralise spreadsheet formulas",()=>{ assert.ok(csvCell("=IMPORTDATA(1)").startsWith('"'+String.fromCharCode(39))); assert.equal(csvCell('a "quote"'), '"a ""quote"""'); });
+test("CSV exports also neutralise formulas hidden behind leading whitespace",()=>{
+ // The production exports used a second escaper that only checked the first character, so a
+ // provider name or note beginning " =..." was written straight into the spreadsheet live.
+ for(const payload of [" =SUM(A1)","\t=SUM(A1)","\r=SUM(A1)"," +1"," -1"," @SUM(A1)"])
+  assert.ok(csvCell(payload).startsWith('"'+String.fromCharCode(39)),"not neutralised: "+JSON.stringify(payload));
+ // Ordinary prose and negative-looking notes must not be needlessly prefixed.
+ assert.equal(csvCell("Engineering insight"),'"Engineering insight"');
+});
