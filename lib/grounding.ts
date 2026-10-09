@@ -20,8 +20,12 @@ export function unsupportedClaims(reflection:RichReflection,experience:Experienc
  const unsupported:string[]=[];
  for(const text of authored){
   for(const match of String(text).matchAll(/\d+(?:\.\d+)?/g)){
-   const token=normalise(match[0]);
-   if(token.length>1&&!evidence.includes(token))unsupported.push(match[0]);
+   const token=match[0];
+   // Whole-number matching only: a claimed "20" must not borrow the digits of "2024",
+   // and single digits are claims too ("mentored 4 students"). A decimal point in front
+   // or behind also disqualifies the hit ("4" inside "4.5" is a different number).
+   const pattern=new RegExp("(?<![\\d.])"+token.replace(/\./g,"\\.")+"(?![\\d.])");
+   if(!pattern.test(evidence))unsupported.push(token);
   }
  }
  return [...new Set(unsupported)];

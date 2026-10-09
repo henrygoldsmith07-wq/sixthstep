@@ -3,7 +3,7 @@ import { categories, formats, dateSchema, isDate } from "./domain";
 const str=(n:number)=>z.string().max(n);
 export const extractedSchema=z.object({
  title:str(180),provider:str(180),description:str(1800),category:z.enum(categories),sector:str(100),subSector:str(150),
- activities:z.array(str(500)).max(8),skills:z.array(str(150)).max(10),eligibility:str(1200),
+ activities:z.array(str(500)).max(8),skills:z.array(str(150)).max(10),eligibility:str(1200),eligibilityQuote:str(1200).default(""),
  minAge:z.number().int().min(0).max(100).nullable(),maxAge:z.number().int().min(0).max(100).nullable(),ageQuote:str(1200),
  years:z.array(str(80)).max(8),yearQuote:str(1200),subjects:z.array(str(100)).max(12),subjectRequirements:str(600),
  geography:str(600),location:str(300),format:z.enum(formats),duration:str(300),cost:str(300),

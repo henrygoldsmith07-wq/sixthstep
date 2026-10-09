@@ -16,6 +16,9 @@ export async function POST(req:Request) {
   const invented=unsupportedClaims(reflection,experience);
   if(invented.length)throw new ApiError(502,"The reflection stated "+invented.slice(0,4).join(", ")+", which is not in your notes. Please try again or write that part yourself.");
   if(!hasGroundedQuotes(reflection,experience))throw new ApiError(502,"The reflection contained a skill without a matching quote from your notes. Please try again or add your own evidence.");
-  return Response.json({reflection},{headers:{"Cache-Control":"no-store"}});
+  // Provenance is the route's promise, not the model's claim. A model could echo an
+  // origin:"student" key verbatim from instructions in the notes, so the schema default
+  // is not enough; the response origin is forced here either way.
+  return Response.json({reflection:{...reflection,origin:"ai" as const}},{headers:{"Cache-Control":"no-store"}});
  }catch(error){return apiFailure(error);}
 }
