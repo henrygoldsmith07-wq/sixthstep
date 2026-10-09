@@ -16,7 +16,7 @@ export async function POST(req:Request) {
   const text=parsed.data.text?.trim()||(url?await extractOpportunity(url):"");
   if(text.length<60)throw new ApiError(400,"Add at least 60 characters of opportunity information.");
   const value=await generateJson(extractedSchema,
-   'Extract a sixth-form opportunity using only supplied facts. Return all fields as JSON: title, provider, description, category, sector, subSector, activities, skills, eligibility, minAge, maxAge, ageQuote, years, yearQuote, subjects, subjectRequirements, geography, location, format, duration, cost, deadline, deadlineDate, deadlineQuote, startDate, startQuote, applicationUrl, certificate, selection, nextSteps, unconfirmed. category must be one of '+JSON.stringify(categories)+'. format must be Virtual, In person, Hybrid or Not stated. Missing string facts: "Not stated"; missing dates/links/quotes: ""; missing arrays: []; missing age bounds: null. Never infer age from school year, school year from age, or a date year from today. Include exact verbatim source quotes for age, school years and dates. Date fields use YYYY-MM-DD only if full day, month and year are explicit. Do not treat a directory or article as a specific programme. Include only an application URL explicitly present in the source. Distinguish simulations from employment. Label missing facts in unconfirmed.',text);
+   'Extract a sixth-form opportunity using only supplied facts. Return all fields as JSON: title, provider, description, category, sector, subSector, activities, skills, eligibility, eligibilityQuote, minAge, maxAge, ageQuote, years, yearQuote, subjects, subjectRequirements, geography, location, format, duration, cost, deadline, deadlineDate, deadlineQuote, startDate, startQuote, applicationUrl, certificate, selection, nextSteps, unconfirmed. category must be one of '+JSON.stringify(categories)+'. format must be Virtual, In person, Hybrid or Not stated. Missing string facts: "Not stated"; missing dates/links/quotes: ""; missing arrays: []; missing age bounds: null. Never infer age from school year, school year from age, or a date year from today. Include exact verbatim source quotes for age, school years, dates and eligibility. Date fields use YYYY-MM-DD only if full day, month and year are explicit. Do not treat a directory or article as a specific programme. Include only an application URL explicitly present in the source. Distinguish simulations from employment. Label missing facts in unconfirmed.',text);
   const unconfirmed=[...value.unconfirmed,"Current application availability"];
   const deadlineDate=confirmedDate(value.deadlineDate,value.deadlineQuote,text),startDate=confirmedDate(value.startDate,value.startQuote,text);
   if(value.deadlineDate&&!deadlineDate)unconfirmed.push("Deadline date not supported by an exact dated quote");
@@ -28,9 +28,17 @@ export async function POST(req:Request) {
   const ageConfirmed=confirmedAge(value.ageQuote,text,value.minAge,value.maxAge);
   if((value.minAge!==null||value.maxAge!==null)&&!ageConfirmed)unconfirmed.push("Numeric age restriction not confirmed");
   const years=quoteInSource(value.yearQuote,text)?value.years.filter(year=>value.yearQuote.toLowerCase().includes(year.toLowerCase())):[];
+  // Free-text fields are model prose, not quotes. Eligibility decides who should apply,
+  // so it is quote-gated like dates and ages: without a verbatim source quote it stays
+  // unknown instead of becoming an invented criterion.
+  const eligibilityConfirmed=value.eligibility.trim().length>0&&value.eligibility!=="Not stated"&&quoteInSource(value.eligibilityQuote,text);
+  if(!eligibilityConfirmed&&value.eligibility.trim()&&value.eligibility!=="Not stated")unconfirmed.push("Eligibility could not be confirmed word-for-word in the source");
+  if(value.description.trim()&&value.description!=="Not stated")unconfirmed.push("Description is an AI summary of the source; check the provider page");
+  if(value.selection.trim()&&value.selection!=="Not stated"&&!quoteInSource(value.selection,text))unconfirmed.push("Selection process not confirmed word-for-word in the source");
   const opportunity=enrich({
    ...value,id:"import-"+createHash("sha256").update(url||text).digest("hex").slice(0,16),
    type:value.category,minAge:ageConfirmed&&value.minAge!==null?value.minAge:undefined,maxAge:ageConfirmed&&value.maxAge!==null?value.maxAge:undefined,
+   eligibility:eligibilityConfirmed?value.eligibility:"Not stated",
    years,deadlineDate,startDate,applicationUrl,url,source:"imported",sourceKind:value.category==="Provider directory"?"Directory":"Imported",
    checkedAt:"",sourceUrls:url?[url]:[],unconfirmed:[...new Set(unconfirmed)],tags:[value.sector],applicationState:"Unknown"
   });

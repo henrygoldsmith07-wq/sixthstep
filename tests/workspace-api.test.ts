@@ -9,12 +9,12 @@ let count=0;
 function request(body:unknown,origin?:string){return new Request("http://localhost:3000/api/test",{method:"POST",headers:{"Content-Type":"application/json","x-forwarded-for":"upgrade-api-"+count++,...(origin?{origin}:{})},body:JSON.stringify(body)});}
 function completion(value:unknown){return Response.json({choices:[{finish_reason:"stop",message:{content:JSON.stringify(value)}}]});}
 const text="A virtual engineering insight programme for students aged 16–18 in Year 12. Applications close 31 October 2026. Starts 10 November 2026. Apply at https://example.org/apply. Complete a design task and hear from engineers.";
-const extracted={title:"Engineering insight",provider:"Example university",description:"A virtual design task and insight event.",category:"Employer insight",sector:"Engineering",subSector:"Design",activities:["Complete a design task"],skills:["Problem solving"],eligibility:"Students aged 16–18 in Year 12.",minAge:16,maxAge:18,ageQuote:"students aged 16–18",years:["Year 12"],yearQuote:"Year 12",subjects:[],subjectRequirements:"Not stated",geography:"Not stated",location:"Virtual",format:"Virtual",duration:"Not stated",cost:"Not stated",deadline:"31 October 2026",deadlineDate:"2026-10-31",deadlineQuote:"Applications close 31 October 2026",startDate:"2026-11-10",startQuote:"Starts 10 November 2026",applicationUrl:"https://example.org/apply",certificate:"Not stated",selection:"Not stated",nextSteps:["Check full requirements"],unconfirmed:["Cost","Certificate"]};
+const extracted={title:"Engineering insight",provider:"Example university",description:"A virtual design task and insight event.",category:"Employer insight",sector:"Engineering",subSector:"Design",activities:["Complete a design task"],skills:["Problem solving"],eligibility:"Students aged 16–18 in Year 12.",eligibilityQuote:"students aged 16–18 in Year 12",minAge:16,maxAge:18,ageQuote:"students aged 16–18",years:["Year 12"],yearQuote:"Year 12",subjects:[],subjectRequirements:"Not stated",geography:"Not stated",location:"Virtual",format:"Virtual",duration:"Not stated",cost:"Not stated",deadline:"31 October 2026",deadlineDate:"2026-10-31",deadlineQuote:"Applications close 31 October 2026",startDate:"2026-11-10",startQuote:"Starts 10 November 2026",applicationUrl:"https://example.org/apply",certificate:"Not stated",selection:"Not stated",nextSteps:["Check full requirements"],unconfirmed:["Cost","Certificate"]};
 test("URL extraction produces a normal reviewable record with supported dates, age and source links",async t=>{
  setup(t);const calls:string[]=[];
  global.fetch=async (input,init)=>{calls.push(String(input));if(String(input).endsWith("/extract"))return Response.json({results:[{raw_content:text}]});assert.equal(new Headers(init?.headers).get("Authorization"),"Bearer test-secret");return completion(extracted);};
  const response=await importOpportunity(request({url:"https://example.org/engineering"}));assert.equal(response.status,200);assert.equal(response.headers.get("Cache-Control"),"no-store");
- const result=await response.json(),o=result.opportunity;assert.equal(o.title,"Engineering insight");assert.equal(o.source,"imported");assert.equal(o.sourceKind,"Imported");assert.equal(o.checkedAt,"");assert.equal(o.applicationState,"Unknown");assert.equal(o.deadlineDate,"2026-10-31");assert.equal(o.startDate,"2026-11-10");assert.equal(o.minAge,16);assert.deepEqual(o.years,["Year 12"]);assert.equal(o.applicationUrl,"https://example.org/apply");assert.deepEqual(o.sourceUrls,["https://example.org/engineering"]);assert.doesNotMatch(JSON.stringify(result),/test-secret|test-extraction-key/);assert.equal(calls.length,2);
+ const result=await response.json(),o=result.opportunity;assert.equal(o.title,"Engineering insight");assert.equal(o.source,"imported");assert.equal(o.sourceKind,"Imported");assert.equal(o.checkedAt,"");assert.equal(o.applicationState,"Unknown");assert.equal(o.deadlineDate,"2026-10-31");assert.equal(o.startDate,"2026-11-10");assert.equal(o.minAge,16);assert.deepEqual(o.years,["Year 12"]);assert.equal(o.applicationUrl,"https://example.org/apply");assert.equal(o.eligibility,"Students aged 16–18 in Year 12.");assert.deepEqual(o.sourceUrls,["https://example.org/engineering"]);assert.doesNotMatch(JSON.stringify(result),/test-secret|test-extraction-key/);assert.equal(calls.length,2);
 });
 test("unsupported dates, ages and invented application links stay unconfirmed",async t=>{
  setup(t);
@@ -22,6 +22,24 @@ test("unsupported dates, ages and invented application links stay unconfirmed",a
  const response=await importOpportunity(request({text}));assert.equal(response.status,200);const o=(await response.json()).opportunity;
  assert.equal(o.deadlineDate,"");assert.equal(o.minAge,undefined);assert.deepEqual(o.years,[]);assert.equal(o.applicationUrl,"");assert.ok(o.unconfirmed.some((v:string)=>v.includes("Deadline")));assert.ok(o.unconfirmed.some((v:string)=>v.includes("age")));assert.ok(o.unconfirmed.some((v:string)=>v.includes("Application")));
 });
+test("unquoted eligibility and AI-written summaries are labelled unconfirmed, never stated as fact",async t=>{
+
+ setup(t);
+
+ global.fetch=async()=>completion({...extracted,eligibility:"Open to every UK student",eligibilityQuote:"",selection:"Three staged interview rounds",description:"An inspiring programme."});
+
+ const response=await importOpportunity(request({text}));assert.equal(response.status,200);const o=(await response.json()).opportunity;
+
+ assert.equal(o.eligibility,"Not stated");
+
+ assert.ok(o.unconfirmed.some((v:string)=>v.includes("Eligibility")));
+
+ assert.ok(o.unconfirmed.some((v:string)=>v.includes("Description")));
+
+ assert.ok(o.unconfirmed.some((v:string)=>v.includes("Selection")));
+
+});
+
 test("missing AI configuration prevents spending an extraction request and unsafe origins/URLs fail",async t=>{
  setup(t,false);process.env.TAVILY_API_KEY="test";let calls=0;global.fetch=async()=>{calls++;throw new Error("No fetch");};
  assert.equal((await importOpportunity(request({url:"https://example.org/programme"}))).status,503);
@@ -40,6 +58,32 @@ test("rich reflections send only selected student evidence and return reusable g
  const response=await reflect(request(entry));assert.equal(response.status,200);assert.equal(response.headers.get("Cache-Control"),"no-store");
  const result=await response.json();assert.deepEqual(result.reflection,{...reflection,origin:"ai"});assert.match(submitted,/I compared two design options/);assert.doesNotMatch(submitted,/other-student|test-secret/);
 });
+test("model-claimed student provenance and invented single-digit numbers are rejected or relabelled",async t=>{
+
+ setup(t);
+
+ global.fetch=async()=>completion({...reflection,cvBullet:"Mentored 4 students through design choices."});
+
+ assert.equal((await reflect(request(entry))).status,502);
+
+ // "20" hidden inside "2024" must not match: the notes mention a year, not twenty of anything.
+
+ const dated=experienceSchema.parse({...entry,whatDid:entry.whatDid+" The workshop ran in 2024."});
+
+ global.fetch=async()=>completion({...reflection,cvBullet:"Improved outcomes for 20 participants."});
+
+ assert.equal((await reflect(request(dated))).status,502);
+
+ // A model echoing origin:"student" back from the notes is relabelled before anything is saved.
+
+ global.fetch=async()=>completion({...reflection,origin:"student"});
+
+ const response=await reflect(request(entry));assert.equal(response.status,200);
+
+ assert.equal((await response.json()).reflection.origin,"ai");
+
+});
+
 test("reflection rejects invented or metadata-only evidence quotes and too little student evidence",async t=>{
  setup(t);global.fetch=async()=>completion({...reflection,skills:[{...reflection.skills[0],evidenceQuote:"Engineering simulation"}]});
  assert.equal((await reflect(request(entry))).status,502);
