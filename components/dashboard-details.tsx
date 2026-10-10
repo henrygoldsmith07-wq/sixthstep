@@ -2,16 +2,16 @@
 import { useState, useMemo } from "react";
 import { ArrowRight, Leaf, CalendarDays } from "lucide-react";
 import { catalogue } from "@/lib/catalogue";
-import { nextSteps, recordDeadline, dateLabel, daysUntil, evidenceBank, skillNames } from "@/lib/domain";
+import { nextSteps, recordDeadline, dateLabel, daysUntil, evidenceBank, skillNames, type RichOpportunity } from "@/lib/domain";
 import { recordedCoverage, unrecordedAreas, missingSkills } from "@/lib/coverage";
-import { recommendations } from "@/lib/recommendations";
+import { type Match } from "@/lib/recommendations";
 import { workspaceAlerts, starComplete } from "@/lib/intelligence";
 import { OpportunityCard } from "./opportunity";
 import { useWorkspace } from "./workspace-context";
 import { Empty } from "./shared";
-export function DashboardDetails(){
+export function DashboardDetails({recommended}:{recommended:{item:RichOpportunity;match:Match}[]}) {
  const {data,navigate,setActiveRecord,startExperience,dismissAlert,openOpportunity}=useWorkspace(),[allAlerts,setAllAlerts]=useState(false);
- const {steps,alerts,deadlines,waiting,evidence,unreflected,coverage,recorded,gaps,missingSkillsList,recommended}=useMemo(()=>
+ const {steps,alerts,deadlines,waiting,evidence,unreflected,coverage,recorded,gaps,missingSkillsList}=useMemo(()=>
  {const c=recordedCoverage(data.experiences);return {
   steps:nextSteps(data.records,data.experiences),
   alerts:workspaceAlerts(data,catalogue),
@@ -23,7 +23,7 @@ export function DashboardDetails(){
   recorded:[...c.areas.entries()].sort((a,b)=>b[1]-a[1]),
   gaps:unrecordedAreas(data.profile,c),
   missingSkillsList:missingSkills(c,skillNames),
-  recommended:recommendations(catalogue,data.profile,data.records.map(r=>r.opportunity.id),{records:data.records,experiences:data.experiences,feedback:data.feedback}).slice(0,3)
+  recommended
  };},[data]);
  function open(id:string){setActiveRecord(id);navigate("saved");}
  const onboard=[data.profile.configured,data.profile.configured&&recommended.length>0||data.records.length>0,data.records.length>0,data.records.some(r=>r.nextAction.trim())];
