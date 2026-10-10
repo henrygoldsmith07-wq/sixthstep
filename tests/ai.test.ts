@@ -82,3 +82,16 @@ test("JSON-mode-off output is still schema checked and truncated output is rejec
  global.fetch=async()=>Response.json({choices:[{finish_reason:"length",message:{content:'{"ok":true}'}}]});
  await assert.rejects(generateJson(schema,"JSON","test"),(e:unknown)=>e instanceof ApiError && e.status===502);
 });
+
+test("transient provider errors are retried; permanent ones fail fast and closed",async t=>{
+ setup(t,generic);
+ const schema=z.object({ok:z.boolean()});
+ // A 429 (rate-limited free tier, see README) followed by success must retry once and resolve.
+ let calls=0;global.fetch=async()=>{calls++;return calls===1?Response.json({},{status:429}):completion({ok:true});};
+ assert.deepEqual(await generateJson(schema,"JSON","test"),{ok:true});
+ assert.equal(calls,2);
+ // A permanent 500 must fail fast and closed without burning retries.
+ let calls2=0;global.fetch=async()=>{calls2++;return Response.json({},{status:500});};
+ await assert.rejects(generateJson(schema,"JSON","test"),(e:unknown)=>e instanceof ApiError && e.status===503 && /unavailable|endpoint/.test(e.message));
+ assert.equal(calls2,1);
+});

@@ -47,6 +47,22 @@ export function aiStatus() {
   return {ai:false,aiProvider:providerName(),aiSetup:genericSelected() ? "invalid" as const : "missing" as const};
  }
 }
+const delay=(ms:number)=>new Promise<void>(resolve=>setTimeout(resolve,ms));
+function isTransient(status:number){return status===429||status===503;}
+// Parsing is a local operation: a malformed or schema-invalid response will not self-correct
+// on a retry, and retrying would risk a second billed request for the same failed output, so
+// parse/schema failures fail fast as a 502 without re-attempting the call.
+function parseJsonResponse(payload:unknown,schema:z.ZodType<any>):any {
+ try {
+  const choice=(payload as any)?.choices?.[0];
+  if(choice?.finish_reason==="length" || choice?.finish_reason==="content_filter") throw new Error("Incomplete output");
+  const content=choice?.message?.content;
+  if(typeof content!=="string") throw new Error("Missing output");
+  const fenced=content.trim().match(/^\x60\x60\x60(?:json)?\s*([\s\S]*?)\s*\x60\x60\x60$/i);
+  const value=JSON.parse(fenced ? fenced[1] : content);
+  return schema.parse(value);
+ } catch (error) { throw new ApiError(502,error instanceof ApiError?error.message:"SixthStep could not read the AI response. Please try again."); }
+}
 export async function generateJson<T>(schema:z.ZodType<T>,instruction:string,input:string):Promise<T> {
  const config=configuration();
  const body:Record<string,unknown>={
@@ -60,22 +76,34 @@ export async function generateJson<T>(schema:z.ZodType<T>,instruction:string,inp
  if(config.jsonMode) body.response_format={type:"json_object"};
  // Many reasoning models reject temperature; omit it for generic providers.
  if(config.temperature!==undefined) body.temperature=config.temperature;
- const response=await fetch(config.endpoint,{
-  method:"POST",
-  headers:{Authorization:"Bearer "+config.key,"Content-Type":"application/json"},
-  body:JSON.stringify(body),signal:AbortSignal.timeout(22000),cache:"no-store",
-  redirect:"error"
- });
- if(!response.ok) throw new ApiError(response.status===429?429:503,
-  response.status===429 ? "The AI allowance is busy or used up. Try again later." : "AI is temporarily unavailable. Check the provider endpoint, API key, model and compatibility settings.");
+ const json=JSON.stringify(body);
+ const headers={"Authorization":"Bearer "+config.key,"Content-Type":"application/json"};
+ // A single overall budget shared across attempts keeps retries bounded. The budget is
+ // well inside the route's maxDuration (30s), so a rate-limited free tier (README:
+ // Groq/Tavily) can recover from a transient 429/503 without the call hanging the route.
+ const controller=new AbortController();const deadline=20000;const start=Date.now();const stop=setTimeout(()=>controller.abort(),deadline);
+ let last:unknown;
  try {
-  const payload=await response.json();
-  const choice=payload.choices?.[0];
-  if(choice?.finish_reason==="length" || choice?.finish_reason==="content_filter") throw new Error("Incomplete output");
-  const content=choice?.message?.content;
-  if(typeof content!=="string") throw new Error("Missing output");
-  const fenced=content.trim().match(/^\x60\x60\x60(?:json)?\s*([\s\S]*?)\s*\x60\x60\x60$/i);
-  const value=JSON.parse(fenced ? fenced[1] : content);
-  return schema.parse(value);
- } catch (error) { throw new ApiError(502,error instanceof ApiError?error.message:"SixthStep could not read the AI response. Please try again."); }
+  for(let attempt=0;attempt<3;attempt++){
+   if(attempt>0){if(Date.now()>start+deadline-4000)break;await delay(Math.min(125*2**(attempt-1),350));}
+   try {
+    const response=await fetch(config.endpoint,{
+     method:"POST",headers,body:json,signal:controller.signal,cache:"no-store",redirect:"error"
+    });
+    // Permanent provider errors (auth, bad request, model not found, other 4xx/5xx) fail
+    // fast and fail closed. Only 429/503 are retried; everything else surfaces immediately.
+    if(!response.ok){const transient=isTransient(response.status);last=new ApiError(503,response.status===429?"The AI allowance is busy or used up. Try again later.":"AI is temporarily unavailable. Check the provider endpoint, API key, model and compatibility settings.");if(!transient)break;continue;}
+    return parseJsonResponse(await response.json(),schema);
+   } catch (error) {
+    if(error instanceof ApiError){ if(isTransient(error.status)){last=error;continue;}throw error; }
+    if(error instanceof Error&&["TimeoutError","AbortError"].includes(error.name)){last=new ApiError(503,"The AI response timed out. Try again.");break;}
+    // Network-level failure: retryable, bounded by the overall deadline.
+    last=new ApiError(503,"The AI response could not be sent. Try again.");continue;
+   }
+  }
+  if(last instanceof ApiError)throw last;
+  throw new ApiError(503,"AI is temporarily unavailable. Please try again.");
+ } finally {
+  clearTimeout(stop);
+ }
 }
