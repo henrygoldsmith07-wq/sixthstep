@@ -171,8 +171,12 @@ export function evidenceBank(experiences:Experience[]) {
 // unsupportedClaims) and the route's >=60/12000-character gates all run on the *full* experience, not this text.
 export const lengthLimit=140; // keeps an 11-field experience under ~1800 chars (well below the 12k hard reject)
 function window(field:string,limit:number=lengthLimit){return field.length>limit?field.slice(0,limit)+"…(truncated)":field;}
-export function reflectionInput(experience:Experience,limit:number=lengthLimit) {
- return [
+// The prior reflection is sent only as a *bounded, labelled* draft that the model may read for
+// continuity but must not copy. Each slice is capped, so the model cannot regurgitate the prior
+// wording in bulk; every OUTPUT quote is still re-grounded by supportsGroundedQuotes against the
+// student's full evidence, and unsupported numbers are still caught by unsupportedClaims.
+export function reflectionInput(experience:Experience,prior?:RichReflection,limit:number=lengthLimit) {
+ const parts=[
   "Experience: "+window(experience.name,limit),"Organisation: "+window(experience.organisation,limit),"Type: "+window(experience.type,limit),
   "What I did: "+window(experience.whatDid,limit),"What I learned: "+window(experience.learned,limit),
   "Challenges: "+window(experience.challenges,limit),"Surprises: "+window(experience.surprised,limit),"Enjoyed: "+window(experience.enjoyed,limit),
@@ -181,5 +185,14 @@ export function reflectionInput(experience:Experience,limit:number=lengthLimit) 
   // model prose back as the student's own record would let a later reflection regurgitate
   // wording SixthStep itself wrote.
   ...experience.skills.filter(s=>s.origin!=="ai").map(s=>"Skill: "+window(s.skill,limit)+"; What happened: "+window(s.whatHappened,limit)+"; My action: "+window(s.action,limit)+"; Learning: "+window(s.learning,limit))
- ].join("\n");
+ ];
+ if(prior){
+  parts.push("",
+   "# Prior reflection draft (for continuity only — do not copy its wording; you may keep an evidenceQuote only if it is grounded in the notes above, and rephrase everything else):",
+   "Summary: "+window(prior.summary,limit),
+   "Prior evidence quotes: "+prior.skills.map(s=>" - "+window(s.evidenceQuote,limit)).join(", "),
+   "Prior CV: "+window(prior.cvBullet,limit),
+   "Prior STAR: "+window([prior.star?.situation,prior.star?.task,prior.star?.action,prior.star?.result].filter(Boolean).join(" "),limit));
+ }
+ return parts.join("\n");
 }

@@ -26,7 +26,7 @@ export function Journal(){
   if(!experience||busy)return;
   setBusy(true);setError("");setPending(null);
   const snapshot=experience.id,notes=studentEvidenceText(experience);
-  try{const response=await fetch("/api/experience-reflection",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...experience,reflection:undefined})});const result=await response.json();if(!response.ok)throw new Error(result.error);setPending({id:snapshot,notes,value:result.reflection});}
+  try{const response=await fetch("/api/experience-reflection",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...experience})});const result=await response.json();if(!response.ok)throw new Error(result.error);setPending({id:snapshot,notes,value:result.reflection});}
   catch(e){if(currentId.current===snapshot)setError(e instanceof Error?e.message:"Reflection could not complete.");}finally{setBusy(false);}
  }
  const output=(pending?.id===experience?.id?pending?.value:null)||experience?.reflection;

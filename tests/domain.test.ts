@@ -128,6 +128,22 @@ test("reflection input is bounded for cost but preserves verbatim evidence to gr
  // And an overrunning field is marked rather than silently clipped.
  assert.ok(input.includes("…(truncated)"));
 });
+
+test("prior reflection is added as a bounded, non-regurgitating continuity block",()=>{
+ const base="I compared two design options and explained my choice. ";
+ const e=experienceSchema.parse({id:"prior",name:"A project",whatDid:base.slice(0,4400),learned:base.slice(0,2400),updatedAt:""});
+ const prior=richReflectionSchema.parse({summary:"I learned about trade-offs by comparing two designs.",skills:[{skill:"Problem solving",evidenceQuote:"I compared two design options",whatHappened:"Two options",action:"Compared",learning:"Trade-offs matter"}],star:{situation:"Two designs",task:"Choose",action:"Compared",result:"Chose one"},cvBullet:"Compared designs",applicationExample:"",interviewTalkingPoint:"",nextSteps:[]});
+ const input=reflectionInput(e,prior);
+ // Continuity context is present and labelled as a draft to improve, not copy.
+ assert.ok(input.includes("# Prior reflection draft (for continuity only"));
+ assert.ok(input.includes("do not copy its wording"));
+ // The verbatim prior evidenceQuote is preserved so it can be re-grounded by hasGroundedQuotes.
+ assert.ok(input.includes("I compared two design options"));
+ // And the whole prompt (evidence + bounded prior) stays bounded — no full prior dump.
+ assert.ok(input.length<=2400,`reflectionInput+ prior was ${input.length} chars, expected <=2400`);
+ // Without a prior, no continuity block is added.
+ assert.equal(reflectionInput(e).includes("Prior reflection draft"),false);
+});
 test("discovery sections need enough real entries and new labels use added date, not check date",()=>{
  assert.equal(discoverySections([programme],profile,[]).length,0);
  const second=enrich({...programme,id:"two"});const sections=discoverySections([programme,second],profile,[]);
