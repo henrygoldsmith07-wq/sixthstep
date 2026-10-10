@@ -21,8 +21,8 @@ test("explicit feedback changes explainable ordering without changing eligibilit
 });
 test("not-for-me and similar-done hide only the explicit programme and feedback can be reset",()=>{
  const other=enrich({...programme,id:"other"});
- for(const signal of ["Not for me","Already done something similar"]){const result=recommendations([programme,other],profile,[],{feedback:[feedback(signal)]});assert.deepEqual(result.map(r=>r.item.id),["other"]);assert.ok(discoverySections([programme,other],profile,[],day,[],[feedback(signal)]).every(s=>s.items.every(i=>i.id!=="engineering")));}
- assert.equal(recommendations([programme],profile,[],{feedback:[]}).length,1);
+ for(const signal of ["Not for me","Already done something similar"]){const result=recommendations([programme,other],profile,[],{feedback:[feedback(signal)]},day);assert.deepEqual(result.map(r=>r.item.id),["other"]);assert.ok(discoverySections([programme,other],profile,[],day,[],[feedback(signal)]).every(s=>s.items.every(i=>i.id!=="engineering")));}
+ assert.equal(recommendations([programme],profile,[],{feedback:[]},day).length,1);
 });
 test("priority actions put overdue work first and keep the default to four spread across applications",()=>{
  const records=Array.from({length:6},(_,i)=>{const r=createRecord(enrich({...programme,id:"p"+i,title:"Programme "+i}));r.intent="Applying";r.nextAction="Task "+i;r.nextActionDate=i===2?"2026-10-02":"2026-10-07";return r;});
@@ -87,8 +87,8 @@ test("freshness and field provenance never treat live discoveries or directories
 });
 test("related pathways retrieve broad-area opportunities without deciding the student's career",()=>{
  const health=enrich({...programme,id:"health",sector:"Healthcare",title:"NHS volunteering",careerAreas:["Medicine"]});
- assert.ok(pathwayOpportunities("Medicine",[programme,health]).some(i=>i.id==="health"));assert.ok(pathwayOpportunities("Engineering",[programme,health]).some(i=>i.id==="engineering"));
- assert.equal(pathwayOpportunities("Engineering",[enrich({...programme,deadlineDate:"2020-01-01"})]).length,0);
+ assert.ok(pathwayOpportunities("Medicine",[programme,health],day).some(i=>i.id==="health"));assert.ok(pathwayOpportunities("Engineering",[programme,health],day).some(i=>i.id==="engineering"));
+ assert.equal(pathwayOpportunities("Engineering",[enrich({...programme,deadlineDate:"2020-01-01"})],day).length,0);
 });
 test("evidence retrieval ranks complete actual STAR details first at equal relevance and retains missing fields",()=>{
  const e=experienceSchema.parse({id:"e",name:"Design exercise",updatedAt:day,skills:[{id:"incomplete",skill:"Problem solving",whatHappened:"Two options",action:"I compared costs.",learning:"Explain tradeoffs"},{id:"complete",skill:"Problem solving",whatHappened:"Two options",action:"I compared costs.",learning:"Explain tradeoffs",star:{situation:"Two options",task:"Compare them",action:"I compared costs",result:"I explained my choice"}}]});
@@ -123,10 +123,10 @@ test("freshly recorded matches can become explained Home actions without creatin
 
 test("regional year labels use the actual published band and never silently assume equivalence",()=>{
  const regional=enrich({...programme,years:["Year 12","Year 13 (Northern Ireland)","S5"]});
- assert.equal(matchOpportunity(regional,{...profile,year:"S5"}).eligible,true);
- assert.equal(matchOpportunity(regional,{...profile,year:"Year 13 (Northern Ireland)"}).eligible,true);
- assert.equal(matchOpportunity(regional,{...profile,year:"Year 13"}).eligible,false);
- const scottish=matchOpportunity(programme,{...profile,year:"S5"});
+ assert.equal(matchOpportunity(regional,{...profile,year:"S5"},{},day).eligible,true);
+ assert.equal(matchOpportunity(regional,{...profile,year:"Year 13 (Northern Ireland)"},{},day).eligible,true);
+ assert.equal(matchOpportunity(regional,{...profile,year:"Year 13"},{},day).eligible,false);
+ const scottish=matchOpportunity(programme,{...profile,year:"S5"},{},day);
  // A difference in regional naming is not evidence of ineligibility, but it is never
  // silent either: the student is told the provider's wording and asked to check it.
  assert.equal(scottish.eligible,true);

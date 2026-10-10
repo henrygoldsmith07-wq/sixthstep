@@ -15,18 +15,19 @@ export const careerLinks=[
 // string is normalised once here and each term is tested against the result.
 function normalised(text:string){return " "+text.toLowerCase().replace(/[^a-z0-9]+/g," ")+" ";}
 // The same opportunity content is classified two or three times in one render (scoring, then
-// coverage, then discovery sections), and every result is read-only, so a bounded memo removes
-// the repeats. It is keyed on the raw text and capped so a long session cannot grow it forever.
+// coverage, then discovery sections). A bounded memo skips the repeats, but it returns a shallow
+// copy of the cached array: callers must not share a single mutable reference, which earlier let
+// one caller's mutation leak into the next.
 const areaCache=new Map<string,ReturnType<typeof classifyAreas>>();
 const areaCacheLimit=4000;
 function classifyAreas(text:string){const haystack=normalised(text);return careerLinks.filter(link=>link.terms.some(term=>haystack.includes(" "+term+" ")));}
 export function relatedAreas(text:string){
  const cached=areaCache.get(text);
- if(cached)return cached;
+ if(cached)return cached.slice();
  const result=classifyAreas(text);
  if(areaCache.size>=areaCacheLimit)areaCache.clear();
  areaCache.set(text,result);
- return result;
+ return result.slice();
 }
 export function opportunityContent(item:RichOpportunity){return [item.title,item.sector,item.subSector,item.description,...item.tags,...item.subjects].join(" ");}
 export function explorationMap(experiences:Experience[]){

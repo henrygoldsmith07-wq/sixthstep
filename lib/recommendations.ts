@@ -23,19 +23,19 @@ export function conciseReason(match:Match){
 const stopWords=new Set(["and","the","for","with","are","not","but","all","any","can","our","out","its","was","has","have","had","new","use","one","two","get","how","who","via","per","own","set","may","see","way","day","work","people","help","want","would","like","from","they","them","this","that","there","here","what","when","where","which","your","you","their","been","being","into","than","then","also","some","more","most","only","just","over","such","very","will","shall","does","done","each"]);
 function words(value:string) {return value.toLowerCase().replace(/mathematics/g,"maths").replace(/computer science/g,"computing").split(/[^a-z0-9]+/).filter(v=>v.length>2&&!stopWords.has(v));}
 function overlap(a:string,b:string) {const tokens=words(a);return tokens.some(w=>words(b).includes(w));}
-function prepareMatcher(profile:StudentProfile,context:RecommendationContext){
+function prepareMatcher(profile:StudentProfile,context:RecommendationContext,today=todayISO()){
  const signals=context.feedback||[],saved=new Map<string,TrackedRecord[]>(),decreased=new Map<string,Experience>();
  for(const record of context.records||[])if(record.intent!=="Maybe"&&!["Not pursuing","Unsuccessful"].includes(record.status)){const sector=record.opportunity.sector,list=saved.get(sector)||[];if(list.length<2)list.push(record);saved.set(sector,list);}
  for(const e of context.experiences||[])if(e.interestChange==="Decreased"&&(e.disliked.trim()||e.careerImpact.trim()))for(const area of e.careerAreas)if(!decreased.has(area))decreased.set(area,e);
  const enjoyed=(context.experiences||[]).filter(e=>e.interestChange==="Increased"&&(e.enjoyed.trim()||e.careerImpact.trim())).map(experience=>({experience,areas:new Set(experience.careerAreas.flatMap(a=>relatedAreas(a).map(v=>v.area)))}));
  const tokens=new Map<string,string[]>(),get=(text:string)=>{let value=tokens.get(text);if(!value){value=words(text);tokens.set(text,value);}return value;};
  const coverage=recordedCoverage(context.experiences||[]);
- return {today:todayISO(),direct:new Map(signals.map(f=>[f.opportunityId,f])),more:signals.filter(f=>f.signal==="Show me more like this"),fewer:signals.filter(f=>f.signal==="Show fewer like this"),signals,saved,decreased,enjoyed,careerAreas:relatedAreas([profile.careerInterests,...profile.interests].join(" ")),coverage,unrecorded:new Set(unrecordedAreas(profile,coverage)),overlap:(a:string,b:string)=>{const bs=get(b);return get(a).some(w=>bs.includes(w));}};
+ return {today: today, direct:new Map(signals.map(f=>[f.opportunityId,f])),more:signals.filter(f=>f.signal==="Show me more like this"),fewer:signals.filter(f=>f.signal==="Show fewer like this"),signals,saved,decreased,enjoyed,careerAreas:relatedAreas([profile.careerInterests,...profile.interests].join(" ")),coverage,unrecorded:new Set(unrecordedAreas(profile,coverage)),overlap:(a:string,b:string)=>{const bs=get(b);return get(a).some(w=>bs.includes(w));}};
 }
-export function recommendationMatcher(profile:StudentProfile,context:RecommendationContext={}){
- const prepared=prepareMatcher(profile,context);return (item:RichOpportunity)=>matchOpportunity(item,profile,context,prepared);
+export function recommendationMatcher(profile:StudentProfile,context:RecommendationContext={},today=todayISO()){
+ const prepared=prepareMatcher(profile,context,today);return (item:RichOpportunity)=>matchOpportunity(item,profile,context,today,prepared);
 }
-export function matchOpportunity(item:RichOpportunity,profile:StudentProfile,context:RecommendationContext={},prepared=prepareMatcher(profile,context)):Match {
+export function matchOpportunity(item:RichOpportunity,profile:StudentProfile,context:RecommendationContext={},today=todayISO(),prepared=prepareMatcher(profile,context,today)):Match {
  const reasons:string[]=[],checks:string[]=[],conflicts:string[]=[];let rank=0;
  const content=opportunityContent(item),itemAreas=relatedAreas(content),relatedOverlap=prepared.overlap;
  const signals=prepared.signals;
@@ -115,8 +115,8 @@ export function matchOpportunity(item:RichOpportunity,profile:StudentProfile,con
  else if(state==="Not yet open")checks.push("Applications have not opened yet — check the stated opening date");
  return {reasons:[...new Set(reasons)],checks:[...new Set(checks)],conflicts,rank,eligible:!conflicts.some(c=>/age band|school year|closed/.test(c))};
 }
-export function recommendations(items:RichOpportunity[],profile:StudentProfile,exclude:string[]=[],context:RecommendationContext={}) {
- const match=recommendationMatcher(profile,context),excluded=new Set(exclude),hidden=new Set((context.feedback||[]).filter(f=>["Not for me","Already done something similar"].includes(f.signal)).map(f=>f.opportunityId));
+export function recommendations(items:RichOpportunity[],profile:StudentProfile,exclude:string[]=[],context:RecommendationContext={},today=todayISO()) {
+ const match=recommendationMatcher(profile,context,today),excluded=new Set(exclude),hidden=new Set((context.feedback||[]).filter(f=>["Not for me","Already done something similar"].includes(f.signal)).map(f=>f.opportunityId));
  const ranked=items.map(item=>({item,match:match(item)})).filter(v=>v.match.eligible&&v.match.rank>=3&&v.item.sourceKind==="Programme"&&!excluded.has(v.item.id)&&!hidden.has(v.item.id))
  .sort((a,b)=>b.match.rank-a.match.rank||a.item.title.localeCompare(b.item.title));
  return diversifyRecommendations(ranked,profile.direction);
@@ -185,7 +185,7 @@ export function deadlineOrder(a:RichOpportunity,b:RichOpportunity) {
 export function discoverySections(items:RichOpportunity[],profile:StudentProfile,records:TrackedRecord[],today?:string,experiences:Experience[]=[],feedback:DiscoveryFeedback[]=[]) {
  const sections:{title:string;description:string;items:RichOpportunity[]}[]=[];
  items=items.filter(i=>!feedback.some(f=>f.opportunityId===i.id&&["Not for me","Already done something similar"].includes(f.signal)));
- const matches=recommendations(items,profile,records.map(r=>r.opportunity.id),{records,experiences,feedback});
+ const matches=recommendations(items,profile,records.map(r=>r.opportunity.id),{records,experiences,feedback},today);
  const recommended=matches.slice(0,3).map(v=>v.item);
  if(recommended.length>=2)sections.push({title:"Recommended for you",description:"Based on your interests, subjects and preferences. Always check the full criteria.",items:recommended});
  const add=(title:string,description:string,list:RichOpportunity[])=>{if(list.length>=2)sections.push({title,description,items:list.slice(0,3)});};
