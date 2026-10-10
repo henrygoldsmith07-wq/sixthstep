@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ArrowRight, Leaf, CalendarDays } from "lucide-react";
 import { catalogue } from "@/lib/catalogue";
 import { nextSteps, recordDeadline, dateLabel, daysUntil, evidenceBank, skillNames } from "@/lib/domain";
@@ -11,12 +11,20 @@ import { useWorkspace } from "./workspace-context";
 import { Empty } from "./shared";
 export function DashboardDetails(){
  const {data,navigate,setActiveRecord,startExperience,dismissAlert,openOpportunity}=useWorkspace(),[allAlerts,setAllAlerts]=useState(false);
- const steps=nextSteps(data.records,data.experiences),alerts=workspaceAlerts(data,catalogue);
- const deadlines=data.records.filter(r=>["Saved","Researching","Preparing application"].includes(r.status)&&recordDeadline(r)).sort((a,b)=>recordDeadline(a).localeCompare(recordDeadline(b)));
- const waiting=data.records.filter(r=>["Applied","Interview / next stage"].includes(r.status)),completed=data.records.filter(r=>r.status==="Completed"),evidence=evidenceBank(data.experiences);
- const unreflected=completed.filter(r=>!data.experiences.some(e=>e.opportunityId===r.opportunity.id&&(e.reflectionCompletedAt||e.reflection)));
- const coverage=recordedCoverage(data.experiences),recorded=[...coverage.areas.entries()].sort((a,b)=>b[1]-a[1]),gaps=unrecordedAreas(data.profile,coverage),missingSkillsList=missingSkills(coverage,skillNames);
- const recommended=recommendations(catalogue,data.profile,data.records.map(r=>r.opportunity.id),{records:data.records,experiences:data.experiences,feedback:data.feedback}).slice(0,3);
+ const {steps,alerts,deadlines,waiting,evidence,unreflected,coverage,recorded,gaps,missingSkillsList,recommended}=useMemo(()=>
+ {const c=recordedCoverage(data.experiences);return {
+  steps:nextSteps(data.records,data.experiences),
+  alerts:workspaceAlerts(data,catalogue),
+  deadlines:data.records.filter(r=>["Saved","Researching","Preparing application"].includes(r.status)&&recordDeadline(r)).sort((a,b)=>recordDeadline(a).localeCompare(recordDeadline(b))),
+  waiting:data.records.filter(r=>["Applied","Interview / next stage"].includes(r.status)),
+  evidence:evidenceBank(data.experiences),
+  unreflected:data.records.filter(r=>r.status==="Completed").filter(r=>!data.experiences.some(e=>e.opportunityId===r.opportunity.id&&(e.reflectionCompletedAt||e.reflection))),
+  coverage:c,
+  recorded:[...c.areas.entries()].sort((a,b)=>b[1]-a[1]),
+  gaps:unrecordedAreas(data.profile,c),
+  missingSkillsList:missingSkills(c,skillNames),
+  recommended:recommendations(catalogue,data.profile,data.records.map(r=>r.opportunity.id),{records:data.records,experiences:data.experiences,feedback:data.feedback}).slice(0,3)
+ };},[data]);
  function open(id:string){setActiveRecord(id);navigate("saved");}
  const onboard=[data.profile.configured,data.profile.configured&&recommended.length>0||data.records.length>0,data.records.length>0,data.records.some(r=>r.nextAction.trim())];
 
@@ -39,3 +47,6 @@ export function DashboardDetails(){
  {coverage.examples>0&&<><h3 className="section-subtitle">Skills you have recorded</h3><p className="fine-print">{[...coverage.skills.entries()].map(([name,count])=>name+" ("+count+")").join(" · ")}</p><h3 className="section-subtitle">Workspace skills with nothing recorded yet</h3><p className="fine-print">{missingSkillsList.join(" · ")} · these are the workspace's own skill list, not any programme's claims.</p></>}
  <div className="detail-actions"><button className="button secondary" onClick={()=>navigate("reflect")}>Open my journal</button><button className="inline-link" onClick={()=>navigate("evidence")}>Evidence bank</button></div></section></div></details></>;
 }
+
+
+
