@@ -165,15 +165,21 @@ export function experienceFromRecord(record:TrackedRecord,now=new Date().toISOSt
 export function evidenceBank(experiences:Experience[]) {
  return experiences.flatMap(experience=>experience.skills.filter(s=>s.skill.trim()&&s.action.trim()).map(skill=>({...skill,experienceId:experience.id,experienceName:experience.name,experienceType:experience.type,organisation:experience.organisation,date:experience.date,sectors:experience.careerAreas})));
 }
-export function reflectionInput(experience:Experience) {
+// A focused evidence window is enough for the model to ground a verbatim quote, and bounding
+// the prompt keeps a free-tier reflection turn affordable (see README: Groq is rate/length-limited).
+// Trimming the model's input cannot weaken honesty: grounding (studentEvidenceText, supportsGroundedQuotes,
+// unsupportedClaims) and the route's >=60/12000-character gates all run on the *full* experience, not this text.
+export const lengthLimit=140; // keeps an 11-field experience under ~1800 chars (well below the 12k hard reject)
+function window(field:string,limit:number=lengthLimit){return field.length>limit?field.slice(0,limit)+"…(truncated)":field;}
+export function reflectionInput(experience:Experience,limit:number=lengthLimit) {
  return [
-  "Experience: "+experience.name,"Organisation: "+experience.organisation,"Type: "+experience.type,
-  "What I did: "+experience.whatDid,"What I learned: "+experience.learned,
-  "Challenges: "+experience.challenges,"Surprises: "+experience.surprised,"Enjoyed: "+experience.enjoyed,
-  "Disliked: "+experience.disliked,"Career impact: "+experience.careerImpact,"Next step: "+experience.nextStep,
+  "Experience: "+window(experience.name,limit),"Organisation: "+window(experience.organisation,limit),"Type: "+window(experience.type,limit),
+  "What I did: "+window(experience.whatDid,limit),"What I learned: "+window(experience.learned,limit),
+  "Challenges: "+window(experience.challenges,limit),"Surprises: "+window(experience.surprised,limit),"Enjoyed: "+window(experience.enjoyed,limit),
+  "Disliked: "+window(experience.disliked,limit),"Career impact: "+window(experience.careerImpact,limit),"Next step: "+window(experience.nextStep,limit),
   // AI-drafted skills are excluded, exactly as the grounding gate excludes them. Feeding
   // model prose back as the student's own record would let a later reflection regurgitate
   // wording SixthStep itself wrote.
-  ...experience.skills.filter(s=>s.origin!=="ai").map(s=>"Skill: "+s.skill+"; What happened: "+s.whatHappened+"; My action: "+s.action+"; Learning: "+s.learning)
+  ...experience.skills.filter(s=>s.origin!=="ai").map(s=>"Skill: "+window(s.skill,limit)+"; What happened: "+window(s.whatHappened,limit)+"; My action: "+window(s.action,limit)+"; Learning: "+window(s.learning,limit))
  ].join("\n");
 }

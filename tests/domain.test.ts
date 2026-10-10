@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { catalogue } from "../lib/catalogue";
-import { appSchema, opportunitySchema, enrich, defaultProfile, createRecord, recordDeadline, daysUntil, deadlineLabel, todayISO, availability, nextSteps, experienceFromRecord, experienceSchema, evidenceBank, richReflectionSchema } from "../lib/domain";
+import { appSchema, opportunitySchema, enrich, defaultProfile, createRecord, recordDeadline, daysUntil, deadlineLabel, todayISO, availability, nextSteps, experienceFromRecord, experienceSchema, evidenceBank, richReflectionSchema, reflectionInput } from "../lib/domain";
 import { discover, defaultFilters, matchOpportunity, recommendations, discoverySections } from "../lib/recommendations";
 import { loadWorkspace, storageKey, backupJSON, restoreWorkspace } from "../lib/persistence";
 import { explicitDate, confirmedDate, confirmedAge } from "../lib/extraction";
@@ -109,6 +109,24 @@ test("AI skill quotes must come from student evidence, not programme metadata",(
  const e=experienceSchema.parse({id:"e",name:"I led a team of ten",whatDid:"I compared two design options and explained my choice.",updatedAt:""});
  const reflection=richReflectionSchema.parse({summary:"I compared designs.",skills:[{skill:"Problem solving",evidenceQuote:"I compared two design options",whatHappened:"Two options",action:"Compared",learning:"Trade-offs"}],star:{situation:"",task:"",action:"",result:""},cvBullet:"Compared designs.",applicationExample:"Compared designs.",interviewTalkingPoint:"Compared designs.",nextSteps:[]});
  assert.equal(hasGroundedQuotes(reflection,e),true);reflection.skills[0].evidenceQuote="I led a team of ten";assert.equal(hasGroundedQuotes(reflection,e),false);
+});
+
+test("reflection input is bounded for cost but preserves verbatim evidence to ground",()=>{
+ // Valid schema caps: whatDid<=4500, learned<=2500. A complete experience can sit at ~12k,
+ // which the route rejects as "shorten to 12000 chars". Bounding the model window instead of
+ // rejecting lets the student reflect on their richest evidence.
+ const base="I compared two design options and explained my choice. "; // 54 chars, contains a verifiable verbatim quote at the start
+ const whatDid=base.repeat(80).slice(0,4400); // under the 4500 cap
+ const learned=base.replace("compared","learned about").repeat(50).slice(0,2400); // under the 2500 cap
+ const e=experienceSchema.parse({id:"long",name:"A project",whatDid:whatDid,learned:learned,updatedAt:""});
+ const input=reflectionInput(e);
+ // A free-tier reflection turn must not bill on a 12k-token evidence dump.
+ assert.ok(input.length<=2000,`reflectionInput was ${input.length} chars, expected <=2000`);
+ // Trimming the model window keeps the start of the student's own words verbatim, so a
+ // quote at the start of whatDid remains exactly matchable by hasGroundedQuotes.
+ assert.ok(input.includes("What I did: I compared two design options and explained my choice."),input.slice(0,80));
+ // And an overrunning field is marked rather than silently clipped.
+ assert.ok(input.includes("…(truncated)"));
 });
 test("discovery sections need enough real entries and new labels use added date, not check date",()=>{
  assert.equal(discoverySections([programme],profile,[]).length,0);
