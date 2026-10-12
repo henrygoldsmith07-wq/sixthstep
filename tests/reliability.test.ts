@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { appSchema, emptyData, createRecord, enrich, experienceSchema, evidenceBank, questionSchema } from "../lib/domain";
 import { readRoute, routeHash } from "../lib/navigation";
-import { LocalWorkspaceStorage, conflictBackupKey } from "../lib/workspace-storage";
+import { LocalWorkspaceStorage, conflictBackupKey, originalKeys } from "../lib/workspace-storage";
 import { storageKey, restoreWorkspace, backupJSON } from "../lib/persistence";
 import { calendarItems, priorityActions } from "../lib/operating-system";
 import { calendarExport, eventIdentity } from "../lib/calendar-export";
@@ -15,7 +15,7 @@ import { diversifyRecommendations } from "../lib/recommendations";
 const today="2026-10-03",at="2026-10-03T12:00:00Z";
 const opportunity=enrich({id:"reliability",title:"Programme",provider:"University",sector:"Engineering",source:"catalogue",checkedAt:today,addedAt:today,deadlineDate:"2026-10-09",deadline:"9 October 2026",url:"https://example.ac.uk/programme",applicationState:"Open"});
 const workspace=()=>appSchema.parse({...emptyData,records:[createRecord(opportunity,at)]});
-function memory(initial:Record<string,string>={}){const values=new Map(Object.entries(initial));return {getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>{values.set(key,value);}};}
+function memory(initial:Record<string,string>={}){const values=new Map(Object.entries(initial));return {getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>{values.set(key,value);},removeItem:(key:string)=>{values.delete(key);}};}
 test("durable links round trip reserved characters and preserve old workspace addresses",()=>{
  for(const route of [{view:"saved" as const,record:"manual/a #é",question:"question::1"},{view:"reflect" as const,experience:"source:experience"},{view:"evidence" as const,evidence:"exp::skill"},{view:"finder" as const,opportunity:"provider/programme"}])assert.deepEqual(readRoute(routeHash(route)),route);
  for(const view of ["dashboard","saved","reflect","calendar","finder"] as const)assert.deepEqual(readRoute("#"+view),{view});
@@ -53,7 +53,7 @@ test("two-tab conflicts never overwrite edits and an explicit choice preserves t
 });
 test("corrupt data and backup write failures remain recoverable instead of being overwritten",async()=>{
  const backend=memory({[storageKey]:"{broken"}),adapter=new LocalWorkspaceStorage(backend);assert.ok((await adapter.load()).error);await assert.rejects(()=>adapter.save(workspace()));assert.equal((await adapter.recovery())[storageKey],"{broken");
- const throwing={getItem:backend.getItem,setItem:()=>{throw new Error("Quota exceeded");}},failed=new LocalWorkspaceStorage(throwing);await failed.load();await assert.rejects(()=>failed.replace(workspace()));assert.equal(backend.getItem(storageKey),"{broken");
+ const throwing={getItem:backend.getItem,setItem:()=>{throw new Error("Quota exceeded");},removeItem:()=>{throw new Error("Quota exceeded");}},failed=new LocalWorkspaceStorage(throwing);await failed.load();await assert.rejects(()=>failed.replace(workspace()));assert.equal(backend.getItem(storageKey),"{broken");
 });
 test("the structured catalogue preserves every existing record, order and provenance exactly",()=>{
  const added=["engineering-college-steam","parliament-education","national-archives-education","british-library-schools","nhs-health-careers","apprenticeships-gov-uk","uk-supreme-court-debate-days","bath-step-into-bath","bath-discover-bath","kcl-pre-university-summer","ucl-summer-school","wadham-summer-schools","sheffield-access-summer","royal-holloway-summer-university","winchester-discover-summer","southampton-sutton-trust-summer","cardiff-step-up","swansea-summer-school","imperial-accelerate","imperial-work-experience","tdi-challenge","paribus-essay-prize","orwell-youth-prize","lse-thrive","techniquest-destination-stem","dorset-healthcare-work-experience","future-leaders-uk","sutton-trust-pathways","courtauld-summer-university","courtauld-young-people","npg-lab","npg-link","mediatrust-miq-work-experience","bfi-film-academy","redcross-young-volunteering","bhf-young-volunteering","newcastle-bitesize-uni"],revised=["bristol-insight"],preserved=catalogue.filter(i=>!added.includes(i.id)&&!revised.includes(i.id));
@@ -97,4 +97,12 @@ test("local funnel counts use actual recorded actions, preserve unknown timings 
  const data=workspace();let metrics=measure(data.metrics,"view",at);metrics=measure(metrics,"save","2026-10-03T12:03:00Z");data.metrics=metrics;data.records[0].intent="Applying";data.records[0].nextAction="Check criteria";
  const result=productMetrics(data);assert.equal(result.viewed,1);assert.equal(result.submitted,0);assert.equal(result.firstSaveMinutes,3);assert.equal(result.nextActionPercent,100);assert.equal(productMetrics(appSchema.parse(emptyData)).firstSaveMinutes,null);
  assert.ok(!("opportunityId" in metrics));
+});
+
+test("explicit workspace clear removes only SixthStep keys and leaves unrelated data intact",async()=>{
+  const unrelated="third-party-app-kept";const backend=memory({[storageKey]:JSON.stringify(workspace()),"sixthstep-saved-v1":JSON.stringify([{id:"legacy"}]),"sixthstep-profile-v1":JSON.stringify({year:"Year 12"}),"sixthstep-journal-v1":"old notes",[conflictBackupKey]:JSON.stringify({records:[]}),[unrelated]:"persist me"}),adapter=new LocalWorkspaceStorage(backend);
+  await adapter.load();await adapter.clear();
+  for(const key of originalKeys)assert.equal(backend.getItem(key),null,"clear must remove "+key);
+  assert.equal(backend.getItem(unrelated),"persist me","unrelated app data must survive");
+  const reloaded=await adapter.load();assert.equal(reloaded.data.records.length,0);assert.equal(reloaded.data.experiences.length,0);
 });

@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { catalogue } from "../lib/catalogue";
 // External font delivery is unrelated to product flows and can stall CI navigation.
 test.beforeEach(async({page})=>{await page.route(/https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/,route=>route.abort());});
-import { enrich, createRecord, experienceSchema, defaultProfile, type RichReflection } from "../lib/domain";
+import { enrich, createRecord, experienceSchema, defaultProfile, emptyData, type RichReflection } from "../lib/domain";
 const notes="I compared two design options in a virtual engineering simulation and explained my choice using their costs.";
 const reflection:RichReflection={summary:"I compared two design options in a simulation.",skills:[{skill:"Problem solving",evidenceQuote:"I compared two design options",whatHappened:"Two designs had different costs.",action:"I compared the options and explained my choice.",learning:"I learned to consider trade-offs."}],star:{situation:"Two design options in a simulation",task:"Choose a design",action:"I compared costs",result:"I explained my choice"},cvBullet:"Compared design options in a virtual engineering simulation.",applicationExample:"I considered the costs of two designs and explained my choice.",interviewTalkingPoint:"I learned to discuss design trade-offs.",nextSteps:["Explore engineering design further"],origin:"ai"};
 const imported=enrich({id:"import-e2e",title:"External engineering insight",provider:"Example University",category:"Employer insight",sector:"Engineering",format:"Virtual",location:"Virtual",duration:"2 days",durationBand:"1–3 days",eligibility:"Year 12; age not stated",years:["Year 12"],deadline:"31 October 2026",deadlineDate:"2026-10-31",cost:"Free",activities:["Compare two design options"],skills:["Problem solving"],description:"A virtual engineering insight with a design task.",url:"https://example.org/engineering",applicationUrl:"https://example.org/apply",source:"imported",sourceKind:"Imported",unconfirmed:["Age eligibility"]});
@@ -88,6 +88,21 @@ test("workspace backup restore is reviewable and retains linked evidence",async(
  await page.goto("/#settings");await page.getByLabel("Restore workspace backup").setInputFiles({name:"backup.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(backup))});
  await expect(page.getByText(/This backup contains 1 opportunities and 1 experiences/)).toBeVisible();expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("sixthstep-workspace-v2")!).records.length)).toBe(0);
  await page.getByRole("button",{name:"Restore this workspace",exact:true}).click();await nav(page,"Evidence bank");await expect(page.getByText("I explained the route clearly",{exact:true})).toBeVisible();const download=page.waitForEvent("download");await nav(page,"My profile & settings");await page.getByRole("button",{name:"Export workspace backup",exact:true}).click();expect((await download).suggestedFilename()).toBe("sixthstep-workspace-backup.json");
+});
+test("profile can deliberately erase all SixthStep data while preserving other apps' data",async({page})=>{
+ const seed=JSON.stringify({...emptyData,profile:{...defaultProfile,year:"Year 12",subjects:["Maths"],interests:["Engineering"],configured:true}});
+ await page.addInitScript(()=>{if(!localStorage.getItem("sixthstep-workspace-v2"))localStorage.setItem("sixthstep-workspace-v2",seed);});
+ await page.addInitScript(()=>localStorage.setItem("unrelated-app-pref","keep me"));
+ await page.goto("/#settings");
+ await page.getByRole("button",{name:"Delete all SixthStep data",exact:true}).waitFor({state:"visible"});
+ let message="";page.once("dialog",d=>{message=d.message();d.accept();});
+ await page.getByRole("button",{name:"Delete all SixthStep data",exact:true}).click();
+ await expect(message).toMatch(/Delete all SixthStep data/);
+ await expect(message).toMatch(/It cannot be undone/);
+ expect(await page.evaluate(()=>localStorage.getItem("sixthstep-workspace-v2"))).toBe(null);
+ expect(await page.evaluate(()=>localStorage.getItem("unrelated-app-pref"))).toBe("keep me");
+ await expect(page.getByText(/All SixthStep workspace data has been removed/)).toBeVisible();
+ await expect(page.getByRole("button",{name:"Delete all SixthStep data",exact:true})).toBeEnabled();
 });
 test("decision filters compose, show active choices and clear without inventing eligibility",async({page})=>{
  await page.goto("/#finder");await page.getByRole("button",{name:"Filters",exact:true}).click();await page.getByLabel("Opportunity type",{exact:true}).selectOption("Competition");await page.getByLabel("School year",{exact:true}).selectOption("Year 12");await page.getByLabel("Free only",{exact:true}).check();await page.getByLabel("Verified details only",{exact:true}).check();

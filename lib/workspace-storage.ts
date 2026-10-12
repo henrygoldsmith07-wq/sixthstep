@@ -1,7 +1,7 @@
 import { appSchema, type AppData } from "./domain";
 import { loadWorkspace, storageKey, type StorageReader } from "./persistence";
 
-export type StorageBackend=StorageReader&{setItem:(key:string,value:string)=>void};
+export type StorageBackend=StorageReader&{setItem:(key:string,value:string)=>void;removeItem:(key:string)=>void};
 export type WorkspaceSnapshot=ReturnType<typeof loadWorkspace>;
 export type SaveOutcome={status:"saved"}|{status:"conflict";error:string};
 export interface WorkspaceStorage {
@@ -9,6 +9,9 @@ export interface WorkspaceStorage {
   save(data:AppData):Promise<SaveOutcome>;
   replace(data:AppData):Promise<void>;
   recovery():Promise<Record<string,string|null>>;
+  // Removes only the SixthStep-controlled storage keys, never using clear(), so an
+  // unrelated app's data is never touched. Used by the explicit "Delete all data" control.
+  clear():Promise<void>;
   subscribe?(changed:()=>void):()=>void;
 }
 // Metrics change on every view, so a raw byte comparison turns ordinary two-tab use into
@@ -18,7 +21,7 @@ export function authoredEqual(a:string|null,b:string|null):boolean {
  return authored(a)===authored(b);
 }
 export const conflictBackupKey="sixthstep-before-replacement-v2";
-const originalKeys=[storageKey,"sixthstep-saved-v1","sixthstep-profile-v1","sixthstep-journal-v1",conflictBackupKey];
+export const originalKeys=[storageKey,"sixthstep-saved-v1","sixthstep-profile-v1","sixthstep-journal-v1",conflictBackupKey];
 
 export class LocalWorkspaceStorage implements WorkspaceStorage {
   private baseline:string|null=null;
@@ -51,15 +54,17 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     this.storage.setItem(storageKey,value);this.baseline=value;this.loaded=true;this.needsRecovery=false;
   }
   async recovery(){return Object.fromEntries(originalKeys.map(key=>[key,this.storage.getItem(key)]));}
+  async clear(){for(const key of originalKeys)this.storage.removeItem(key);this.baseline=null;this.loaded=false;this.needsRecovery=false;}
 }
 export function browserWorkspaceStorage():WorkspaceStorage {
   const adapter=new LocalWorkspaceStorage(window.localStorage,changed=>{
     const listener=(event:StorageEvent)=>{if(event.storageArea===window.localStorage&&(event.key===storageKey||event.key===null))changed();};
     window.addEventListener("storage",listener);return()=>window.removeEventListener("storage",listener);
   });
-  const save=adapter.save.bind(adapter),replace=adapter.replace.bind(adapter);
+  const save=adapter.save.bind(adapter),replace=adapter.replace.bind(adapter),clear=adapter.clear.bind(adapter);
   // Coordinate the compare/write transaction across tabs where Web Locks exist.
   adapter.save=data=>navigator.locks?navigator.locks.request(storageKey,()=>save(data)):save(data);
   adapter.replace=data=>navigator.locks?navigator.locks.request(storageKey,()=>replace(data)):replace(data);
+  adapter.clear=()=>navigator.locks?navigator.locks.request(storageKey,()=>clear()):clear();
   return adapter;
 }

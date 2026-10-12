@@ -37,6 +37,11 @@ export function useWorkspaceStorage(factory=browserWorkspaceStorage){
     try{await queue.current.catch(()=>{});const loaded=await adapter.current?.load();if(!loaded)throw new Error();if(!loaded.error){setData(loaded.data);setConflict(false);}blocked.current=!!loaded.error;setStalled(!!loaded.error);setError(loaded.error);}
     catch{setError("The stored workspace could not be read. Keep a backup of your current edits.");}
   }
+  async function clearWorkspace(){
+    ++epoch.current;
+    try{await queue.current.catch(()=>{});if(!adapter.current)throw new Error();await adapter.current.clear();setData(emptyData);blocked.current=false;setConflict(false);setStalled(false);setError("");}
+    catch{setError("Your data could not be erased from this browser. Export a backup first, then try again.");}
+  }
   async function recovery(){if(!adapter.current)throw new Error("Storage is unavailable.");return adapter.current.recovery();}
-  return {data,setData,ready,error,conflict,stalled,replaceData,reloadStored,recovery};
+  return {data,setData,ready,error,conflict,stalled,replaceData,reloadStored,recovery,clearWorkspace};
 }
