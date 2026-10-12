@@ -37,6 +37,8 @@ export function Journal(){
   const item:SkillEvidence={id:crypto.randomUUID(),skill:value.skill,whatHappened:value.whatHappened,action:value.action,learning:value.learning,quote:value.evidenceQuote,origin:"ai"};
   if(experience.skills.length>=30)return;
   if(experience.skills.some(s=>s.skill===item.skill&&s.quote===item.quote)){toast("This evidence is already in your bank");return;}
+  // AI-drafted skills are promoted into the student evidence bank by this action, so the student must confirm explicitly.
+  if(!window.confirm("Add this AI-drafted evidence to your bank? Check it against your own notes first before reusing it in an application.")){toast("Promotion skipped");return;}
   update({skills:[...experience.skills,item]});toast("Evidence added and linked to this experience");
  }
  return <><Heading eyebrow="TURN EXPERIENCE INTO UNDERSTANDING" title="Your experience journal." description="Record what you actually did, keep useful evidence and notice what you want to explore next." action={<button className="button primary" onClick={add}><Plus size={16}/>New experience</button>}/>
