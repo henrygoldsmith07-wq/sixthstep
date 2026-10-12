@@ -103,6 +103,12 @@ test("profile can deliberately erase all SixthStep data while preserving other a
  expect(await page.evaluate(()=>localStorage.getItem("unrelated-app-pref"))).toBe("keep me");
  await expect(page.getByText(/All SixthStep workspace data has been removed/)).toBeVisible();
  await expect(page.getByRole("button",{name:"Delete all SixthStep data",exact:true})).toBeEnabled();
+ // Deleting resets the workspace and the interface saves that reset at once. It must not
+ // report a failure, and autosave must keep working for whatever the student does next.
+ await page.getByRole("button",{name:"Engineering",exact:true}).click();
+ await page.getByRole("button",{name:"Save my profile",exact:true}).click();
+ await expect.poll(()=>page.evaluate(()=>!!localStorage.getItem("sixthstep-workspace-v2")?.includes("Engineering"))).toBe(true);
+ await expect(page.locator(".error-message")).toHaveCount(0);
 });
 test("decision filters compose, show active choices and clear without inventing eligibility",async({page})=>{
  await page.goto("/#finder");await page.getByRole("button",{name:"Filters",exact:true}).click();await page.getByLabel("Opportunity type",{exact:true}).selectOption("Competition");await page.getByLabel("School year",{exact:true}).selectOption("Year 12");await page.getByLabel("Free only",{exact:true}).check();await page.getByLabel("Verified details only",{exact:true}).check();

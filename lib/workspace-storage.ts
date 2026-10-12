@@ -1,4 +1,4 @@
-import { appSchema, type AppData } from "./domain";
+import { appSchema, emptyData, type AppData } from "./domain";
 import { loadWorkspace, storageKey, type StorageReader } from "./persistence";
 
 export type StorageBackend=StorageReader&{setItem:(key:string,value:string)=>void;removeItem:(key:string)=>void};
@@ -22,6 +22,9 @@ export function authoredEqual(a:string|null,b:string|null):boolean {
 }
 export const conflictBackupKey="sixthstep-before-replacement-v2";
 export const originalKeys=[storageKey,"sixthstep-saved-v1","sixthstep-profile-v1","sixthstep-journal-v1",conflictBackupKey];
+// The exact bytes a workspace with no student content serialises to. Compared against the same
+// appSchema.parse round trip save() performs, so a schema default change cannot silently drift.
+const pristineWorkspaceJSON=JSON.stringify(appSchema.parse(emptyData));
 
 export class LocalWorkspaceStorage implements WorkspaceStorage {
   private baseline:string|null=null;
@@ -41,6 +44,9 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     if(this.needsRecovery)throw new Error("Restore a valid backup before replacing unreadable data.");
     const value=JSON.stringify(appSchema.parse(data)),current=this.storage.getItem(storageKey);
     if(current!==this.baseline&&current!==value&&this.authoredDiffers(current,value))return {status:"conflict",error:"Another tab changed this workspace. Your edits are kept here; choose which version to continue with before saving."};
+    // Opening the app, or finishing a deliberate erase, must leave nothing stored: a workspace
+    // holding no student content never creates the key. A real edit still persists normally.
+    if(current===null&&value===pristineWorkspaceJSON)return {status:"saved"};
     if(value!==current)this.storage.setItem(storageKey,value);
     this.baseline=value;return {status:"saved"};
   }
@@ -54,7 +60,10 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     this.storage.setItem(storageKey,value);this.baseline=value;this.loaded=true;this.needsRecovery=false;
   }
   async recovery(){return Object.fromEntries(originalKeys.map(key=>[key,this.storage.getItem(key)]));}
-  async clear(){for(const key of originalKeys)this.storage.removeItem(key);this.baseline=null;this.loaded=false;this.needsRecovery=false;}
+  // The stored state is now known to be empty rather than unread, so a later edit must be
+  // saveable: leaving loaded=false made the interface's own post-delete save throw, which
+  // surfaced a false "could not save" warning and blocked autosave until a reload.
+  async clear(){for(const key of originalKeys)this.storage.removeItem(key);this.baseline=null;this.loaded=true;this.needsRecovery=false;}
 }
 export function browserWorkspaceStorage():WorkspaceStorage {
   const adapter=new LocalWorkspaceStorage(window.localStorage,changed=>{

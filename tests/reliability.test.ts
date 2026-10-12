@@ -106,3 +106,17 @@ test("explicit workspace clear removes only SixthStep keys and leaves unrelated 
   assert.equal(backend.getItem(unrelated),"persist me","unrelated app data must survive");
   const reloaded=await adapter.load();assert.equal(reloaded.data.records.length,0);assert.equal(reloaded.data.experiences.length,0);
 });
+
+test("after an explicit clear the workspace still saves real edits without recreating erased data",async()=>{
+ const backend=memory({[storageKey]:JSON.stringify(workspace())}),adapter=new LocalWorkspaceStorage(backend);
+ await adapter.load();await adapter.clear();
+ assert.equal(backend.getItem(storageKey),null);
+ // Clearing resets the interface to the empty workspace, whose autosave runs immediately.
+ // That save must succeed, and must not write the erased data back as a fresh stored key.
+ assert.deepEqual(await adapter.save(appSchema.parse(emptyData)),{status:"saved"});
+ assert.equal(backend.getItem(storageKey),null,"an empty workspace must not recreate erased data");
+ // A genuine edit afterwards must still persist, or autosave stays broken until a reload.
+ const edited=appSchema.parse({...emptyData,profile:{...emptyData.profile,interests:["Engineering"],configured:true}});
+ assert.deepEqual(await adapter.save(edited),{status:"saved"});
+ assert.ok(backend.getItem(storageKey),"a real edit after a clear must persist");
+});
