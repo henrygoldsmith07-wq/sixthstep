@@ -20,7 +20,7 @@ export function Field({label,children,hint}:{label:string;children:ReactNode;hin
  return <div className="form-field"><label className="field-label" htmlFor={id}>{label}</label>{control}{hint&&<span id={hintId} className="input-hint">{hint}</span>}</div>;
 }
 export function ExportButton({name,text,label="Export"}:{name:string;text:string;label?:string}){
- return <button type="button" className="button secondary" onClick={()=>download(name,text)}><Download size={15}/>{label}</button>;
+ return <button type="button" className="button secondary" onClick={()=>download(name,text)}><Download size={15} aria-hidden="true"/>{label}</button>;
 }
 export function Lines({title,items}:{title:string;items:string[]}){return <><h3>{title}</h3>{items.length?<ul className="output-list">{items.map((item,i)=><li key={i}>{item}</li>)}</ul>:<p className="fine-print">Not stated</p>}</>;}
 // Escaping lives in lib/csv.ts so exports and tests share one guard. The inline copy this
