@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { appSchema, emptyData, createRecord, enrich, experienceSchema, evidenceBank, questionSchema } from "../lib/domain";
 import { readRoute, routeHash } from "../lib/navigation";
-import { LocalWorkspaceStorage, conflictBackupKey, originalKeys } from "../lib/workspace-storage";
+import { LocalWorkspaceStorage, conflictBackupKey, originalKeys, eraseTombstoneKey, anotherTabErasedMessage } from "../lib/workspace-storage";
 import { storageKey, restoreWorkspace, backupJSON } from "../lib/persistence";
 import { calendarItems, priorityActions } from "../lib/operating-system";
 import { calendarExport, eventIdentity } from "../lib/calendar-export";
@@ -51,6 +51,60 @@ test("two-tab conflicts never overwrite edits and an explicit choice preserves t
  assert.equal((await a.save(left)).status,"saved");assert.equal((await b.save(right)).status,"conflict");assert.equal(JSON.parse(backend.getItem(storageKey)!).records[0].notes,"From tab A");
  await b.replace(right);assert.equal(JSON.parse(backend.getItem(conflictBackupKey)!).records[0].notes,"From tab A");assert.equal(JSON.parse(backend.getItem(storageKey)!).records[0].notes,"From tab B");
 });
+test("an erase on one tab cannot be undone by another tab's in-memory copy",async()=>{
+ // The hole this closes: tab A erased, tab B still held the deleted workspace and
+ // still rendered "Keep this tab's version", so the delete was undone by a button
+ // this product offered. replace() must refuse, not silently restore.
+ const data=workspace(),backend=memory({[storageKey]:JSON.stringify(data)}),a=new LocalWorkspaceStorage(backend),b=new LocalWorkspaceStorage(backend);
+ await a.load();await b.load();
+ await a.clear();
+ assert.equal(backend.getItem(storageKey),null,"the erase removed the data");
+ assert.notEqual(backend.getItem(eraseTombstoneKey),null,"an erase leaves a marker so a sibling tab can tell a delete from a write");
+ // Tab B tries to restore what it holds. This must throw, not write.
+ await assert.rejects(()=>b.replace(data),/erased in another tab/,"a stale tab must not restore erased data");
+ assert.equal(backend.getItem(storageKey),null,"the erased data must not come back");
+});
+
+test("an empty workspace is always allowed to replace after an erase",async()=>{
+ // Writing nothing must never be blocked: a student who erases and then starts
+ // again in another tab has to be able to save the fresh, empty workspace.
+ const backend=memory(),a=new LocalWorkspaceStorage(backend);
+ await a.load();await a.clear();
+ await a.replace(emptyData);
+ assert.equal(backend.getItem(storageKey),null,"an empty workspace still creates nothing");
+});
+
+test("after an erase, a load reports the empty workspace rather than falling back to v1 data",async()=>{
+ // Without this, loadWorkspace() would happy-path back into the legacy v1 keys,
+ // which clear() also removed — and resurrecting them would defeat the erase.
+ const backend=memory({"sixthstep-saved-v1":JSON.stringify([{...opportunity,savedAt:at}])}),a=new LocalWorkspaceStorage(backend);
+ await a.load();await a.clear();
+ const loaded=await a.load();
+ assert.equal(loaded.error,"","an erased workspace is a known-empty state, not an unread one");
+ assert.equal(loaded.data.records.length,0);
+ assert.equal(backend.getItem("sixthstep-saved-v1"),null,"the v1 migration source was erased too");
+});
+
+test("an autosave of pre-erase edits is refused with the erased explanation",async()=>{
+ // Autosave is the silent path that would otherwise rewrite erased data.
+ const data=workspace(),backend=memory({[storageKey]:JSON.stringify(data)}),a=new LocalWorkspaceStorage(backend),b=new LocalWorkspaceStorage(backend);
+ await a.load();await b.load();await a.clear();
+ const outcome=await b.save(data);
+ assert.equal(outcome.status,"conflict");
+ assert.equal(outcome.error,anotherTabErasedMessage);
+ assert.equal(backend.getItem(storageKey),null);
+});
+
+test("the first genuine edit after an erase retires the marker so it cannot linger",async()=>{
+ // The marker is an explanation, not a state. If it survived into the next
+ // session it would keep refusing saves forever, long after the erase was done.
+ const backend=memory(),a=new LocalWorkspaceStorage(backend);
+ await a.load();await a.clear();
+ await a.save(workspace());
+ assert.equal(backend.getItem(eraseTombstoneKey),null,"a real edit retires the marker");
+ assert.notEqual(backend.getItem(storageKey),null,"the real edit is stored");
+});
+
 test("corrupt data and backup write failures remain recoverable instead of being overwritten",async()=>{
  const backend=memory({[storageKey]:"{broken"}),adapter=new LocalWorkspaceStorage(backend);assert.ok((await adapter.load()).error);await assert.rejects(()=>adapter.save(workspace()));assert.equal((await adapter.recovery())[storageKey],"{broken");
  const throwing={getItem:backend.getItem,setItem:()=>{throw new Error("Quota exceeded");},removeItem:()=>{throw new Error("Quota exceeded");}},failed=new LocalWorkspaceStorage(throwing);await failed.load();await assert.rejects(()=>failed.replace(workspace()));assert.equal(backend.getItem(storageKey),"{broken");

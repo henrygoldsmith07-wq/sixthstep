@@ -110,6 +110,41 @@ test("profile can deliberately erase all SixthStep data while preserving other a
  await expect.poll(()=>page.evaluate(()=>!!localStorage.getItem("sixthstep-workspace-v2")?.includes("Engineering"))).toBe(true);
  await expect(page.locator(".error-message")).toHaveCount(0);
 });
+
+test("deleting the workspace on a 390px viewport keeps the confirm flow and the erased state usable",async({page})=>{
+ // Mobile parity for the erase section. HEAD claims this was verified, but the
+ // commit that claimed it changed no files, so the flow had only ever been
+ // exercised at the desktop viewport. The control is inside .detail-actions,
+ // which stacks to full-width buttons below 540px, so a phone-sized screen is
+ // where a cramped or clipped control would actually show up.
+ await page.setViewportSize({width:390,height:844});
+ const seed=JSON.stringify({...emptyData,profile:{...defaultProfile,year:"Year 12",subjects:["Maths"],interests:["Engineering"],configured:true}});
+ await page.addInitScript(value=>{if(!localStorage.getItem("sixthstep-workspace-v2"))localStorage.setItem("sixthstep-workspace-v2",value);},seed);
+ await page.goto("/#settings");
+ const erase=page.getByRole("button",{name:"Delete all SixthStep data",exact:true});
+ await erase.waitFor({state:"visible"});
+ // The control must be a real touch target and fully on-screen at 390px.
+ const box=(await erase.boundingBox())!;
+ expect(box.height).toBeGreaterThanOrEqual(40);
+ expect(box.x).toBeGreaterThanOrEqual(0);
+ expect(box.x+box.width).toBeLessThanOrEqual(390);
+ // Nothing overflows horizontally.
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
+ // The confirm dialog must state the consequences before anything is deleted.
+ let message="";page.once("dialog",d=>{message=d.message();d.accept();});
+ await erase.click();
+ await expect(message).toMatch(/Delete all SixthStep data/);
+ await expect(message).toMatch(/It cannot be undone/);
+ expect(await page.evaluate(()=>localStorage.getItem("sixthstep-workspace-v2"))).toBe(null);
+ await expect(page.getByText(/All SixthStep workspace data has been removed/)).toBeVisible();
+ // Autosave still works immediately after an erase, at this width.
+ await page.getByRole("button",{name:"Engineering",exact:true}).click();
+ await page.getByRole("button",{name:"Save my profile",exact:true}).click();
+ await expect.poll(()=>page.evaluate(()=>!!localStorage.getItem("sixthstep-workspace-v2")?.includes("Engineering"))).toBe(true);
+ await expect(page.locator(".error-message")).toHaveCount(0);
+ await page.screenshot({path:"test-results/erase-mobile-390.png",fullPage:true});
+});
+
 test("decision filters compose, show active choices and clear without inventing eligibility",async({page})=>{
  await page.goto("/#finder");await page.getByRole("button",{name:"Filters",exact:true}).click();await page.getByLabel("Opportunity type",{exact:true}).selectOption("Competition");await page.getByLabel("School year",{exact:true}).selectOption("Year 12");await page.getByLabel("Free only",{exact:true}).check();await page.getByLabel("Verified details only",{exact:true}).check();
  await expect(page.locator(".opportunity-card")).not.toHaveCount(0);for(const card of await page.locator(".opportunity-card").all())await expect(card.locator(".type-tag")).toHaveText("Competition");await expect(page.getByRole("button",{name:"Remove category filter",exact:true})).toBeVisible();

@@ -31,6 +31,49 @@ test("another tab's changes are not silently overwritten and current edits can b
  await expect(other.getByRole("alert").filter({hasText:"Another tab changed"})).toBeVisible();await other.getByLabel("Draft response",{exact:false}).fill("My second tab's answer.");await expect(page.getByLabel("Draft response",{exact:false})).toHaveValue("My first tab's answer.");
  await other.getByRole("button",{name:"Keep this tab's version",exact:true}).click();await other.reload();await expect(other.getByLabel("Draft response",{exact:false})).toHaveValue("My second tab's answer.");const before=await other.evaluate(()=>JSON.parse(localStorage.getItem("sixthstep-before-replacement-v2")!));expect(before.records[0].questions[0].draft).toBe("My first tab's answer.");await other.close();
 });
+test("after one tab erases, a sibling tab shows the banner, reloads stored as empty and cannot restore the deleted data",async({page,context})=>{
+ // The cross-tab erase trust claim, exercised end to end. Before the erase
+ // marker existed, this tab kept the erased workspace in memory and offered
+ // "Keep this tab's version", so a deliberate delete was undone by a button
+ // this product rendered. Storage events carry no deletion signal, so the
+ // marker is the only cross-tab channel available.
+ await setup(page);
+ const other=await context.newPage();
+ await other.goto("/#saved/durable");
+ // The sibling tab really holds live workspace content before the erase.
+ await expect(other.getByLabel("Draft response",{exact:false})).toBeVisible();
+ expect(await other.evaluate(()=>JSON.parse(localStorage.getItem("sixthstep-workspace-v2")!).records.length)).toBe(1);
+
+ // Erase from the FIRST tab.
+ await nav(page,"Profile");
+ let confirmMessage="";page.once("dialog",d=>{confirmMessage=d.message();d.accept();});
+ await page.getByRole("button",{name:"Delete all SixthStep data",exact:true}).click();
+ await expect(confirmMessage).toMatch(/It cannot be undone/);
+ await expect.poll(()=>page.evaluate(()=>localStorage.getItem("sixthstep-workspace-v2")===null)).toBe(true);
+
+ // The sibling tab must be told, and the banner must name the cause.
+ const banner=other.getByRole("alert").filter({hasText:"erased"});
+ await expect(banner).toBeVisible();
+ await expect(banner).toContainText("erased in another tab");
+ // It must NOT offer to resurrect the erased copy.
+ await expect(other.getByRole("button",{name:"Keep this tab's version",exact:true})).toHaveCount(0);
+
+ // "Reload what is stored" (the erased-state variant) must yield an EMPTY
+ // workspace — the student-visible proof that the erase took effect.
+ await other.getByRole("button",{name:"Reload this tab",exact:true}).click();
+ await expect(other.getByRole("alert").filter({hasText:"erased"})).toHaveCount(0);
+ await nav(other,"Applications");
+ await expect(other.getByRole("heading",{name:"Make room for your next possibility.",exact:true})).toBeVisible();
+ await expect(other.getByRole("button",{name:"Open workspace",exact:true})).toHaveCount(0);
+ expect(await other.evaluate(()=>localStorage.getItem("sixthstep-workspace-v2")===null)).toBe(true);
+
+ // And the data is genuinely gone: a reload of the sibling tab keeps it empty
+ // rather than resurrecting it from an in-memory cache.
+ await other.reload();
+ await expect(other.getByRole("button",{name:"Open workspace",exact:true})).toHaveCount(0);
+ expect(await other.evaluate(()=>localStorage.getItem("sixthstep-workspace-v2")===null)).toBe(true);
+ await other.close();
+});
 test("changed and removed evidence warns visibly while preserving the answer snapshot",async({page})=>{
  const value=structuredClone(data),bank=evidenceBank(value.experiences),q=value.records[0].questions[0];Object.assign(q,linkEvidence(q,bank[0]));q.draft="My own answer keeps the original wording.";value.experiences[0].skills[0].action="I edited the source action.";await setup(page,"#saved/durable/questions/first",value);
  await expect(page.getByRole("alert").filter({hasText:"Source evidence changed"})).toBeVisible();await expect(page.getByLabel("Draft response",{exact:false})).toHaveValue(q.draft);
@@ -54,4 +97,23 @@ test("saved work stays actionable before optional profile setup on mobile",async
  await page.screenshot({path:"test-results/home-saved-work-mobile.png",fullPage:true});
  await page.getByText("Shape your discovery preferences",{exact:true}).click();
  await expect(page.getByRole("region",{name:"Quick student setup"})).toBeVisible();
+});
+test("an erase in one tab is authoritative in the other: it names the cause and reloads empty",async({page,context})=>{
+  await setup(page);const other=await context.newPage();await other.goto("/#dashboard");await expect(other.getByRole("heading",{name:"Your next step.",exact:true})).toBeVisible();
+  // Tab A deletes everything on purpose, which must include confirming the destructive prompt.
+  await nav(page,"Profile");page.on("dialog",d=>d.accept());
+  await page.getByRole("button",{name:"Delete all SixthStep data",exact:true}).click();
+  await expect(page.getByText(/All SixthStep workspace data has been removed/)).toBeVisible();
+  // Tab B is still holding the deleted workspace in memory. It must be told the real cause,
+  // and it must not be offered the button whose purpose is to restore this tab's version.
+  await expect(other.getByRole("alert").filter({hasText:/erased in another tab/i})).toBeVisible();
+  await expect(other.getByRole("button",{name:"Keep this tab's version",exact:true})).toHaveCount(0);
+  await other.getByRole("button",{name:"Reload this tab",exact:true}).click();
+  await expect(other.getByRole("alert").filter({hasText:/erased in another tab/i})).toBeHidden();
+  // The deletion is honoured: the workspace is empty and nothing was written back.
+  const stored=await other.evaluate(()=>localStorage.getItem("sixthstep-workspace-v2"));
+  expect(stored===null||JSON.parse(stored).records.length===0).toBe(true);
+  await expect(other.getByRole("button",{name:"Find opportunities",exact:true})).toBeVisible();
+  expect(await other.evaluate(()=>localStorage.getItem("sixthstep-journal-v1"))).toBe(null);
+  await other.close();
 });
