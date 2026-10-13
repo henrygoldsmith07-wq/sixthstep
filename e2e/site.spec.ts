@@ -94,7 +94,7 @@ test("profile can deliberately erase all SixthStep data while preserving other a
  await page.addInitScript(()=>{if(!localStorage.getItem("sixthstep-workspace-v2"))localStorage.setItem("sixthstep-workspace-v2",seed);});
  await page.addInitScript(()=>localStorage.setItem("unrelated-app-pref","keep me"));
  await page.goto("/#settings");
- await page.getByRole("button",{name:"Delete all SixthStep data",exact:true}).waitFor({state:"visible"});
+ await expect(page.getByRole("heading",{name:"Accounts & data",exact:true})).toBeVisible();await page.getByRole("button",{name:"Delete all SixthStep data",exact:true}).waitFor({state:"visible"});
  let message="";page.once("dialog",d=>{message=d.message();d.accept();});
  await page.getByRole("button",{name:"Delete all SixthStep data",exact:true}).click();
  await expect(message).toMatch(/Delete all SixthStep data/);
