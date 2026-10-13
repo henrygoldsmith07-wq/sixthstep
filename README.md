@@ -10,7 +10,7 @@ Applications, individual questions, experiences, evidence and opportunities have
 
 Calendar exports individual dates, selected date groups or every exact date as `.ics`. Approximate periods remain undated. Descriptions preserve provider links, checked dates and student-entered/suggested date labels. Stable event identifiers make repeated exports predictable; importing/updating duplicates remains the calendar application's responsibility. Export follows [RFC 5545](https://www.rfc-editor.org/info/rfc5545/) and does not establish calendar sync.
 
-`WorkspaceStorage` in `lib/workspace-storage.ts` provides asynchronous load/save/replace/recovery/subscription operations. The local adapter retains the v2 schema and original v1 data, blocks automatic replacement of corrupt data, detects changes from another tab, and backs up the previous version before an explicit replacement. Web Locks coordinate writes where available. A future authenticated adapter can implement this interface; there is no unused database or cloud account requirement.
+`WorkspaceStorage` in `lib/workspace-storage.ts` provides asynchronous load/save/replace/recovery/subscription operations. The local adapter retains the v2 schema and original v1 data, blocks automatic replacement of corrupt data, detects changes from another tab, and backs up the previous version before an explicit replacement. Web Locks coordinate writes where available. A deliberate erase is authoritative everywhere: it removes only SixthStep's own storage keys and leaves a marker under a SixthStep key, so another tab that still holds the deleted workspace cannot save or restore it, a reload reports the empty workspace instead of falling back to legacy data, and the marker retires on the next genuine edit. An explicit replacement still preserves the version it replaced. A future authenticated adapter can implement this interface; there is no unused database or cloud account requirement.
 
 The catalogue lives in `data/catalogue/` with strict runtime and CI validation. Its review helpers identify stale, incomplete/conflicting and approaching dated records; proposed source changes remain pending confirmation. Run `npm run validate:catalogue` after editing records. All 90 existing records and their provenance are preserved.
 
@@ -164,6 +164,8 @@ Provider keys stay server-side. Zod validates inputs and structured outputs. Req
 
 Search results are cached for one hour in the running instance. Reviewed imports and experience reflections return `no-store`; personal notes are not server-cached. Instance caches reset on restart.
 
+Everything the student writes stays in the browser under `sixthstep-workspace-v2`. There is no account, no sync between devices and no SixthStep server copy, so nothing can be looked up or reset centrally; a backup file is the only way to move work to another device. **Delete all SixthStep data** in Profile removes every SixthStep key from that browser — profile, opportunities, applications, experiences, evidence and AI drafts — and never touches any other site's storage. The deletion is authoritative across tabs: a tab still holding the deleted workspace is refused rather than offered the chance to restore it, and reloading shows the empty workspace instead of recovering legacy data. It cannot be undone, which is why the same section offers an export first; a backup is not required to delete.
+
 The default limiter is **per running server instance**, not a global monthly cap. Optional `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` provide shared atomic limits across Vercel instances. Summary/import routes share 8 requests per hashed IP per minute; searches and reflection routes have 5. Hashes expire after a minute. Configured Redis failures fail closed. Provider quotas still apply.
 
 ## Verification
@@ -176,7 +178,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-API tests use mocked upstream responses; no paid calls or keys are required. The suite includes 150 unit/API tests and 54 browser scenarios. Browser tests cover onboarding and recommendations, shortlist decisions, application requirements/questions, real evidence suggestions and reuse, guided reflection and exploration, deadline alerts, review/import/manual entry, stages, migrations and recovery, mocked AI responses, exports, narrow-width navigation and missing-key errors. GitHub Actions runs these checks.
+API tests use mocked upstream responses; no paid calls or keys are required. The suite includes 155 unit/API tests and 56 browser scenarios. Browser tests cover onboarding and recommendations, shortlist decisions, application requirements/questions, real evidence suggestions and reuse, guided reflection and exploration, deadline alerts, review/import/manual entry, stages, migrations and recovery, mocked AI responses, exports, narrow-width navigation, erasure across two tabs and missing-key errors. GitHub Actions runs these checks.
 
 ## Source collection
 
