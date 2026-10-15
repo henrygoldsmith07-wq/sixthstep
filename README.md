@@ -178,7 +178,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-API tests use mocked upstream responses; no paid calls or keys are required. The suite includes 155 unit/API tests and 56 browser scenarios. Browser tests cover onboarding and recommendations, shortlist decisions, application requirements/questions, real evidence suggestions and reuse, guided reflection and exploration, deadline alerts, review/import/manual entry, stages, migrations and recovery, mocked AI responses, exports, narrow-width navigation, erasure across two tabs and missing-key errors. GitHub Actions runs these checks.
+API tests use mocked upstream responses; no paid calls or keys are required. The suite includes 155 unit/API tests and 58 browser scenarios. Browser tests cover onboarding and recommendations, shortlist decisions, application requirements/questions, real evidence suggestions and reuse, guided reflection and exploration, deadline alerts, review/import/manual entry, stages, migrations and recovery, mocked AI responses, exports, narrow-width navigation, erasure across two tabs and missing-key errors. GitHub Actions runs these checks.
 
 ## Source collection
 

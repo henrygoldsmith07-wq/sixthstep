@@ -17,6 +17,9 @@ jobs:
       - run: npm ci
       - run: npm run validate:catalogue
       - run: npm run typecheck
+      # Guards against the README silently claiming a stale test count. Kept as a
+      # separate step so a docs-only change fails here rather than after a build.
+      - run: npm run check:readme-counts
       - run: npm test
       - run: npm run build
       - run: npx playwright install --with-deps chromium

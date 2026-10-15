@@ -8,6 +8,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "validate:catalogue": "tsx scripts/validate-catalogue.ts",
+    "check:readme-counts": "node scripts/check-readme-counts.mjs",
     "test": "tsx --test tests/*.test.ts",
     "test:e2e": "playwright test",
     "review:catalogue": "tsx scripts/review-catalogue.ts",

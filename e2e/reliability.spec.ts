@@ -31,49 +31,6 @@ test("another tab's changes are not silently overwritten and current edits can b
  await expect(other.getByRole("alert").filter({hasText:"Another tab changed"})).toBeVisible();await other.getByLabel("Draft response",{exact:false}).fill("My second tab's answer.");await expect(page.getByLabel("Draft response",{exact:false})).toHaveValue("My first tab's answer.");
  await other.getByRole("button",{name:"Keep this tab's version",exact:true}).click();await other.reload();await expect(other.getByLabel("Draft response",{exact:false})).toHaveValue("My second tab's answer.");const before=await other.evaluate(()=>JSON.parse(localStorage.getItem("sixthstep-before-replacement-v2")!));expect(before.records[0].questions[0].draft).toBe("My first tab's answer.");await other.close();
 });
-test("after one tab erases, a sibling tab shows the banner, reloads stored as empty and cannot restore the deleted data",async({page,context})=>{
- // The cross-tab erase trust claim, exercised end to end. Before the erase
- // marker existed, this tab kept the erased workspace in memory and offered
- // "Keep this tab's version", so a deliberate delete was undone by a button
- // this product rendered. Storage events carry no deletion signal, so the
- // marker is the only cross-tab channel available.
- await setup(page);
- const other=await context.newPage();
- await other.goto("/#saved/durable");
- // The sibling tab really holds live workspace content before the erase.
- await expect(other.getByLabel("Draft response",{exact:false})).toBeVisible();
- expect(await other.evaluate(()=>JSON.parse(localStorage.getItem("sixthstep-workspace-v2")!).records.length)).toBe(1);
-
- // Erase from the FIRST tab.
- await nav(page,"Profile");
- let confirmMessage="";page.once("dialog",d=>{confirmMessage=d.message();d.accept();});
- await page.getByRole("button",{name:"Delete all SixthStep data",exact:true}).click();
- await expect(confirmMessage).toMatch(/It cannot be undone/);
- await expect.poll(()=>page.evaluate(()=>localStorage.getItem("sixthstep-workspace-v2")===null)).toBe(true);
-
- // The sibling tab must be told, and the banner must name the cause.
- const banner=other.getByRole("alert").filter({hasText:"erased"});
- await expect(banner).toBeVisible();
- await expect(banner).toContainText("erased in another tab");
- // It must NOT offer to resurrect the erased copy.
- await expect(other.getByRole("button",{name:"Keep this tab's version",exact:true})).toHaveCount(0);
-
- // "Reload what is stored" (the erased-state variant) must yield an EMPTY
- // workspace — the student-visible proof that the erase took effect.
- await other.getByRole("button",{name:"Reload this tab",exact:true}).click();
- await expect(other.getByRole("alert").filter({hasText:"erased"})).toHaveCount(0);
- await nav(other,"Applications");
- await expect(other.getByRole("heading",{name:"Make room for your next possibility.",exact:true})).toBeVisible();
- await expect(other.getByRole("button",{name:"Open workspace",exact:true})).toHaveCount(0);
- expect(await other.evaluate(()=>localStorage.getItem("sixthstep-workspace-v2")===null)).toBe(true);
-
- // And the data is genuinely gone: a reload of the sibling tab keeps it empty
- // rather than resurrecting it from an in-memory cache.
- await other.reload();
- await expect(other.getByRole("button",{name:"Open workspace",exact:true})).toHaveCount(0);
- expect(await other.evaluate(()=>localStorage.getItem("sixthstep-workspace-v2")===null)).toBe(true);
- await other.close();
-});
 test("changed and removed evidence warns visibly while preserving the answer snapshot",async({page})=>{
  const value=structuredClone(data),bank=evidenceBank(value.experiences),q=value.records[0].questions[0];Object.assign(q,linkEvidence(q,bank[0]));q.draft="My own answer keeps the original wording.";value.experiences[0].skills[0].action="I edited the source action.";await setup(page,"#saved/durable/questions/first",value);
  await expect(page.getByRole("alert").filter({hasText:"Source evidence changed"})).toBeVisible();await expect(page.getByLabel("Draft response",{exact:false})).toHaveValue(q.draft);
@@ -115,5 +72,40 @@ test("an erase in one tab is authoritative in the other: it names the cause and 
   expect(stored===null||JSON.parse(stored).records.length===0).toBe(true);
   await expect(other.getByRole("button",{name:"Find opportunities",exact:true})).toBeVisible();
   expect(await other.evaluate(()=>localStorage.getItem("sixthstep-journal-v1"))).toBe(null);
+ // A reload of the sibling tab must keep the workspace empty rather than resurrecting the
+ // deleted records from the in-memory copy the tab was still holding.
+ await other.reload();
+ await expect(other.getByRole("button",{name:"Find opportunities",exact:true})).toBeVisible();
+ const afterReload=await other.evaluate(()=>localStorage.getItem("sixthstep-workspace-v2"));
+ expect(afterReload===null||JSON.parse(afterReload).records.length===0).toBe(true);
   await other.close();
+});
+
+test("a linked experience shows what the programme advertised, so 'attending is not performing' can be checked",async({page})=>{
+  // The honesty rule is stated in the journal, but it was uncheckable: the advertised
+  // activities were never shown next to the student's own notes.
+  const advertised=createRecord(enrich({...opportunity,id:"advertised",activities:["Compare two design options","Discuss career paths"],skills:["Problem solving"]}));
+  const linked=experienceSchema.parse({...experience,id:"linked",opportunityId:"advertised",name:"Engineering insight",whatDid:"I compared two designs and explained the constraints."});
+  const value=appSchema.parse({...emptyData,profile:{...emptyData.profile,configured:true,interests:["Engineering"]},records:[createRecord({...opportunity,activities:[],skills:[]}),advertised],experiences:[linked,experience]});
+  await setup(page,"#reflect/linked",value);
+  const panel=page.locator(".advertised-context");
+  await expect(panel).toBeVisible();
+  await expect(panel.locator("summary")).toContainText("What the programme advertised (3)");
+  // It is collapsed by default, so the panel never crowds the journal.
+  await expect(panel.getByText("Compare two design options",{exact:true})).toBeHidden();
+  await panel.locator("summary").click();
+  await expect(panel.getByText("Compare two design options",{exact:true})).toBeVisible();
+  await expect(panel.getByText("Discuss career paths",{exact:true})).toBeVisible();
+  await expect(panel.getByText("Problem solving",{exact:true})).toBeVisible();
+  // It must never be presented as something the student achieved.
+  await expect(panel.getByText(/not achievements you have completed/)).toBeVisible();
+  // The student's own notes stay authoritative and are not overwritten by any of it.
+  await expect(page.getByLabel("What I did",{exact:true})).toHaveValue("I compared two designs and explained the constraints.");
+});
+
+test("an experience with no linked programme shows no advertised context",async({page})=>{
+  // The panel is only meaningful when the experience came from a tracked programme.
+  await setup(page,"#reflect/source");
+  await expect(page.getByLabel("What I did",{exact:true})).toBeVisible();
+  await expect(page.locator(".advertised-context")).toHaveCount(0);
 });
