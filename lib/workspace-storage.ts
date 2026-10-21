@@ -17,10 +17,15 @@ export interface WorkspaceStorage {
   // real cause of a cross-tab change instead of guessing between two ordinary versions.
   erased?():boolean;
 }
+// The exact bytes a workspace with no student content serialises to. Compared against the same
+// appSchema.parse round trip save() performs, so a schema default change cannot silently drift.
+const pristineWorkspaceJSON=JSON.stringify(appSchema.parse(emptyData));
 // Metrics change on every view, so a raw byte comparison turns ordinary two-tab use into
 // a permanent conflict. Strip metrics before comparing; a corrupted raw value is never equal.
+// A missing key holds no authored content, exactly like a pristine workspace: otherwise a
+// sibling tab's first metrics stamp on a fresh workspace reads as an authored change.
 export function authoredEqual(a:string|null,b:string|null):boolean {
-  const authored=(raw:string|null)=>{if(!raw)return "";try{const {metrics:_ignored,...rest}=JSON.parse(raw);return JSON.stringify(rest);}catch{return raw}};
+  const authored=(raw:string|null)=>{try{const {metrics:_ignored,...rest}=JSON.parse(raw??pristineWorkspaceJSON);return JSON.stringify(rest);}catch{return raw}};
   return authored(a)===authored(b);
 }
 export const conflictBackupKey="sixthstep-before-replacement-v2";
@@ -45,14 +50,15 @@ export const eraseTombstoneKey="sixthstep-erased-at-v2";
 export const anotherTabErasedMessage="Your data was erased in another tab. This tab is still holding the deleted version, so it will not be saved. Reopen this tab to see the erased, empty workspace.";
 /** True when a marker left by an explicit erase is still in effect. */
 export function hasEraseTombstone(storage:StorageBackend){return storage.getItem(eraseTombstoneKey)!==null;}
-// The exact bytes a workspace with no student content serialises to. Compared against the same
-// appSchema.parse round trip save() performs, so a schema default change cannot silently drift.
-const pristineWorkspaceJSON=JSON.stringify(appSchema.parse(emptyData));
 
 export class LocalWorkspaceStorage implements WorkspaceStorage {
   private baseline:string|null=null;
   private loaded=false;
   private needsRecovery=false;
+  // The erase marker this adapter has already seen, by its own clear() or by a load() made after
+  // the erase. Only a marker set since then makes this tab stale; one it has seen means its
+  // in-memory state is already the post-erase workspace, so an explicit restore must go through.
+  private acknowledgedErase:string|null=null;
   subscribe?:WorkspaceStorage["subscribe"];
   constructor(private storage:StorageBackend,hook?:WorkspaceStorage["subscribe"]){
    // A storage event fires for every external write, including the metrics-only writes another
@@ -71,12 +77,16 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
    // rather than falling back to the v1 keys: the same erase removed those, and
    // resurrecting them would undo the deletion this marker exists to protect.
     if(hasEraseTombstone(this.storage)){result.data=structuredClone(emptyData);result.error="";result.migrated=false;}
+    this.acknowledgedErase=this.storage.getItem(eraseTombstoneKey);
     this.baseline=this.storage.getItem(storageKey);this.loaded=true;this.needsRecovery=!!result.error;return result;}
   async save(data:AppData):Promise<SaveOutcome>{
     if(!this.loaded)throw new Error("Load the workspace before saving.");
     if(this.needsRecovery)throw new Error("Restore a valid backup before replacing unreadable data.");
     const value=JSON.stringify(appSchema.parse(data)),current=this.storage.getItem(storageKey);
-    if(current!==this.baseline&&current!==value&&this.authoredDiffers(current,value)){
+    // Only an authored change made elsewhere is a conflict. Another tab merely viewing an
+    // opportunity rewrites metrics; comparing against this tab's next value alone turned that
+    // into a false conflict the moment this tab made a genuine edit.
+    if(current!==this.baseline&&this.authoredDiffers(current,this.baseline)&&this.authoredDiffers(current,value)){
      // A tab holding pre-erase edits in memory is not an ordinary conflict. The other tab
      // erased on purpose, so the honest outcomes are "saved" and "empty": offering to
      // overwrite the empty workspace with the erased data would undo a deliberate deletion.
@@ -96,13 +106,15 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
   }
   // Local metrics are written on every view and every keystroke, so comparing them made two
   // ordinary tabs look like a conflict and blocked autosave permanently.
-  private authoredDiffers(current:string|null,next:string):boolean {return !authoredEqual(current,next);}
+  private authoredDiffers(current:string|null,next:string|null):boolean {return !authoredEqual(current,next);}
   async replace(data:AppData){
     // "Keep this tab's version" is an explicit student choice, so it normally wins over a
     // storage change. It must not win over a deliberate erase: restoring the deleted copy
     // would undo the one action whose entire purpose was to remove it. Refuse, keep the
-    // erased (empty) state, and let the student re-open the tab to see it.
-    if(hasEraseTombstone(this.storage)&&authoredDiffersFromEmpty(data))throw new Error(anotherTabErasedMessage);
+    // erased (empty) state, and let the student re-open the tab to see it. A marker this tab has
+    // already seen is not a reason to refuse: erasing and then restoring a backup is deliberate.
+    const marker=this.storage.getItem(eraseTombstoneKey);
+    if(marker!==null&&marker!==this.acknowledgedErase&&authoredDiffersFromEmpty(data))throw new Error(anotherTabErasedMessage);
     const value=JSON.stringify(appSchema.parse(data)),original=this.storage.getItem(storageKey);
     // Preserve the replaced version first. A failed backup must not overwrite it.
     if(original&&original!==value)this.storage.setItem(conflictBackupKey,original);
@@ -112,7 +124,11 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     // the next tab's baseline comparison would differ for a workspace the student never wrote.
     if(original!==value){
       if(value===pristineWorkspaceJSON)this.storage.removeItem(storageKey);
-      else this.storage.setItem(storageKey,value);
+      else{
+        // Restored content is a genuine edit, so it retires the marker exactly as save() does.
+        if(marker!==null)this.storage.removeItem(eraseTombstoneKey);
+        this.storage.setItem(storageKey,value);
+      }
     }
     this.baseline=this.storage.getItem(storageKey);this.loaded=true;this.needsRecovery=false;
   }
@@ -133,6 +149,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     // The marker is SixthStep state rather than student data, so it is re-asserted after the
     // removals in case a browser drops a write made immediately before a removal burst.
     try{this.storage.setItem(eraseTombstoneKey,String(Date.now()));}catch{/* as above */}
+    this.acknowledgedErase=this.storage.getItem(eraseTombstoneKey);
     this.baseline=null;this.loaded=true;this.needsRecovery=false;
   }
 }

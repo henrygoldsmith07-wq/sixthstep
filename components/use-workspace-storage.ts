@@ -60,17 +60,18 @@ export function useWorkspaceStorage(factory=browserWorkspaceStorage){
   async function replaceData(value:AppData){
     ++epoch.current;
     try{await queue.current.catch(()=>{});await adapter.current?.replace(appSchema.parse(value));if(!adapter.current)throw new Error();setData(value);blocked.current=false;setConflict(false);setStalled(false);setErased(false);setError("");}
-    catch{blocked.current=true;setStalled(true);setError("The workspace could not be saved. Your stored version has been retained; export your current edits before leaving.");}
+    catch(failure){blocked.current=true;setStalled(true);setError(failure instanceof Error&&failure.message===anotherTabErasedMessage?anotherTabErasedMessage:"The workspace could not be saved. Your stored version has been retained; export your current edits before leaving.");}
   }
   async function reloadStored(){
     ++epoch.current;
     try{await queue.current.catch(()=>{});const loaded=await adapter.current?.load();if(!loaded)throw new Error();if(!loaded.error){setData(loaded.data);setConflict(false);}blocked.current=!!loaded.error;setStalled(!!loaded.error);setError(loaded.error);}
     catch{setError("The stored workspace could not be read. Keep a backup of your current edits.");}
   }
+  // Resolves false when nothing was erased, so the caller never confirms a deletion that failed.
   async function clearWorkspace(){
     ++epoch.current;
-    try{await queue.current.catch(()=>{});if(!adapter.current)throw new Error();await adapter.current.clear();setData(emptyData);blocked.current=false;setConflict(false);setStalled(false);setErased(false);setError("");}
-    catch{setError("Your data could not be erased from this browser. Export a backup first, then try again.");}
+    try{await queue.current.catch(()=>{});if(!adapter.current)throw new Error();await adapter.current.clear();setData(emptyData);blocked.current=false;setConflict(false);setStalled(false);setErased(false);setError("");return true;}
+    catch{setError("Your data could not be erased from this browser. Export a backup first, then try again.");return false;}
   }
   async function recovery(){if(!adapter.current)throw new Error("Storage is unavailable.");return adapter.current.recovery();}
   return {data,setData,ready,error,conflict,stalled,erased,replaceData,reloadStored,recovery,clearWorkspace};

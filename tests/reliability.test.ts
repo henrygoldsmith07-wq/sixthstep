@@ -105,6 +105,20 @@ test("the first genuine edit after an erase retires the marker so it cannot ling
  assert.notEqual(backend.getItem(storageKey),null,"the real edit is stored");
 });
 
+test("the tab that erased can restore a backup straight away, even after a reload",async()=>{
+ // Erase-then-restore is a deliberate sequence. The marker is meant to stop a stale tab, but it
+ // used to refuse this one too ("erased in another tab") until some unrelated edit retired it.
+ const data=workspace(),backend=memory({[storageKey]:JSON.stringify(data)}),a=new LocalWorkspaceStorage(backend);
+ await a.load();await a.clear();
+ await a.replace(data);
+ assert.deepEqual(JSON.parse(backend.getItem(storageKey)!),appSchema.parse(data),"the backup is restored");
+ assert.equal(backend.getItem(eraseTombstoneKey),null,"a restore is a genuine edit, so it retires the marker");
+ await a.clear();
+ const reopened=new LocalWorkspaceStorage(backend);await reopened.load();
+ await reopened.replace(data);
+ assert.notEqual(backend.getItem(storageKey),null,"a tab opened after the erase is not stale either");
+});
+
 test("corrupt data and backup write failures remain recoverable instead of being overwritten",async()=>{
  const backend=memory({[storageKey]:"{broken"}),adapter=new LocalWorkspaceStorage(backend);assert.ok((await adapter.load()).error);await assert.rejects(()=>adapter.save(workspace()));assert.equal((await adapter.recovery())[storageKey],"{broken");
  const throwing={getItem:backend.getItem,setItem:()=>{throw new Error("Quota exceeded");},removeItem:()=>{throw new Error("Quota exceeded");}},failed=new LocalWorkspaceStorage(throwing);await failed.load();await assert.rejects(()=>failed.replace(workspace()));assert.equal(backend.getItem(storageKey),"{broken");

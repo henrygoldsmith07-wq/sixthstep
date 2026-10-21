@@ -51,6 +51,33 @@ test("two tabs writing only local metrics do not manufacture a conflict", async 
   assert.equal((await right.save(theirs)).status, "conflict");
 });
 
+test("another tab's metrics-only write does not turn this tab's next real edit into a conflict", async () => {
+  // Viewing an opportunity writes metrics. Tab A's edit was compared with the stored value
+  // alone, so tab B merely browsing made A's next genuine edit stop autosave with a false conflict.
+  const backend = memory(), base = withRecord();
+  const seeded = new LocalWorkspaceStorage(backend);
+  await seeded.load();
+  await seeded.save(base);
+  const tabA = new LocalWorkspaceStorage(backend), tabB = new LocalWorkspaceStorage(backend);
+  await tabA.load();await tabB.load();
+  const browsed = structuredClone(base);
+  browsed.metrics.views = 5;
+  assert.equal((await tabB.save(browsed)).status, "saved");
+  const edited = structuredClone(base);
+  edited.records[0].notes = "a later edit";
+  assert.equal((await tabA.save(edited)).status, "saved");
+  assert.equal(JSON.parse(backend.getItem(storageKey)!).records[0].notes, "a later edit");
+
+  // The same holds on a fresh workspace, where the other tab's first stamp creates the key.
+  const fresh = memory();
+  const first = new LocalWorkspaceStorage(fresh), second = new LocalWorkspaceStorage(fresh);
+  await first.load();await second.load();
+  const stamped = structuredClone(emptyData);
+  stamped.metrics.startedAt = "2026-10-05T09:00:00.000Z";
+  assert.equal((await first.save(stamped)).status, "saved");
+  assert.equal((await second.save(withRecord())).status, "saved");
+});
+
 test("a long v1 journal keeps every character and says it was split", () => {
   // The old migration sliced at fixed character offsets and discarded everything past 7000,
   // so a returning student silently lost a third of their own writing.
