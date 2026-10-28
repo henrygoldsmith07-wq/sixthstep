@@ -60,3 +60,16 @@ test("in-memory rate limiting remains bounded without resetting live allowances"
  await assert.rejects(()=>rateLimit(make("capacity-0"),"capacity",1),(e:unknown)=>e instanceof ApiError&&e.status===429);
 });
 test("empty weekly workspace remains honest and actionable",()=>{assert.deepEqual(weeklyOverview({...structuredClone(emptyData),profile:defaultProfile},today),{attention:[],upcoming:[]});});
+test("the 12,000-character input limit is counted in characters, not UTF-8 bytes",async()=>{
+ // The byte cap fired at 24,000 BYTES while the routes promise 12,000 CHARACTERS: text with
+ // accented or non-Latin characters is 2–4 bytes each in UTF-8, so a student pasting Japanese
+ // was cut off at roughly half the documented limit for reasons the interface never explained.
+ const entry=new TextEncoder().encode(JSON.stringify({text:"日"})).length-JSON.stringify({text:""}).length;
+ assert.equal(entry,3,"the check relies on 日 being three UTF-8 bytes");
+ const large={text:"日".repeat(23000)}; // 69,000 bytes: under the character cap, over the old byte cap
+ const ok=new Request("https://example.org",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(large)});
+ assert.deepEqual(await readBody(ok),large);
+ const over={text:"日".repeat(30000)}; // ~90,000 bytes and ~30,000 characters: over both caps
+ const tooBig=new Request("https://example.org",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(over)});
+ await assert.rejects(()=>readBody(tooBig),(e:unknown)=>e instanceof ApiError&&e.status===413);
+});
