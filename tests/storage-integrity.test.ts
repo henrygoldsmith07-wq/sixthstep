@@ -100,6 +100,19 @@ test("a v1 journal that fits one entry reports no warning at all", () => {
   assert.equal(result.migrated, true);
 });
 
+test("a split v1 journal warning is added to earlier migration errors, not swapped in for them", () => {
+  // The journal path assigned with ||=. A student whose saved opportunities partly failed to
+  // migrate AND had a long journal would be told only about the split, so the failure the
+  // workspace could not recover silently vanished from the one message they see on load.
+  const result = loadWorkspace(memory({
+    "sixthstep-saved-v1": "{not json",
+    "sixthstep-journal-v1": JSON.stringify("x".repeat(12000)),
+  }));
+  assert.match(result.error, /saved opportunities/);
+  assert.match(result.error, /split into/);
+});
+
+
 test("both a bookmarks failure and a profile failure are reported, not just the first", () => {
   const result = loadWorkspace(memory({ "sixthstep-saved-v1": "{not json", "sixthstep-profile-v1": "{not json" }));
   assert.match(result.error, /saved opportunities/);
