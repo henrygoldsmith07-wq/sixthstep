@@ -138,3 +138,14 @@ test("student deadline overrides retain the original source date and clearing a 
  const deadline=calendarItems(data,[],day).find(i=>i.kind==="Deadline")!;assert.equal(deadline.date,"2026-10-05");assert.equal(deadline.originalDate,"2026-10-09");assert.equal(deadline.basis,"Student-entered date");
  r.deadlineDate="";const cleared=calendarItems(workspace([r]),[],day).find(i=>i.kind==="Deadline")!;assert.equal(cleared.date,"");assert.ok(cleared.detail.includes("original source still states"));assert.ok(!cleared.detail.includes("No exact closing date"));
 });
+test("a personal reminder labelled Deadline never borrows the provider's date as its original",()=>{
+ // Reminders reuse the "Deadline" kind, so the override provenance ("Original: <provider date>")
+ // leaked onto the student's own reminder date — on the card and inside exported .ics events.
+ const r=createRecord(programme);r.deadlineOverride=true;r.deadlineDate="2026-10-05";
+ r.reminders=[{id:"rem",label:"Double-check the closing date",date:"2026-10-06",done:false,kind:"Deadline"}];
+ const data=workspace([r]);
+ const reminder=calendarItems(data,[],day).find(i=>i.sourceId==="rem")!;
+ assert.equal(reminder.date,"2026-10-06");assert.equal(reminder.originalDate,"2026-10-06","a student-entered reminder date is its own original");
+ const own=calendarItems(data,[],day).find(i=>i.kind==="Deadline"&&!i.sourceId)!;
+ assert.equal(own.originalDate,"2026-10-09","the record's own deadline keeps the provider's original date");
+});
