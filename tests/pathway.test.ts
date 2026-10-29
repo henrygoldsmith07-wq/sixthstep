@@ -180,3 +180,15 @@ test("evidence suggestions spread across experiences and name what is missing",(
 function evidence(experience:ReturnType<typeof build>){
  return experience.skills.map(skill=>({...skill,experienceId:experience.id,experienceName:experience.name,experienceType:experience.type,organisation:experience.organisation,date:experience.date,sectors:experience.careerAreas}));
 }
+
+test("an overdue plan clamps the whole schedule, not only the earliest item",()=>{
+ // With daysLeft = -3 and three items, offsets 0..2 all exceed daysLeft, so every step is
+ // undated. If the clamp only covered some indices, a past-due plan would show items
+ // "scheduled" on days that have already gone.
+ const record=createRecord(programme,today);record.intent="Applying";record.planDate="2026-09-30";
+ record.requirements=[requirementSchema.parse({id:"r1",label:"CV required"})];
+ record.questions=[questionSchema.parse({id:"q1",question:"Why medicine?"}),questionSchema.parse({id:"q2",question:"Tell us about teamwork"})];
+ const plan=applicationPlan(record,today);
+ assert.equal(plan.steps.length,3);
+ assert.ok(plan.steps.every(s=>s.date===""),"every overdue step must be undated, got "+plan.steps.map(s=>s.date).join(","));
+});
