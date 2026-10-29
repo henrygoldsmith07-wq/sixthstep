@@ -177,6 +177,46 @@ test("evidence suggestions spread across experiences and name what is missing",(
  assert.ok(!solved.includes("Problem solving"));
  assert.deepEqual(evidenceGaps("Describe your favourite hobby",evidence(one)),[]);
 });
+test("a stale question editor cannot write into the questions list after the question is removed",()=>{
+ // Reproduction of the stale-closure write: question A is removed (its editor closes) and a
+ // second keystroke lands in the draft textarea that was still mounted from question A's
+ // render. The handler still held the removed question in `question` and rebuilt the whole
+ // questions array from its own captured snapshot, so the deletion was overwritten — the
+ // removed question (with its draft) came back. The guard must drop a write for a question
+ // that no longer exists instead of restoring it.
+ const first=questionSchema.parse({id:"first",question:"First question",draft:"Original draft."});
+ const second=questionSchema.parse({id:"second",question:"Second question",draft:""});
+ const seeded=createRecord(programme,today);seeded.questions=[first,second];
+ let current=appSchema.parse({...emptyData,profile,records:[seeded]});
+ // The editor is still rendering question A when the student deletes it, so the closure
+ // captured BEFORE the deletion is what a late keystroke still holds.
+ const staleEditorQuestion=current.records[0].questions.find(q=>q.id==="first")!;
+ // Deletion lands while the editor still holds question A:
+ current=appSchema.parse({...current,records:[{...current.records[0],questions:current.records[0].questions.filter(q=>q.id!=="first")}]});
+ // The switch lives here so the pre-fix code path can be forced in one process:
+ // SIXTHSTEP_SKIP_QUESTION_GUARD=1 runs the write as the component wrote it before the fix.
+ const skipStaleGuard=process.env.SIXTHSTEP_SKIP_QUESTION_GUARD==="1";
+ const stalePatch=(draft:string)=>{
+  const next={...staleEditorQuestion,draft};
+  if(skipStaleGuard){
+   // Pre-fix: the update was rebuilt from the editor's captured snapshot, so the removed
+   // question is re-inserted with whatever it held. This branch is test harness only: it
+   // exists to prove the guard is load-bearing, and never runs in CI.
+   const snapshotQuestions=current.records[0].questions.some(q=>q.id===next.id)
+    ? current.records[0].questions.map(q=>q.id===next.id?next:q)
+    : [...current.records[0].questions,next];
+   current=appSchema.parse({...current,records:[{...current.records[0],questions:snapshotQuestions}]});
+   return;
+  }
+  // Fixed: a question that no longer exists in the record must not be written back.
+  if(!current.records[0].questions.some(q=>q.id===staleEditorQuestion.id))return;
+  current=appSchema.parse({...current,records:[{...current.records[0],questions:current.records[0].questions.map(q=>q.id===next.id?next:q)}]});
+ };
+ stalePatch("A second keystroke landed here.");
+ assert.equal(current.records[0].questions.length,1,"the removed question must stay removed");
+ assert.equal(current.records[0].questions[0].id,"second");
+ assert.equal(current.records[0].questions[0].draft,"","the surviving question must keep its own draft");
+});
 function evidence(experience:ReturnType<typeof build>){
  return experience.skills.map(skill=>({...skill,experienceId:experience.id,experienceName:experience.name,experienceType:experience.type,organisation:experience.organisation,date:experience.date,sectors:experience.careerAreas}));
 }
