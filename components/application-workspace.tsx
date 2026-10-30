@@ -20,7 +20,12 @@ export function ApplicationWorkspace({record}:{record:TrackedRecord}){
  function patchQuestion(patch:Partial<ApplicationQuestion>){
   if(!question)return;const next={...question,...patch};
   const invalid=questionValidity(next);if(next.status!=="Draft"&&invalid.length){setError(invalid[0]);return;}
-  setError("");update({questions:record.questions.map(q=>q.id===question.id?next:q)});
+  setError("");
+  // A question removed while these edits were in flight must not resurrect it: the map below
+  // is keyed by this question's id, so a stale update would re-insert the deleted question
+  // (with all its draft text) the next time any other question was edited.
+  if(!record.questions.some(q=>q.id===question.id))return;
+  update({questions:record.questions.map(q=>q.id===question.id?next:q)});
  }
  function copy(e:typeof bank[number],star=false){
   if(!question)return;const draft=[question.draft.trim(),evidenceText(e,star)].filter(Boolean).join("\n\n");

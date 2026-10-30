@@ -7,4 +7,4 @@ export function isDate(value:string):boolean {
 export const dateSchema=z.string().refine(v=>v===""||isDate(v),"Use a real date in YYYY-MM-DD format");
 // Calendar-day arithmetic on the same noon-UTC basis as daysUntil, so shifting a
 // date never crosses a DST boundary or drifts by a day.
-export function shiftDate(date:string,days:number){return isDate(date)?new Date(Date.parse(date+"T12:00:00Z")+days*86400000).toISOString().slice(0,10):"";}
+export function shiftDate(date:string,days:number){return isDate(date)&&Number.isFinite(days)?new Date(Date.parse(date+"T12:00:00Z")+days*86400000).toISOString().slice(0,10):"";}

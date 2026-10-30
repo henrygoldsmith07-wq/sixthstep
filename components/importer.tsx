@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Sparkles, Link2, FileText, Plus, LoaderCircle, ArrowRight, ClipboardCheck } from "lucide-react";
 import { categories, formats, opportunitySchema, enrich, type RichOpportunity } from "@/lib/domain";
 import { sectors } from "@/lib/types";
+import { mergedImport } from "@/lib/opportunity-repository";
 import { useWorkspace } from "./workspace-context";
 import { Heading, Field, Notice, ExportButton, safeHref } from "./shared";
 type Mode="link"|"text"|"manual";
@@ -46,7 +47,7 @@ export function Importer({initialMode="text"}:{initialMode?:Mode}){
    // The reviewed corrections and the typed next action belong to this opportunity, so they are
    // applied to the record already in the workspace instead of being silently dropped. Fields the
    // student owns (deadline override, questions, requirements) live on the record, not here.
-   updateRecord(recordId,{opportunity:{...existing.opportunity,...parsed.data},nextAction:nextAction.trim()||existing.nextAction});
+   updateRecord(recordId,{opportunity:mergedImport(existing.opportunity,parsed.data),nextAction:nextAction.trim()||existing.nextAction});
    setActiveRecord(recordId);navigate("saved");toast("Updated the details on your saved opportunity");return;
   }
   save(parsed.data);updateRecord(recordId,{nextAction});

@@ -2,7 +2,8 @@ import { test, type TestContext } from "node:test";
 import assert from "node:assert/strict";
 import { POST as importOpportunity } from "../app/api/opportunity/route";
 import { POST as reflect } from "../app/api/experience-reflection/route";
-import { experienceSchema } from "../lib/domain";
+import { experienceSchema, opportunitySchema, enrich } from "../lib/domain";
+import { mergedImport } from "../lib/opportunity-repository";
 const names=["OPENAI_API_KEY","OPENAI_BASE_URL","OPENAI_MODEL","OPENAI_PROVIDER_NAME","OPENAI_JSON_MODE","OPENAI_TOKEN_PARAMETER","GROQ_API_KEY","TAVILY_API_KEY","UPSTASH_REDIS_REST_URL","UPSTASH_REDIS_REST_TOKEN"];
 function setup(t:TestContext,ready=true){const previous=Object.fromEntries(names.map(k=>[k,process.env[k]])),fetch=global.fetch;for(const k of names)delete process.env[k];if(ready)Object.assign(process.env,{OPENAI_API_KEY:"test-secret",OPENAI_BASE_URL:"https://provider.example/v1",OPENAI_MODEL:"test-model",TAVILY_API_KEY:"test-extraction-key"});t.after(()=>{global.fetch=fetch;for(const k of names){if(previous[k]===undefined)delete process.env[k];else process.env[k]=previous[k];}});}
 let count=0;
@@ -45,6 +46,26 @@ test("missing AI configuration prevents spending an extraction request and unsaf
  assert.equal((await importOpportunity(request({url:"https://example.org/programme"}))).status,503);
  assert.equal(calls,0);assert.equal((await importOpportunity(request({url:"https://127.0.0.1"}))).status,400);
  assert.equal((await importOpportunity(request({text},"https://other.example"))).status,403);
+});
+test("a re-import matched by source URL updates the saved record without renaming it",()=>{
+ // The importer matches a re-import against a saved record by id, or by source URL
+ // when the saved record came from pasted text or manual entry. An import id hashes
+ // the url-or-text it came from, so a link import of a page first saved from text —
+ // or of a URL a student typed onto a manual record — has a different id. The
+ // saved id is the workspace key: reminders, questions, journal entries, activity
+ // history and feedback all hang off it. Renaming it orphans all of them.
+ const savedFromText=opportunitySchema.parse({...enrich({id:"personal-manual-1",title:"Engineering club",source:"manual",sourceKind:"Personal record"}),url:"https://example.org/programme"});
+ const linkImport=opportunitySchema.parse({...enrich({id:"import-2222222222222222",title:"Engineering club (reviewed)",source:"manual",sourceKind:"Personal record"}),url:"https://example.org/programme"});
+ const merged=mergedImport(savedFromText,linkImport);
+ assert.equal(merged.id,savedFromText.id,"the saved record keeps its id");
+ assert.equal(merged.title,linkImport.title,"the reviewed details still win");
+ assert.equal(merged.url,linkImport.url,"the source URL still wins");
+ // What the pre-fix inline spread did: {...existing.opportunity,...parsed.data}
+ // renamed the saved opportunity, which is exactly what must never happen.
+ assert.notEqual((({...savedFromText,...linkImport}) as {id:string}).id,savedFromText.id);
+ // A same-id re-import (importing the same page again) merges to the same id too.
+ const sameId=mergedImport(linkImport,{...linkImport,title:"Reviewed twice"});
+ assert.equal(sameId.id,linkImport.id);assert.equal(sameId.title,"Reviewed twice");
 });
 test("malformed extracted output is rejected rather than becoming a fabricated opportunity",async t=>{
  setup(t);global.fetch=async()=>completion({title:"Incomplete"});

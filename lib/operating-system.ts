@@ -14,7 +14,11 @@ export function workspaceItems(data:AppData,collection:RichOpportunity[]=[],toda
   const days=daysUntil(date,today);
   const weights:Record<WorkspaceItem["kind"],number>={Deadline:80,Opening:35,"Next action":75,Interview:90,Reference:65,"Follow up":25,Programme:30,Reflection:20,Personal:50,Milestone:40,Requirement:55,Question:60,Plan:78,Explore:10};
   const score=(days!==null&&days<0?1000:days!==null&&days<=7?300-days*5:days!==null&&days<=30?120-days:0)+weights[kind]+(r.priority==="High"?15:r.priority==="Low"?-10:0);
-  items.push({id:r.opportunity.id+":"+kind+":"+suffix+":"+date,recordId:r.opportunity.id,title,detail:detail||r.opportunity.title,kind,date,originalDate:kind==="Deadline"&&r.deadlineOverride?r.opportunity.deadlineDate:date,period,basis,score,sourceId,priority:r.priority,snoozed:false});
+  // "Original" provenance belongs to the record's own deadline item (suffix defaults to the kind).
+  // A personal reminder typed with the "Deadline" label reuses that kind, and stamping the
+  // provider's deadline on it claimed the student's own reminder date came from the source —
+  // shown as "Original: …" on the card and written into exported calendar events.
+  items.push({id:r.opportunity.id+":"+kind+":"+suffix+":"+date,recordId:r.opportunity.id,title,detail:detail||r.opportunity.title,kind,date,originalDate:kind==="Deadline"&&suffix==="Deadline"&&r.deadlineOverride?r.opportunity.deadlineDate:date,period,basis,score,sourceId,priority:r.priority,snoozed:false});
  }
  for(const r of data.records){
   const o=r.opportunity,source:DateBasis=o.source==="manual"?"Student-entered date":o.source==="catalogue"&&!sourceFreshness(o,today).stale?"Confirmed source date":"Source date · needs review";

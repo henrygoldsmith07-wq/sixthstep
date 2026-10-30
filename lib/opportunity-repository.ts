@@ -5,6 +5,15 @@ export function opportunityCollection(curated:RichOpportunity[],records:TrackedR
  for(const item of [...curated,...records.map(r=>r.opportunity),...live])entries.set(item.id,item);
  return [...entries.values()];
 }
+// A re-import that matched a saved record (same id, or the same source URL on a record imported
+// from pasted text) updates the details the student just reviewed. It must not rename the saved
+// opportunity: its id is the workspace key linking reminders, questions, journal entries, activity
+// history and feedback. An import id is a hash of the url-or-text it came from, so a link import of
+// a page first saved from pasted text produced a different id — and spreading the review over the
+// saved record silently renamed it, orphaning everything that pointed at the old id.
+export function mergedImport(existing:RichOpportunity,incoming:RichOpportunity):RichOpportunity {
+ return {...incoming,id:existing.id};
+}
 export function opportunityPage(items:RichOpportunity[],page=1,size=pageSize){
  const totalPages=Math.max(1,Math.ceil(items.length/size)),current=Math.min(totalPages,Math.max(1,page));
  return {items:items.slice((current-1)*size,current*size),page:current,totalPages,total:items.length};

@@ -38,9 +38,11 @@ export function loadWorkspace(storage:StorageReader):{data:AppData;error:string;
       part++;
     }
     // Only whitespace ever remains here, but "Nothing was removed" must stay true.
-    if(part>1)error ||= "Your previous journal was longer than one entry allows, so it was split into "+part+" entries in date order. "+(remainder.length?"Only trailing blank space was removed.":"Nothing was removed.");
+    // Accumulated like the other migration errors above: a journal that had to be split must
+    // not overwrite a warning that some saved opportunities could not be migrated.
+    if(part>1)error += (error?" ":"")+"Your previous journal was longer than one entry allows, so it was split into "+part+" entries in date order. "+(remainder.length?"Only trailing blank space was removed.":"Nothing was removed.");
    }
- }catch{error ||= "Old journal data could not be loaded. Original data is retained.";}
+ }catch{error += (error?" ":"")+"Old journal data could not be loaded. Original data is retained.";}
  return {data:appSchema.parse(data),error,migrated:data.records.length>0||data.experiences.length>0||data.profile.configured};
 }
 export function backupJSON(data:AppData){return JSON.stringify(data,null,2);}

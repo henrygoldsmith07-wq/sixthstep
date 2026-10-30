@@ -10,14 +10,29 @@ export function safePublicUrl(value:string) {
  return url.toString();
 }
 export async function readBody(req:Request) {
+ // 24,000 UTF-16 units is the most a 12,000-character payload can occupy, and 4 bytes is the
+ // most any of those units can occupy in UTF-8, so a header above 96,000 bytes can never hold
+ // a body this function is meant to accept.
  const length=Number(req.headers.get("content-length")||0);
- if(length>24000) throw new ApiError(413,"Please keep the input under 12,000 characters.");
+ if(length>96000) throw new ApiError(413,"Please keep the input under 12,000 characters.");
  if(!req.headers.get("content-type")?.includes("application/json")) throw new ApiError(415,"Send JSON input.");
- // Enforce the limit while reading, including chunked requests without a header.
  const reader=req.body?.getReader();
  if(!reader)throw new ApiError(400,"Invalid request.");
- const chunks:Uint8Array[]=[];let size=0;
- try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>24000){await reader.cancel();throw new ApiError(413,"Please shorten the input.");}chunks.push(value);}}finally{reader.releaseLock();}
+ // Enforce the limit while reading, including chunked requests without a header. The limit is
+ // documented and enforced downstream as 12,000 CHARACTERS, so a byte cap silently refused
+ // non-ASCII input long before that promise: an accented character is two bytes in UTF-8 and a
+ // Japanese or Arabic one three, which cut what a student could paste roughly in half. Counting
+ // characters instead needs a stateful decoder, because a chunk boundary can split one character.
+ // The count stays a hard ceiling: at most 4 bytes per character, the cap always fires by about
+ // 96kB whatever the client sends, so the bound is still closed.
+ const decoder=new TextDecoder();const chunks:Uint8Array[]=[];let characters=0,done=false;
+ try{
+  while(!done){
+   const {done:finished,value}=await reader.read();done=finished;
+   if(value){chunks.push(value);characters+=decoder.decode(value,{stream:true}).length;}
+   if(characters>24000){await reader.cancel();throw new ApiError(413,"Please shorten the input.");}
+  }
+ }finally{reader.releaseLock();}
  const text=Buffer.concat(chunks).toString("utf8");
  try{return JSON.parse(text);}catch{throw new ApiError(400,"Invalid request.");}
 }
